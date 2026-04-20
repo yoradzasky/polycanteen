@@ -1,0 +1,18 @@
+# Laravel
+/api/vendor/
+/api/.env
+/api/storage/*.key
+/api/public/storage
+/api/bootstrap/cache/*
+
+# Flutter
+/mobile/.dart_tool/
+/mobile/.packages
+/mobile/build/
+/mobile/.pub-cache/
+/mobile/.pub/
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
