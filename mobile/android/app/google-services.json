@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "935228298100",
-    "project_id": "polycanteen-db",
-    "storage_bucket": "polycanteen-db.firebasestorage.app"
+    "project_number": "191706147557",
+    "project_id": "polycanteen-db-1a9d3",
+    "storage_bucket": "polycanteen-db-1a9d3.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:935228298100:android:77ed7eb9270a4ddaedd221",
+        "mobilesdk_app_id": "1:191706147557:android:169bc3a13088c78a7dc20c",
         "android_client_info": {
           "package_name": "com.example.mobile"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyD6j6Hh-pksRnxwib0qmpvR2C3Vo4w2xu8"
+          "current_key": "AIzaSyAFdi4-kE0NU9F6nf6zkGKLlfI7sKFAMuY"
         }
       ],
       "services": {

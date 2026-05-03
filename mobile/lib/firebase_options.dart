@@ -41,48 +41,49 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCfTOtizMwAHUdZpQlQmajdvGpDtbKOoRw',
-    appId: '1:935228298100:web:51775fbf4243ed09edd221',
-    messagingSenderId: '935228298100',
-    projectId: 'polycanteen-db',
-    authDomain: 'polycanteen-db.firebaseapp.com',
-    storageBucket: 'polycanteen-db.firebasestorage.app',
-    measurementId: 'G-93F1M391VQ',
+    apiKey: 'AIzaSyAqAZ-92uCuHP7AA5KLurdHx8QAbSLbzVI',
+    appId: '1:191706147557:web:8341f40fc4a513497dc20c',
+    messagingSenderId: '191706147557',
+    projectId: 'polycanteen-db-1a9d3',
+    authDomain: 'polycanteen-db-1a9d3.firebaseapp.com',
+    storageBucket: 'polycanteen-db-1a9d3.firebasestorage.app',
+    measurementId: 'G-549HCH8MFJ',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyD6j6Hh-pksRnxwib0qmpvR2C3Vo4w2xu8',
-    appId: '1:935228298100:android:77ed7eb9270a4ddaedd221',
-    messagingSenderId: '935228298100',
-    projectId: 'polycanteen-db',
-    storageBucket: 'polycanteen-db.firebasestorage.app',
+    apiKey: 'AIzaSyAFdi4-kE0NU9F6nf6zkGKLlfI7sKFAMuY',
+    appId: '1:191706147557:android:169bc3a13088c78a7dc20c',
+    messagingSenderId: '191706147557',
+    projectId: 'polycanteen-db-1a9d3',
+    storageBucket: 'polycanteen-db-1a9d3.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCIQH5Fv1-NVj28nX5Ny5ZUMY96rUCRXyQ',
-    appId: '1:935228298100:ios:d9b841d3b88c81a7edd221',
-    messagingSenderId: '935228298100',
-    projectId: 'polycanteen-db',
-    storageBucket: 'polycanteen-db.firebasestorage.app',
+    apiKey: 'AIzaSyB9DxqB2uT3c9JtCk-7DaL6Cyv45ItK3gk',
+    appId: '1:191706147557:ios:2efb8ef9320b576f7dc20c',
+    messagingSenderId: '191706147557',
+    projectId: 'polycanteen-db-1a9d3',
+    storageBucket: 'polycanteen-db-1a9d3.firebasestorage.app',
     iosBundleId: 'com.example.mobile',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyCIQH5Fv1-NVj28nX5Ny5ZUMY96rUCRXyQ',
-    appId: '1:935228298100:ios:d9b841d3b88c81a7edd221',
-    messagingSenderId: '935228298100',
-    projectId: 'polycanteen-db',
-    storageBucket: 'polycanteen-db.firebasestorage.app',
+    apiKey: 'AIzaSyB9DxqB2uT3c9JtCk-7DaL6Cyv45ItK3gk',
+    appId: '1:191706147557:ios:2efb8ef9320b576f7dc20c',
+    messagingSenderId: '191706147557',
+    projectId: 'polycanteen-db-1a9d3',
+    storageBucket: 'polycanteen-db-1a9d3.firebasestorage.app',
     iosBundleId: 'com.example.mobile',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyCfTOtizMwAHUdZpQlQmajdvGpDtbKOoRw',
-    appId: '1:935228298100:web:840ecc9bce365950edd221',
-    messagingSenderId: '935228298100',
-    projectId: 'polycanteen-db',
-    authDomain: 'polycanteen-db.firebaseapp.com',
-    storageBucket: 'polycanteen-db.firebasestorage.app',
-    measurementId: 'G-W5QNR6CV3D',
+    apiKey: 'AIzaSyAqAZ-92uCuHP7AA5KLurdHx8QAbSLbzVI',
+    appId: '1:191706147557:web:5e22499a711fe77c7dc20c',
+    messagingSenderId: '191706147557',
+    projectId: 'polycanteen-db-1a9d3',
+    authDomain: 'polycanteen-db-1a9d3.firebaseapp.com',
+    storageBucket: 'polycanteen-db-1a9d3.firebasestorage.app',
+    measurementId: 'G-GSRY82KV2L',
   );
+
 }
