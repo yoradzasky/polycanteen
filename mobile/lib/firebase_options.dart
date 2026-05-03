@@ -52,19 +52,21 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyAFdi4-kE0NU9F6nf6zkGKLlfI7sKFAMuY',
-    appId: '1:191706147557:android:169bc3a13088c78a7dc20c',
+    appId: '1:191706147557:android:d10a6bfccfce37907dc20c',
     messagingSenderId: '191706147557',
     projectId: 'polycanteen-db-1a9d3',
+    databaseURL: 'https://polycanteen-db-1a9d3-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'polycanteen-db-1a9d3.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyB9DxqB2uT3c9JtCk-7DaL6Cyv45ItK3gk',
-    appId: '1:191706147557:ios:2efb8ef9320b576f7dc20c',
+    appId: '1:191706147557:ios:81e990c8db7f809b7dc20c',
     messagingSenderId: '191706147557',
     projectId: 'polycanteen-db-1a9d3',
+    databaseURL: 'https://polycanteen-db-1a9d3-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'polycanteen-db-1a9d3.firebasestorage.app',
-    iosBundleId: 'com.example.mobile',
+    iosBundleId: 'com.polines.polycanteen',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(

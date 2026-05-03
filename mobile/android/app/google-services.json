@@ -1,15 +1,16 @@
 {
   "project_info": {
     "project_number": "191706147557",
+    "firebase_url": "https://polycanteen-db-1a9d3-default-rtdb.asia-southeast1.firebasedatabase.app",
     "project_id": "polycanteen-db-1a9d3",
     "storage_bucket": "polycanteen-db-1a9d3.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:191706147557:android:169bc3a13088c78a7dc20c",
+        "mobilesdk_app_id": "1:191706147557:android:d10a6bfccfce37907dc20c",
         "android_client_info": {
-          "package_name": "com.example.mobile"
+          "package_name": "com.polines.polycanteen"
         }
       },
       "oauth_client": [],
