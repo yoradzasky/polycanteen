@@ -1,6 +1,5 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-// import { getDatabase } from "firebase/database"; // Uncomment jika ingin test RTDB juga
 
 const firebaseConfig = {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -14,6 +13,5 @@ const firebaseConfig = {
 // Inisialisasi Firebase
 const app = initializeApp(firebaseConfig);
 
-// Ekspor layanan yang ingin dipakai
+// Ekspor Firestore agar bisa digunakan untuk tracking/data
 export const db = getFirestore(app);
-// export const rtdb = getDatabase(app);
