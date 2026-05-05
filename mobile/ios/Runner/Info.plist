@@ -66,5 +66,24 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<!-- 1. Izin Lokasi saat aplikasi sedang dibuka -->
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>PolyCanteen membutuhkan lokasi Anda untuk memantau pergerakan pengiriman pesanan ke pembeli.</string>
+
+    <!-- 2. Izin Lokasi saat aplikasi ditutup/layar mati (Sangat penting untuk Kurir) -->
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>PolyCanteen membutuhkan lokasi latar belakang agar pembeli dapat melacak posisi pesanan secara real-time meskipun Anda mengantongi HP.</string>
+
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>PolyCanteen membutuhkan lokasi latar belakang untuk update pelacakan kurir.</string>
+
+    <!-- 3. Mengaktifkan Background Modes untuk Lokasi -->
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>location</string>
+        <string>fetch</string>
+        <string>processing</string>
+		<string>remote-notification</string>
+	</array>
 </dict>
 </plist>
