@@ -6,9 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class KantinPegawai extends Model
+class Pegawai extends Model // Berubah dari KantinPegawai
 {
-    protected $table = 'kantin_pegawai';
+    use HasFactory;
+
+    protected $table = 'pegawai'; // Mengikuti nama tabel baru
     protected $fillable = ['kantin_id', 'nama_karyawan', 'no_telp'];
     
     public function kantin(): BelongsTo

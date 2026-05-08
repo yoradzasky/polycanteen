@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 class User extends Authenticatable
 {
@@ -29,21 +30,19 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    // Relasi ke profil mahasiswa
     public function mahasiswa(): HasOne
     {
         return $this->hasOne(Mahasiswa::class);
     }
 
-    // Relasi ke profil pemilik kantin
     public function pemilik(): HasOne
     {
         return $this->hasOne(Pemilik::class);
     }
     
-    // Relasi ke kantin yang dikelola (untuk role 'kantin')
-    public function kantin(): HasOne
+    // Diupdate menggunakan HasOneThrough karena harus melewati model Pemilik
+    public function kantin(): HasOneThrough
     {
-        return $this->hasOne(Kantin::class);
+        return $this->hasOneThrough(Kantin::class, Pemilik::class, 'user_id', 'pemilik_id', 'id', 'id');
     }
-}   
+}

@@ -1,97 +1,256 @@
-import { useEffect } from 'react';
-import Checkbox from '@/Components/Checkbox';
-import GuestLayout from '@/Layouts/GuestLayout';
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
-import { Head, Link, useForm } from '@inertiajs/react';
+import React, { useId, useState } from "react";
+import { Head, useForm } from "@inertiajs/react"; // Import khusus dari Inertia
 
-export default function Login({ status, canResetPassword }) {
-    const { data, setData, post, processing, errors, reset } = useForm({
-        email: '',
-        password: '',
-        remember: false,
+const featureHeadingLines = ["Kelola Kantin dengan", "Mudah & Terpusat"];
+const featureDescriptionLines = [
+  "Sistem manajemen terintegrasi untuk efisiensi",
+  "operasional dan analisis data kantin Anda.",
+];
+
+// Ubah menjadi export default agar terbaca oleh rute Laravel
+export default function Login() {
+  const emailId = useId();
+  const passwordId = useId();
+  const rememberMeId = useId();
+
+  // Mengganti useState dengan useForm dari Inertia
+  const { data, setData, post, processing, errors, reset } = useForm({
+    email: "",
+    password: "",
+    remember: false, // Laravel Breeze menggunakan nama 'remember'
+  });
+
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Menghubungkan tombol submit ke proses login backend
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    post(route("login"), {
+      onFinish: () => reset("password"), // Kosongkan password jika login gagal
     });
+  };
 
-    useEffect(() => {
-        return () => {
-            reset('password');
-        };
-    }, []);
+  return (
+    <main className="flex min-h-screen items-start relative bg-[linear-gradient(0deg,rgba(244,246,251,1)_0%,rgba(244,246,251,1)_100%),linear-gradient(0deg,rgba(255,255,255,1)_0%,rgba(255,255,255,1)_100%)]">
+      {/* Mengubah title tab browser */}
+      <Head title="Admin Login" />
 
-    const submit = (e) => {
-        e.preventDefault();
+      <section
+        aria-label="Informasi sistem"
+        className="flex flex-col items-center justify-center p-12 relative flex-1 self-stretch grow bg-[#1e2d6b]"
+      >
+        <div
+          aria-hidden="true"
+          className="absolute w-full h-full top-0 left-0 opacity-20 overflow-hidden pointer-events-none"
+        >
+          <div className="relative w-[60px] h-[60px]">
+            {/* Pastikan file vector.svg ada di folder public/ */}
+            <div className="w-10 h-10 bg-[url(/vector.svg)] bg-[100%_100%]" />
+          </div>
+        </div>
+        <div className="inline-flex flex-col min-w-[448px] max-w-md items-start gap-4 relative flex-[0_0_auto]">
+          <div className="relative self-stretch w-full max-h-80 h-80 bg-[#ffffff01] rounded-2xl overflow-hidden shadow-[0px_25px_50px_-12px_#00000040]">
+            {/* Pastikan gambar ini ada di folder public/ */}
+            <div className="h-[calc(100%_+_184px)] bg-[url(/professional-3d-abstract-illustration-representing-dashboard-analytics-data-charts-and-cafeteria-management-concepts-dark-blue-and-vibrant-orange-accents-clean-corporate-style.png)] bg-cover bg-[50%_50%]" />
+          </div>
+          <div className="flex flex-col items-center pt-4 pb-0 px-0 relative self-stretch w-full flex-[0_0_auto]">
+            <h1 className="relative w-[355px] h-20 mt-[-1.00px] [font-family:'Inter-Bold',Helvetica] font-bold text-white text-4xl text-center tracking-[-0.90px] leading-10">
+              {featureHeadingLines.map((line, index) => (
+                <React.Fragment key={line}>
+                  {line}
+                  {index < featureHeadingLines.length - 1 ? <br /> : null}
+                </React.Fragment>
+              ))}
+            </h1>
+          </div>
+          <div className="flex flex-col items-center relative self-stretch w-full flex-[0_0_auto]">
+            <p className="relative w-[390.2px] h-14 mt-[-1.00px] [font-family:'Inter-Regular',Helvetica] font-normal text-blue-200 text-lg text-center tracking-[0] leading-7">
+              {featureDescriptionLines.map((line, index) => (
+                <React.Fragment key={line}>
+                  {line}
+                  {index < featureDescriptionLines.length - 1 ? <br /> : null}
+                </React.Fragment>
+              ))}
+            </p>
+          </div>
+        </div>
+      </section>
 
-        post(route('login'));
-    };
-
-    return (
-        <GuestLayout>
-            <Head title="Log in" />
-
-            {status && <div className="mb-4 font-medium text-sm text-green-600">{status}</div>}
-
-            <form onSubmit={submit}>
-                <div>
-                    <InputLabel htmlFor="email" value="Email" />
-
-                    <TextInput
-                        id="email"
-                        type="email"
-                        name="email"
-                        value={data.email}
-                        className="mt-1 block w-full"
-                        autoComplete="username"
-                        isFocused={true}
-                        onChange={(e) => setData('email', e.target.value)}
-                    />
-
-                    <InputError message={errors.email} className="mt-2" />
+      <section className="flex-col items-center justify-center p-12 flex-1 self-stretch grow bg-[#f4f6fb] flex relative">
+        <form
+          onSubmit={handleSubmit}
+          className="flex-col max-w-[440px] w-[440px] items-start gap-8 pt-10 pb-14 px-10 flex-[0_0_auto] bg-white rounded-2xl shadow-[0px_4px_40px_#0000000a] flex relative"
+        >
+          <div className="flex flex-col items-start gap-2 relative self-stretch w-full flex-[0_0_auto]">
+            <div className="flex items-center justify-center gap-3 relative self-stretch w-full flex-[0_0_auto]">
+              <div className="w-10 h-10 items-center justify-center bg-[#3852b4] rounded-[10px] flex relative">
+                <div className="absolute top-[calc(50.00%_-_20px)] left-[calc(50.00%_-_20px)] w-10 h-10 bg-[#ffffff01] rounded-[10px] shadow-[0px_4px_6px_-4px_#3852b44c,0px_10px_15px_-3px_#3852b44c]" />
+                <div className="inline-flex flex-col items-center relative flex-[0_0_auto]">
+                  <div
+                    aria-hidden="true"
+                    className="relative flex items-center justify-center w-[17.61px] h-5 mt-[-1.00px] [font-family:'Font_Awesome_5_Free-Solid',Helvetica] font-normal text-white text-xl text-center tracking-[0] leading-5 whitespace-nowrap"
+                  >
+                    
+                  </div>
                 </div>
-
-                <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
-
-                    <TextInput
-                        id="password"
-                        type="password"
-                        name="password"
-                        value={data.password}
-                        className="mt-1 block w-full"
-                        autoComplete="current-password"
-                        onChange={(e) => setData('password', e.target.value)}
-                    />
-
-                    <InputError message={errors.password} className="mt-2" />
+              </div>
+              <div className="inline-flex flex-col items-center relative flex-[0_0_auto]">
+                <div className="relative flex items-center justify-center w-[232px] h-8 mt-[-1.00px] [font-family:'Inter-Bold',Helvetica] font-bold text-gray-900 text-2xl text-center tracking-[-0.60px] leading-8 whitespace-nowrap">
+                  Admin Polycanteen
                 </div>
+              </div>
+            </div>
+            <div className="flex flex-col items-center pt-4 pb-0 px-0 relative self-stretch w-full flex-[0_0_auto]">
+              <h2 className="relative flex items-center justify-center w-[243.64px] h-8 mt-[-1.00px] [font-family:'Inter-SemiBold',Helvetica] font-semibold text-gray-800 text-2xl text-center tracking-[0] leading-8 whitespace-nowrap">
+                Masuk ke Dashboard
+              </h2>
+            </div>
+            <div className="flex flex-col items-center relative self-stretch w-full flex-[0_0_auto]">
+              <p className="relative flex items-center justify-center w-[353.97px] h-5 mt-[-1.00px] [font-family:'Inter-Regular',Helvetica] font-normal text-gray-500 text-sm text-center tracking-[0] leading-5 whitespace-nowrap">
+                Silakan masukkan kredensial Anda untuk melanjutkan
+              </p>
+            </div>
+          </div>
 
-                <div className="block mt-4">
-                    <label className="flex items-center">
-                        <Checkbox
-                            name="remember"
-                            checked={data.remember}
-                            onChange={(e) => setData('remember', e.target.checked)}
-                        />
-                        <span className="ms-2 text-sm text-gray-600">Remember me</span>
-                    </label>
+          <div className="flex flex-col items-start gap-5 relative self-stretch w-full flex-[0_0_auto]">
+            {/* Input Email */}
+            <div className="flex flex-col items-start gap-1.5 relative self-stretch w-full flex-[0_0_auto]">
+              <div className="flex flex-col items-start relative self-stretch w-full flex-[0_0_auto]">
+                <label
+                  htmlFor={emailId}
+                  className="relative flex items-center self-stretch mt-[-1.00px] [font-family:'Inter-Medium',Helvetica] font-medium text-gray-700 text-sm tracking-[0] leading-5"
+                >
+                  Email
+                </label>
+              </div>
+              <div className="flex flex-col items-start relative self-stretch w-full flex-[0_0_auto]">
+                <div className="flex flex-col items-start pl-10 pr-4 py-3.5 relative self-stretch w-full flex-[0_0_auto] bg-[#f9fafb80] rounded-xl overflow-hidden border border-solid shadow-[0px_1px_2px_#0000000d]">
+                  <input
+                    id={emailId}
+                    name="email"
+                    autoComplete="email"
+                    inputMode="email"
+                    aria-label="Email"
+                    className="relative self-stretch w-full border-[none] [background:none] h-5 mt-[-1.00px] [font-family:'Inter-Regular',Helvetica] font-normal text-gray-700 placeholder:text-gray-400 text-base tracking-[0] leading-[normal] p-0 focus:ring-0"
+                    placeholder="admin@kantin.com"
+                    type="email"
+                    value={data.email} // Hubungkan dengan useForm
+                    onChange={(e) => setData("email", e.target.value)} // Hubungkan dengan useForm
+                  />
                 </div>
-
-                <div className="flex items-center justify-end mt-4">
-                    {canResetPassword && (
-                        <Link
-                            href={route('password.request')}
-                            className="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >
-                            Forgot your password?
-                        </Link>
-                    )}
-
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Log in
-                    </PrimaryButton>
+                {/* Ikon Email */}
+                <div aria-hidden="true" className="inline-flex h-full items-center pl-3.5 pr-0 py-0 absolute top-0 left-0">
+                  <div className="inline-flex flex-col items-start relative flex-[0_0_auto]">
+                    <div className="w-[16.2px] [font-family:'Font_Awesome_5_Free-Regular',Helvetica] relative flex items-center h-4 mt-[-1.00px] font-normal text-gray-400 text-base tracking-[0] leading-4 whitespace-nowrap">
+                      
+                    </div>
+                  </div>
                 </div>
-            </form>
-        </GuestLayout>
-    );
+              </div>
+              {/* Menampilkan pesan error jika email salah/tidak ditemukan */}
+              {errors.email && <span className="text-red-500 text-xs mt-1">{errors.email}</span>}
+            </div>
+
+            {/* Input Password */}
+            <div className="flex flex-col items-start gap-1.5 relative self-stretch w-full flex-[0_0_auto]">
+              <div className="flex flex-col items-start relative self-stretch w-full flex-[0_0_auto]">
+                <label
+                  htmlFor={passwordId}
+                  className="relative flex items-center self-stretch mt-[-1.00px] [font-family:'Inter-Medium',Helvetica] font-medium text-gray-700 text-sm tracking-[0] leading-5"
+                >
+                  Password
+                </label>
+              </div>
+              <div className="flex flex-col items-start relative self-stretch w-full flex-[0_0_auto]">
+                <div className="flex flex-col items-start px-10 py-3.5 self-stretch w-full flex-[0_0_auto] bg-[#f9fafb80] rounded-xl overflow-hidden border shadow-[0px_1px_2px_#0000000d] relative border-solid">
+                  <input
+                    id={passwordId}
+                    name="password"
+                    autoComplete="current-password"
+                    aria-label="Password"
+                    className="relative self-stretch w-full border-[none] [background:none] h-5 mt-[-1.00px] [font-family:'Inter-Regular',Helvetica] font-normal text-gray-700 placeholder:text-gray-400 text-base tracking-[0] leading-[normal] p-0 focus:ring-0"
+                    placeholder="••••••••"
+                    type={showPassword ? "text" : "password"}
+                    value={data.password} // Hubungkan dengan useForm
+                    onChange={(e) => setData("password", e.target.value)} // Hubungkan dengan useForm
+                  />
+                </div>
+                {/* Ikon Gembok */}
+                <div aria-hidden="true" className="inline-flex h-full items-center pl-3.5 pr-0 py-0 absolute top-0 left-0">
+                  <div className="inline-flex flex-col items-start relative flex-[0_0_auto]">
+                    <div className="w-[14.18px] [font-family:'Font_Awesome_5_Free-Solid',Helvetica] relative flex items-center h-4 mt-[-1.00px] font-normal text-gray-400 text-base tracking-[0] leading-4 whitespace-nowrap">
+                      
+                    </div>
+                  </div>
+                </div>
+                {/* Tombol Tampilkan Password */}
+                <button
+                  type="button"
+                  aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
+                  aria-pressed={showPassword}
+                  onClick={() => setShowPassword((current) => !current)}
+                  className="all-[unset] box-border inline-flex h-full items-center pl-0 pr-3.5 py-[17px] absolute top-0 right-0 cursor-pointer"
+                >
+                  <div className="inline-flex flex-col items-center relative flex-[0_0_auto] mt-[-1.00px] mb-[-1.00px]">
+                    <div className="justify-center w-[20.12px] [font-family:'Font_Awesome_5_Free-Regular',Helvetica] text-center relative flex items-center h-4 mt-[-1.00px] font-normal text-gray-400 text-base tracking-[0] leading-4 whitespace-nowrap">
+                      
+                    </div>
+                  </div>
+                </button>
+              </div>
+              {/* Menampilkan pesan error jika password salah */}
+              {errors.password && <span className="text-red-500 text-xs mt-1">{errors.password}</span>}
+            </div>
+
+            {/* Checkbox Remember Me */}
+            <div className="flex items-center justify-around gap-[130.31px] pr-[1.14e-13px] pl-0 pt-1 pb-0 relative self-stretch w-full flex-[0_0_auto]">
+              <label
+                htmlFor={rememberMeId}
+                className="inline-flex items-center relative flex-[0_0_auto] cursor-pointer"
+              >
+                <input
+                  id={rememberMeId}
+                  name="remember"
+                  type="checkbox"
+                  checked={data.remember} // Hubungkan dengan useForm
+                  onChange={(e) => setData("remember", e.target.checked)} // Hubungkan dengan useForm
+                  className="peer sr-only"
+                />
+                <div className="w-4 h-4 bg-white rounded-[2.5px] border-[#767676] relative border border-solid peer-checked:bg-[#3852b4] peer-checked:border-[#3852b4] flex items-center justify-center transition-colors">
+                  <span className="text-[10px] leading-none text-white opacity-0 peer-checked:opacity-100">
+                    ✓
+                  </span>
+                </div>
+                <div className="inline-flex flex-col items-start pl-2 pr-0 py-0 relative flex-[0_0_auto]">
+                  <div className="relative flex items-center w-[96.18px] h-5 mt-[-1.00px] [font-family:'Inter-Regular',Helvetica] font-normal text-gray-600 text-sm tracking-[0] leading-5 whitespace-nowrap">
+                    Remember me
+                  </div>
+                </div>
+              </label>
+            </div>
+
+            {/* Tombol Submit */}
+            <button
+              type="submit"
+              disabled={processing} // Cegah klik dobel saat sedang loading
+              className={`all-[unset] box-border flex items-start justify-center px-4 py-3.5 relative self-stretch w-full flex-[0_0_auto] bg-[#3852b4] rounded-xl border border-solid border-transparent cursor-pointer hover:bg-[#2c4190] transition-colors ${processing ? 'opacity-75 cursor-wait' : ''}`}
+            >
+              <div className="absolute w-full h-full top-0 left-0 bg-[#ffffff01] rounded-xl shadow-[0px_2px_4px_-2px_#0000001a,0px_4px_6px_-1px_#0000001a]" />
+              <div className="relative flex items-center justify-center w-[45.33px] h-5 mt-[-1.00px] [font-family:'Inter-SemiBold',Helvetica] font-semibold text-white text-sm text-center tracking-[0] leading-5 whitespace-nowrap">
+                {processing ? "Loading..." : "Masuk"}
+              </div>
+            </button>
+          </div>
+        </form>
+        
+        <footer className="inline-flex flex-col items-start pt-8 pb-0 px-0 relative flex-[0_0_auto]">
+          <div className="inline-flex flex-col items-center relative flex-[0_0_auto]">
+            <p className="relative flex items-center justify-center w-[281.61px] h-5 mt-[-1.00px] [font-family:'Inter-Medium',Helvetica] font-medium text-gray-500 text-sm text-center tracking-[0] leading-5 whitespace-nowrap">
+              © 2026 Sistem Kantin. All rights reserved.
+            </p>
+          </div>
+        </footer>
+      </section>
+    </main>
+  );
 }
