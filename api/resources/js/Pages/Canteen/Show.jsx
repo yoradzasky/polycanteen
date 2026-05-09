@@ -3,12 +3,48 @@ import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { AreaChart, Area, ResponsiveContainer, Tooltip } from 'recharts';
 
-function formatRupiah(a) { if (!a && a !== 0) return 'Rp 0'; if (a >= 1e9) { const v = a / 1e9; return `Rp ${v % 1 === 0 ? v : v.toFixed(1).replace('.', ',')} M` } if (a >= 1e6) { const v = a / 1e6; return `Rp ${v % 1 === 0 ? v : v.toFixed(1).replace('.', ',')} jt` } return `Rp ${a.toLocaleString('id-ID')}` }
-function formatRupiahPenuh(a) { if (!a && a !== 0) return 'Rp 0'; return `Rp ${Number(a).toLocaleString('id-ID')}` }
-function formatTanggal(iso) { if (!iso) return '-'; const b = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des']; const d = new Date(iso); return `${d.getDate()} ${b[d.getMonth()]} ${d.getFullYear()}` }
-function formatTanggalLengkap(iso) { if (!iso) return '-'; const hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']; const b = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des']; const d = new Date(iso); return `${hari[d.getDay()]}, ${d.getDate()} ${b[d.getMonth()]} ${d.getFullYear()}` }
-function formatAngka(n) { if (!n && n !== 0) return '0'; return Number(n).toLocaleString('id-ID') }
-function getInisial(nama) { if (!nama) return '?'; return nama.split(' ').filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase() }
+function formatRupiah(a) {
+    if (!a && a !== 0) return 'Rp 0';
+    if (a >= 1e9) {
+        const v = a / 1e9;
+        return `Rp ${v % 1 === 0 ? v : v.toFixed(1).replace('.', ',')} M`;
+    }
+    if (a >= 1e6) {
+        const v = a / 1e6;
+        return `Rp ${v % 1 === 0 ? v : v.toFixed(1).replace('.', ',')} jt`;
+    }
+    return `Rp ${a.toLocaleString('id-ID')}`;
+}
+
+function formatRupiahPenuh(a) {
+    if (!a && a !== 0) return 'Rp 0';
+    return `Rp ${Number(a).toLocaleString('id-ID')}`;
+}
+
+function formatTanggal(iso) {
+    if (!iso) return '-';
+    const b = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'];
+    const d = new Date(iso);
+    return `${d.getDate()} ${b[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function formatTanggalLengkap(iso) {
+    if (!iso) return '-';
+    const hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const b = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'];
+    const d = new Date(iso);
+    return `${hari[d.getDay()]}, ${d.getDate()} ${b[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function formatAngka(n) {
+    if (!n && n !== 0) return '0';
+    return Number(n).toLocaleString('id-ID');
+}
+
+function getInisial(nama) {
+    if (!nama) return '?';
+    return nama.split(' ').filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+}
 
 export default function Show({ kantin, total_penjualan, total_menu_terjual, menus, sales_activity }) {
     const [aktPage, setAktPage] = useState(1);
@@ -31,12 +67,12 @@ export default function Show({ kantin, total_penjualan, total_menu_terjual, menu
 
     return (
         <AdminLayout title="Detail Kantin" description={
-                <div className="flex items-center gap-2 text-xs">
-                    <Link href={route('admin.canteens.index')} className="text-blue-600 hover:underline font-medium">Daftar Kantin</Link>
-                    <span className="text-gray-400">›</span>
-                    <span className="text-gray-500">Detail</span>
-                </div>
-            } rightContent={
+            <div className="flex items-center gap-2 text-xs">
+                <Link href={route('admin.canteens.index')} className="text-blue-600 hover:underline font-medium">Daftar Kantin</Link>
+                <span className="text-gray-400">›</span>
+                <span className="text-gray-500">Detail</span>
+            </div>
+        } rightContent={
             <div className="flex items-center gap-3">
                 <Link href={route('admin.canteens.edit', kantin.id)} className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#2d3a8c] hover:bg-[#252f73] text-white text-sm font-semibold rounded-xl transition-all">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
@@ -98,41 +134,41 @@ export default function Show({ kantin, total_penjualan, total_menu_terjual, menu
                 </div>
 
                 {/* §4 Menu Table */}
-                    <div className="bg-white rounded-2xl border border-gray-100">
-                        <div className="px-6 py-5 border-b border-gray-100"><h2 className="text-base font-bold text-gray-900">Daftar Menu</h2><p className="text-xs text-gray-400 mt-0.5">{meta.total || 0} menu terdaftar di kantin ini</p></div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full min-w-[650px]">
-                                <thead><tr className="border-b border-gray-100">
-                                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase">Foto Menu</th>
-                                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase">Nama Menu</th>
-                                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase">Harga</th>
-                                    <th className="text-center px-6 py-3 text-xs font-semibold text-gray-400 uppercase">Status</th>
-                                    <th className="text-center px-6 py-3 text-xs font-semibold text-gray-400 uppercase">Total Terjual</th>
-                                </tr></thead>
-                                <tbody className="divide-y divide-gray-50">
-                                    {menuData.length > 0 ? menuData.map(m => (
-                                        <tr key={m.id} className="hover:bg-gray-50/50 transition-colors">
-                                            <td className="px-6 py-3">{m.foto_menu ? <img src={m.foto_menu} alt={m.nama_item} className="w-12 h-12 rounded-xl object-cover" /> : <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center"><span className="text-xs font-bold text-orange-600">{getInisial(m.nama_item)}</span></div>}</td>
-                                            <td className="px-6 py-3"><p className="text-sm font-semibold text-gray-900">{m.nama_item}</p><p className="text-xs text-gray-400">{m.kategori}</p></td>
-                                            <td className="px-6 py-3 text-sm text-gray-700">{formatRupiahPenuh(m.harga)}</td>
-                                            <td className="px-6 py-3 text-center"><span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${m.status_stok ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}><span className={`w-1.5 h-1.5 rounded-full ${m.status_stok ? 'bg-emerald-500' : 'bg-red-500'}`} />{m.status_stok ? 'Tersedia' : 'Habis'}</span></td>
-                                            <td className="px-6 py-3 text-center text-sm font-semibold text-gray-700">{formatAngka(m.pesanan_details_sum_jumlah_pesanan || 0)}</td>
-                                        </tr>
-                                    )) : <tr><td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">Belum ada menu</td></tr>}
-                                </tbody>
-                            </table>
-                        </div>
-                        <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
-                            <p className="text-sm text-gray-500">Menampilkan <span className="font-semibold text-gray-700">{meta.from || 0}–{meta.to || 0}</span> dari <span className="font-semibold text-gray-700">{meta.total || 0}</span> menu</p>
-                            <div className="flex items-center gap-1">
-                                <button onClick={() => handleMenuPage(Math.max(1, (meta.current_page || 1) - 1))} disabled={(meta.current_page || 1) <= 1} className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30">‹</button>
-                                {Array.from({ length: meta.last_page || 1 }, (_, i) => i + 1).map(p => (
-                                    <button key={p} onClick={() => handleMenuPage(p)} className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm transition-colors ${p === (meta.current_page || 1) ? 'bg-[#3852b4] text-white font-semibold' : 'text-gray-600 hover:bg-gray-100'}`}>{p}</button>
-                                ))}
-                                <button onClick={() => handleMenuPage(Math.min(meta.last_page || 1, (meta.current_page || 1) + 1))} disabled={(meta.current_page || 1) >= (meta.last_page || 1)} className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30">›</button>
-                            </div>
+                <div className="bg-white rounded-2xl border border-gray-100">
+                    <div className="px-6 py-5 border-b border-gray-100"><h2 className="text-base font-bold text-gray-900">Daftar Menu</h2><p className="text-xs text-gray-400 mt-0.5">{meta.total || 0} menu terdaftar di kantin ini</p></div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full min-w-[650px]">
+                            <thead><tr className="border-b border-gray-100">
+                                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase">Foto Menu</th>
+                                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase">Nama Menu</th>
+                                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase">Harga</th>
+                                <th className="text-center px-6 py-3 text-xs font-semibold text-gray-400 uppercase">Status</th>
+                                <th className="text-center px-6 py-3 text-xs font-semibold text-gray-400 uppercase">Total Terjual</th>
+                            </tr></thead>
+                            <tbody className="divide-y divide-gray-50">
+                                {menuData.length > 0 ? menuData.map(m => (
+                                    <tr key={m.id} className="hover:bg-gray-50/50 transition-colors">
+                                        <td className="px-6 py-3">{m.foto_menu ? <img src={m.foto_menu} alt={m.nama_item} className="w-12 h-12 rounded-xl object-cover" /> : <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center"><span className="text-xs font-bold text-orange-600">{getInisial(m.nama_item)}</span></div>}</td>
+                                        <td className="px-6 py-3"><p className="text-sm font-semibold text-gray-900">{m.nama_item}</p><p className="text-xs text-gray-400">{m.kategori}</p></td>
+                                        <td className="px-6 py-3 text-sm text-gray-700">{formatRupiahPenuh(m.harga)}</td>
+                                        <td className="px-6 py-3 text-center"><span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${m.status_stok ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}><span className={`w-1.5 h-1.5 rounded-full ${m.status_stok ? 'bg-emerald-500' : 'bg-red-500'}`} />{m.status_stok ? 'Tersedia' : 'Habis'}</span></td>
+                                        <td className="px-6 py-3 text-center text-sm font-semibold text-gray-700">{formatAngka(m.pesanan_details_sum_jumlah_pesanan || 0)}</td>
+                                    </tr>
+                                )) : <tr><td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">Belum ada menu</td></tr>}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
+                        <p className="text-sm text-gray-500">Menampilkan <span className="font-semibold text-gray-700">{meta.from || 0}–{meta.to || 0}</span> dari <span className="font-semibold text-gray-700">{meta.total || 0}</span> menu</p>
+                        <div className="flex items-center gap-1">
+                            <button onClick={() => handleMenuPage(Math.max(1, (meta.current_page || 1) - 1))} disabled={(meta.current_page || 1) <= 1} className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30">‹</button>
+                            {Array.from({ length: meta.last_page || 1 }, (_, i) => i + 1).map(p => (
+                                <button key={p} onClick={() => handleMenuPage(p)} className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm transition-colors ${p === (meta.current_page || 1) ? 'bg-[#3852b4] text-white font-semibold' : 'text-gray-600 hover:bg-gray-100'}`}>{p}</button>
+                            ))}
+                            <button onClick={() => handleMenuPage(Math.min(meta.last_page || 1, (meta.current_page || 1) + 1))} disabled={(meta.current_page || 1) >= (meta.last_page || 1)} className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30">›</button>
                         </div>
                     </div>
+                </div>
 
                 {/* §6 Sales Activity */}
                 <div className="bg-white rounded-2xl border border-gray-100">
