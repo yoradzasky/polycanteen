@@ -1,5 +1,4 @@
 import defaultTheme from 'tailwindcss/defaultTheme';
-import forms from '@tailwindcss/forms';
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -7,16 +6,19 @@ export default {
         './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
         './storage/framework/views/*.php',
         './resources/views/**/*.blade.php',
-        './resources/js/**/*.jsx',
+        './resources/js/**/*.jsx', // Pastikan baris ini ada
     ],
-
     theme: {
         extend: {
-            fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+            colors: {
+                cobalt: "var(--cobalt)",
+                "d-9d-9d-9": "var(--d-9d-9d-9)",
+                periwinkle: "var(--periwinkle)",
+                sand: "var(--sand)",
+                "variable-collection-color": "var(--variable-collection-color)",
+                "warm-orange": "var(--warm-orange)",
             },
         },
     },
-
-    plugins: [forms],
+    plugins: [],
 };

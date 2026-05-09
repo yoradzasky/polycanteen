@@ -1,3 +1,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Tambahkan di bawah ini */
+:root {
+  --cobalt: rgba(56, 82, 180, 1);
+  --d-9d-9d-9: rgba(240, 244, 255, 1);
+  --periwinkle: rgba(94, 122, 196, 1);
+  --sand: rgba(243, 190, 122, 1);
+  --variable-collection-color: rgba(156, 163, 175, 1);
+  --warm-orange: rgba(240, 141, 57, 1);
+}
+
+@layer components {
+  .all-\[unset\] {
+    all: unset;
+  }
+}
