@@ -117,7 +117,7 @@ function ActionButtons({ canteen }) {
             </Link>
             <button
                 onClick={handleNonaktifkan}
-                className="inline-flex items-center justify-center w-8 h-8 text-gray-400 bg-gray-50 rounded-lg hover:bg-gray-100 hover:text-gray-600 transition-colors"
+                className="inline-flex items-center justify-center w-8 h-8 text-[#EF4444] bg-red-50 rounded-lg hover:bg-red-100 hover:text-red-600 transition-colors"
                 title="Nonaktifkan"
             >
                 {/* Ban / Stop icon */}
@@ -179,7 +179,7 @@ function Pagination({ links }) {
 
 export default function Index({ canteens, filters }) {
     const [search, setSearch] = useState(filters.nama_kantin || '');
-    const [perPage, setPerPage] = useState(canteens.meta?.per_page || 8);
+    const [perPage, setPerPage] = useState(canteens.per_page || 8);
     const debounceTimer = useRef(null);
 
     // Debounced search
@@ -207,7 +207,7 @@ export default function Index({ canteens, filters }) {
         );
     };
 
-    const meta = canteens.meta || {};
+    const meta = canteens;
 
     return (
         <AdminLayout
@@ -253,7 +253,7 @@ export default function Index({ canteens, filters }) {
                     <div className="px-6 py-5 border-b border-gray-100">
                         <h2 className="text-base font-bold text-gray-900">Daftar Semua Kantin</h2>
                         <p className="text-xs text-gray-400 mt-0.5">
-                            Menampilkan {meta.total || 0} dari {meta.total || 0} kantin
+                            Menampilkan {canteens.data?.length || 0} dari {meta.total || 0} kantin
                         </p>
                     </div>
 
@@ -262,35 +262,14 @@ export default function Index({ canteens, filters }) {
                         <table className="w-full min-w-[900px]">
                             <thead>
                                 <tr className="border-b border-gray-100">
-                                    <th className="text-left px-6 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                                        <div className="flex items-center gap-1">
-                                            Nama Kantin
-                                            <svg className="w-3 h-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-                                            </svg>
-                                        </div>
-                                    </th>
-                                    <th className="text-left px-6 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                                        <div className="flex items-center gap-1">
-                                            Pemilik
-                                            <svg className="w-3 h-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-                                            </svg>
-                                        </div>
-                                    </th>
-                                    <th className="text-left px-6 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                                        <div className="flex items-center gap-1">
-                                            Lokasi
-                                            <svg className="w-3 h-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-                                            </svg>
-                                        </div>
-                                    </th>
-                                    <th className="text-left px-6 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Jumlah Menu</th>
-                                    <th className="text-left px-6 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Transaksi</th>
-                                    <th className="text-left px-6 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
-                                    <th className="text-left px-6 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Tanggal Daftar</th>
-                                    <th className="text-left px-6 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Aksi</th>
+                                    <th className="text-center px-6 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Nama Kantin</th>
+                                    <th className="text-center px-6 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Pemilik</th>
+                                    <th className="text-center px-6 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Lokasi</th>
+                                    <th className="text-center px-6 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Jumlah Menu</th>
+                                    <th className="text-center px-6 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Transaksi</th>
+                                    <th className="text-center px-6 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
+                                    <th className="text-center px-6 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Tanggal Daftar</th>
+                                    <th className="text-center px-6 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
@@ -298,8 +277,8 @@ export default function Index({ canteens, filters }) {
                                     canteens.data.map((kantin) => (
                                         <tr key={kantin.id} className="hover:bg-[#f9fafd] transition-colors">
                                             {/* Nama Kantin */}
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-3">
+                                            <td className="px-6 py-4 text-center">
+                                                <div className="flex items-center justify-center gap-3">
                                                     <Avatar nama={kantin.nama_kantin} size="w-9 h-9" textSize="text-xs" />
                                                     <div>
                                                         <p className="text-sm font-semibold text-gray-900">{kantin.nama_kantin}</p>
@@ -307,8 +286,8 @@ export default function Index({ canteens, filters }) {
                                                 </div>
                                             </td>
                                             {/* Pemilik */}
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-2.5">
+                                            <td className="px-6 py-4 text-center">
+                                                <div className="flex items-center justify-center gap-2.5">
                                                     <Avatar
                                                         src={kantin.pemilik?.user?.avatar}
                                                         nama={kantin.pemilik?.nama_pemilik}
@@ -319,8 +298,8 @@ export default function Index({ canteens, filters }) {
                                                 </div>
                                             </td>
                                             {/* Lokasi */}
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-1.5">
+                                            <td className="px-6 py-4 text-center">
+                                                <div className="flex items-center justify-center gap-1.5">
                                                     <svg className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                                                     </svg>
@@ -328,28 +307,28 @@ export default function Index({ canteens, filters }) {
                                                 </div>
                                             </td>
                                             {/* Jumlah Menu */}
-                                            <td className="px-6 py-4">
+                                            <td className="px-6 py-4 text-center">
                                                 <span className="text-sm font-medium text-gray-700">
                                                     {kantin.menus_count ?? 0}
                                                     <span className="text-gray-400 font-normal ml-1">menu</span>
                                                 </span>
                                             </td>
                                             {/* Total Transaksi */}
-                                            <td className="px-6 py-4">
+                                            <td className="px-6 py-4 text-center">
                                                 <p className="text-sm font-semibold text-gray-900">
                                                     {formatRupiah(kantin.pesanan_sum_total_harga || 0)}
                                                 </p>
                                             </td>
                                             {/* Status */}
-                                            <td className="px-6 py-4">
+                                            <td className="px-6 py-4 text-center">
                                                 <StatusBadge status={kantin.status_toko} />
                                             </td>
                                             {/* Tanggal Daftar */}
-                                            <td className="px-6 py-4">
+                                            <td className="px-6 py-4 text-center">
                                                 <span className="text-sm text-gray-600">{formatTanggal(kantin.created_at)}</span>
                                             </td>
                                             {/* Aksi */}
-                                            <td className="px-6 py-4">
+                                            <td className="px-6 py-4 text-center">
                                                 <ActionButtons canteen={kantin} />
                                             </td>
                                         </tr>
