@@ -11,8 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('menus', function (Blueprint $table) {
+        Schema::create('menu', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('kantin_id')->constrained('kantin')->onDelete('cascade');
+            $table->string('nama_item');
+            $table->string('kategori');
+            $table->decimal('harga', 10, 2);
+            $table->string('foto_menu')->nullable();
+            $table->boolean('status_stok')->default(true);
             $table->timestamps();
         });
     }
@@ -22,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('menus');
+        Schema::dropIfExists('menu');
     }
 };

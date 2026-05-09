@@ -1,5 +1,6 @@
 import vector13 from "./vector-13.svg";
 import vector16 from "./vector-16.svg";
+import { Link, usePage } from '@inertiajs/react';
 
 const managementSections = [
   {
@@ -17,6 +18,8 @@ const managementSections = [
             />
           </div>
         ),
+        href: route('admin.canteens.index'),
+        activePath: '/admin/canteens',
       },
     ],
   },
@@ -28,6 +31,8 @@ const managementSections = [
         icon: (
           <div className="relative w-[17.5px] h-3.5 mr-[-1.50px] bg-[url(/vector-14.svg)] bg-[100%_100%]" />
         ),
+        href: '#',
+        activePath: '/admin/buyers',
       },
       {
         label: "Persetujuan Akun Pembeli",
@@ -35,15 +40,20 @@ const managementSections = [
         icon: (
           <div className="relative w-[17.28px] h-3.5 mr-[-1.28px] bg-[url(/vector-15.svg)] bg-[100%_100%]" />
         ),
+        href: '#',
+        activePath: '/admin/approvals',
       },
     ],
   },
 ];
 
 export default function Sidebar() {
+  const { url } = usePage();
+  const isDashboardActive = url.startsWith('/admin/dashboard');
+
   return (
     <aside
-      className="flex flex-col w-60 h-[890px] items-start absolute top-0 left-0 bg-[#1e2d6b]"
+      className="flex flex-col w-60 h-screen items-start bg-[#1e2d6b] flex-shrink-0 z-20"
       aria-label="Sidebar admin"
     >
       <div className="flex items-center gap-3 p-6 relative self-stretch w-full flex-[0_0_auto] border-b [border-bottom-style:solid] border-[#ffffff1a]">
@@ -74,27 +84,31 @@ export default function Sidebar() {
         className="flex flex-col items-start gap-1 px-4 py-6 relative flex-1 self-stretch w-full grow"
         aria-label="Navigasi utama admin"
       >
-        <button
-          type="button"
-          aria-current="page"
-          className="flex items-center gap-3 px-4 py-2.5 relative self-stretch w-full flex-[0_0_auto] bg-[#3852b4] rounded-xl text-left"
+        <Link
+          href={route('admin.dashboard')}
+          aria-current={isDashboardActive ? "page" : undefined}
+          className={`flex items-center gap-3 px-4 py-2.5 relative self-stretch w-full flex-[0_0_auto] rounded-xl text-left transition-colors ${
+            isDashboardActive ? 'bg-[#3852b4]' : 'hover:bg-[#ffffff0d]'
+          }`}
         >
-          <div
-            className="absolute w-full h-full top-0 left-0 bg-[#ffffff01] rounded-xl shadow-[0px_4px_6px_-4px_#3852b44c,0px_10px_15px_-3px_#3852b44c]"
-            aria-hidden="true"
-          />
-          <div className="flex flex-col w-4 items-start relative">
+          {isDashboardActive && (
+            <div
+              className="absolute w-full h-full top-0 left-0 bg-[#ffffff01] rounded-xl shadow-[0px_4px_6px_-4px_#3852b44c,0px_10px_15px_-3px_#3852b44c]"
+              aria-hidden="true"
+            />
+          )}
+          <div className={`flex flex-col w-4 items-start relative ${isDashboardActive ? '' : 'opacity-70'}`}>
             <div
               className="relative w-4 h-4 bg-[url(/vector-12.svg)] bg-[100%_100%]"
               aria-hidden="true"
             />
           </div>
           <div className="inline-flex flex-col items-start relative flex-[0_0_auto]">
-            <div className="relative flex items-center w-[74.11px] h-5 mt-[-1.00px] [font-family:'Inter-SemiBold',Helvetica] font-semibold text-white text-sm tracking-[0] leading-5 whitespace-nowrap">
+            <div className={`relative flex items-center h-5 mt-[-1.00px] [font-family:'Inter-SemiBold',Helvetica] font-semibold text-sm tracking-[0] leading-5 whitespace-nowrap ${isDashboardActive ? 'text-white' : 'text-blue-200'}`}>
               Dashboard
             </div>
           </div>
-        </button>
+        </Link>
         {managementSections.map((section) => (
           <div
             key={section.heading}
@@ -107,41 +121,51 @@ export default function Sidebar() {
                 </div>
               </div>
             </div>
-            {section.items.map((item) => (
-              <button
-                key={item.label}
-                type="button"
-                className="flex items-center gap-3 px-4 py-2.5 relative self-stretch w-full flex-[0_0_auto] rounded-xl text-left"
-              >
-                <div
-                  className="flex flex-col w-4 items-start relative"
-                  aria-hidden="true"
+            {section.items.map((item) => {
+              const isActive = item.activePath ? url.startsWith(item.activePath) : false;
+              
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className={`flex items-center gap-3 px-4 py-2.5 relative self-stretch w-full flex-[0_0_auto] rounded-xl text-left transition-colors ${
+                    isActive ? 'bg-[#3852b4]' : 'hover:bg-[#ffffff0d]'
+                  }`}
                 >
-                  {item.icon}
-                </div>
-                {item.multiline ? (
-                  <div className="inline-flex flex-col items-start pl-0 pr-[29.86px] py-0 relative flex-[0_0_auto]">
-                    <div className="relative w-[118.14px] h-10 mt-[-1.00px] [font-family:'Inter-Medium',Helvetica] font-medium text-blue-200 text-sm tracking-[0] leading-5">
-                      Persetujuan Akun
-                      <br />
-                      Pembeli
-                    </div>
-                  </div>
-                ) : (
-                  <div className="inline-flex flex-col items-start relative flex-[0_0_auto]">
+                  {isActive && (
                     <div
-                      className={`relative flex items-center h-5 mt-[-1.00px] [font-family:'Inter-Medium',Helvetica] font-medium text-blue-200 text-sm tracking-[0] leading-5 whitespace-nowrap ${
-                        item.label === "Daftar Kantin"
-                          ? "w-[89.13px]"
-                          : "w-[99.15px]"
-                      }`}
-                    >
-                      {item.label}
-                    </div>
+                      className="absolute w-full h-full top-0 left-0 bg-[#ffffff01] rounded-xl shadow-[0px_4px_6px_-4px_#3852b44c,0px_10px_15px_-3px_#3852b44c]"
+                      aria-hidden="true"
+                    />
+                  )}
+                  <div
+                    className={`flex flex-col w-4 items-start relative ${isActive ? '' : 'opacity-70'}`}
+                    aria-hidden="true"
+                  >
+                    {item.icon}
                   </div>
-                )}
-              </button>
-            ))}
+                  {item.multiline ? (
+                    <div className="inline-flex flex-col items-start pl-0 pr-[29.86px] py-0 relative flex-[0_0_auto]">
+                      <div className={`relative w-[118.14px] h-10 mt-[-1.00px] [font-family:'Inter-Medium',Helvetica] font-medium text-sm tracking-[0] leading-5 ${isActive ? 'text-white font-semibold' : 'text-blue-200'}`}>
+                        Persetujuan Akun
+                        <br />
+                        Pembeli
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="inline-flex flex-col items-start relative flex-[0_0_auto]">
+                      <div
+                        className={`relative flex items-center h-5 mt-[-1.00px] [font-family:'Inter-Medium',Helvetica] font-medium text-sm tracking-[0] leading-5 whitespace-nowrap ${
+                          isActive ? 'text-white font-semibold' : 'text-blue-200'
+                        }`}
+                      >
+                        {item.label}
+                      </div>
+                    </div>
+                  )}
+                </Link>
+              );
+            })}
           </div>
         ))}
       </nav>

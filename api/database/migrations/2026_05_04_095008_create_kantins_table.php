@@ -11,9 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('kantins', function (Blueprint $table) {
+        Schema::create('kantin', function (Blueprint $table) {
             $table->id();
+            $table->string('nama_kantin');
+            $table->text('lokasi_lengkap')->nullable();
+            $table->decimal('longitude', 10, 7)->nullable();
+            $table->decimal('latitude', 10, 7)->nullable();
+            $table->string('status_toko')->default('tutup');
+            $table->string('logo_path')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
@@ -22,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('kantins');
+        Schema::dropIfExists('kantin');
     }
 };

@@ -8,10 +8,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AdminMiddleware
 {
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next, string $role): Response
     {
-        // Sesuaikan dengan role di User.php milikmu ('admin')
-        if (auth()->check() && auth()->user()->role === 'admin') {
+        // Sesuaikan dengan role di User.php milikmu
+        if (auth()->check() && auth()->user()->role === $role) {
             return $next($request);
         }
 

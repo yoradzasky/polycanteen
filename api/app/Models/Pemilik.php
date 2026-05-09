@@ -18,8 +18,8 @@ class Pemilik extends Model
     }
 
     // Relasi ke Kantin
-    public function kantin(): HasOne
+    public function kantin(): BelongsTo
     {
-        return $this->hasOne(Kantin::class, 'kantin_id', 'id');
+        return $this->belongsTo(Kantin::class, 'kantin_id', 'id');
     }
 }

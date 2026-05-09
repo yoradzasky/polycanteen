@@ -18,7 +18,7 @@ class User extends Authenticatable
         'email',
         'password',
         'status_akun',
-        'role', // admin, mahasiswa, kantin, kurir
+        'role', // admin, mahasiswa, pemilik, pegawai
     ];
 
     protected $hidden = [
