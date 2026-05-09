@@ -17,6 +17,7 @@ class User extends Authenticatable
         'username',
         'email',
         'password',
+        'status_akun',
         'role', // admin, mahasiswa, kantin, kurir
     ];
 
@@ -39,10 +40,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(Pemilik::class);
     }
-    
-    // Diupdate menggunakan HasOneThrough karena harus melewati model Pemilik
-    public function kantin(): HasOneThrough
+
+    public function pegawai(): HasOne
     {
-        return $this->hasOneThrough(Kantin::class, Pemilik::class, 'user_id', 'pemilik_id', 'id', 'id');
+        return $this->hasOne(Pegawai::class);
     }
 }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Pemilik extends Model
 {
@@ -17,8 +18,8 @@ class Pemilik extends Model
     }
 
     // Relasi ke Kantin
-    public function kantin(): BelongsTo
+    public function kantin(): HasOne
     {
-        return $this->belongsTo(Kantin::class);
+        return $this->hasOne(Kantin::class, 'kantin_id', 'id');
     }
 }

@@ -11,10 +11,10 @@ class Pesanan extends Model
 {
     protected $table = 'pesanan';
     protected $fillable = [
-        'mahasiswa_id', 
-        'kantin_id', 
-        'tipe_pesanan', 
-        'status_pesanan', 
+        'mahasiswa_id',
+        'kantin_id',
+        'tipe_pesanan',
+        'status_pesanan',
         'total_harga'
     ];
 
@@ -28,7 +28,7 @@ class Pesanan extends Model
         return $this->belongsTo(Kantin::class);
     }
 
-    public function detail(): HasMany
+    public function details(): HasMany
     {
         return $this->hasMany(PesananDetail::class);
     }
