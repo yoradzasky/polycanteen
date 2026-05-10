@@ -12,7 +12,6 @@ class Kantin extends Model
     use SoftDeletes;
     protected $table = 'kantin';
 
-    // HAPUS pemilik_id. Tambahkan lokasi_gedung
     protected $fillable = [
         'nama_kantin',
         'lokasi_lengkap',
