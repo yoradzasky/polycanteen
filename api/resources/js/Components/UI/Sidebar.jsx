@@ -170,10 +170,12 @@ export default function Sidebar() {
         ))}
       </nav>
       <div className="flex flex-col items-start pt-0 pb-6 px-4 relative self-stretch w-full flex-[0_0_auto]">
-        <button
-          type="button"
-          className="flex items-center gap-3 px-4 py-3 relative self-stretch w-full flex-[0_0_auto] bg-[#ffffff0d] rounded-xl border border-solid border-[#ffffff1a] text-left"
-          aria-label="Profil Admin Utama, Super Admin"
+        <Link
+          href={route('logout')}
+          method="post"
+          as="button"
+          className="flex items-center gap-3 px-4 py-3 relative self-stretch w-full flex-[0_0_auto] bg-[#ffffff0d] rounded-xl border border-solid border-[#ffffff1a] text-left hover:bg-red-500/20 transition-colors"
+          aria-label="Logout"
         >
           <div
             className="relative max-w-52 w-8 h-8 rounded-full border-2 border-solid border-[#f08d39] bg-[url(/admin-avatar.png)] bg-cover bg-[50%_50%]"
@@ -195,14 +197,14 @@ export default function Sidebar() {
             <div className="relative w-3 h-3">
               <img
                 className="absolute w-full h-[93.75%] top-[6.25%] left-0"
-                alt=""
+                alt="Logout"
                 src={vector16}
                 aria-hidden="true"
               />
             </div>
           </div>
-        </button>
+        </Link>
       </div>
     </aside>
   );
-};
+}
