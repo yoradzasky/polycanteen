@@ -251,6 +251,17 @@ class CanteenService
                 }
 
                 // Tahap 4: Sinkronisasi data karyawan
+                $payloadPegawaiIds = collect($data['karyawan'] ?? [])->pluck('id')->filter()->toArray();
+
+                // Suspend akun & hapus record pegawai yang tidak ada di form (dihapus oleh admin)
+                $pegawaiDihapus = $kantin->pegawai()->whereNotIn('id', $payloadPegawaiIds)->get();
+                foreach ($pegawaiDihapus as $pegawai) {
+                    if ($pegawai->user) {
+                        $pegawai->user->update(['status_akun' => 'suspend']);
+                    }
+                    $pegawai->delete();
+                }
+
                 if (isset($data['karyawan']) && is_array($data['karyawan'])) {
                     foreach ($data['karyawan'] as $karyawanData) {
                         if (!empty($karyawanData['id'])) {

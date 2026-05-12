@@ -90,10 +90,6 @@ export default function Edit({ kantin }) {
                         Daftar Kantin
                     </Link>
                     <span className="text-gray-300">›</span>
-                    <Link href={route('admin.canteens.show', kantin.id)} className="text-blue-600 hover:underline font-medium">
-                        Detail
-                    </Link>
-                    <span className="text-gray-300">›</span>
                     <span className="text-gray-500">Edit</span>
                 </span>
             }
