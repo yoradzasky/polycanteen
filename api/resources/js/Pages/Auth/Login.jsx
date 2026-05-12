@@ -1,5 +1,7 @@
 import React, { useId, useState } from "react";
-import { Head, useForm } from "@inertiajs/react"; // Import khusus dari Inertia
+import { Head, useForm } from "@inertiajs/react"; 
+import heroImage from "../../Components/UI/hero-dashboard.svg";
+import forkIcon from "../../Components/UI/fork.svg"; // Import ikon sendok garpu
 
 const featureHeadingLines = ["Kelola Kantin dengan", "Mudah & Terpusat"];
 const featureDescriptionLines = [
@@ -7,32 +9,28 @@ const featureDescriptionLines = [
   "operasional dan analisis data kantin Anda.",
 ];
 
-// Ubah menjadi export default agar terbaca oleh rute Laravel
 export default function Login() {
   const emailId = useId();
   const passwordId = useId();
   const rememberMeId = useId();
 
-  // Mengganti useState dengan useForm dari Inertia
   const { data, setData, post, processing, errors, reset } = useForm({
     email: "",
     password: "",
-    remember: false, // Laravel Breeze menggunakan nama 'remember'
+    remember: false, 
   });
 
   const [showPassword, setShowPassword] = useState(false);
 
-  // Menghubungkan tombol submit ke proses login backend
   const handleSubmit = (event) => {
     event.preventDefault();
     post(route("login"), {
-      onFinish: () => reset("password"), // Kosongkan password jika login gagal
+      onFinish: () => reset("password"),
     });
   };
 
   return (
     <main className="flex min-h-screen items-start relative bg-[linear-gradient(0deg,rgba(244,246,251,1)_0%,rgba(244,246,251,1)_100%),linear-gradient(0deg,rgba(255,255,255,1)_0%,rgba(255,255,255,1)_100%)]">
-      {/* Mengubah title tab browser */}
       <Head title="Admin Login" />
 
       <section
@@ -44,14 +42,18 @@ export default function Login() {
           className="absolute w-full h-full top-0 left-0 opacity-20 overflow-hidden pointer-events-none"
         >
           <div className="relative w-[60px] h-[60px]">
-            {/* Pastikan file vector.svg ada di folder public/ */}
-            <div className="w-10 h-10 bg-[url(/vector.svg)] bg-[100%_100%]" />
+            {/* Mengganti background vector.svg dengan forkIcon agar tidak error */}
+            <img src={forkIcon} alt="" className="w-10 h-10 object-contain opacity-50" />
           </div>
         </div>
         <div className="inline-flex flex-col min-w-[448px] max-w-md items-start gap-4 relative flex-[0_0_auto]">
           <div className="relative self-stretch w-full max-h-80 h-80 bg-[#ffffff01] rounded-2xl overflow-hidden shadow-[0px_25px_50px_-12px_#00000040]">
-            {/* Pastikan gambar ini ada di folder public/ */}
-            <div className="h-[calc(100%_+_184px)] bg-[url(/professional-3d-abstract-illustration-representing-dashboard-analytics-data-charts-and-cafeteria-management-concepts-dark-blue-and-vibrant-orange-accents-clean-corporate-style.png)] bg-cover bg-[50%_50%]" />
+            <img 
+              src={heroImage} 
+              alt="Dashboard Analytics Illustration"
+              className="w-full h-full object-cover object-center relative z-10"
+            />
+            <div className="absolute inset-0 bg-[#1e2d6b]/10 mix-blend-multiply pointer-events-none z-20" />
           </div>
           <div className="flex flex-col items-center pt-4 pb-0 px-0 relative self-stretch w-full flex-[0_0_auto]">
             <h1 className="relative w-[355px] h-20 mt-[-1.00px] [font-family:'Inter-Bold',Helvetica] font-bold text-white text-4xl text-center tracking-[-0.90px] leading-10">
@@ -83,17 +85,16 @@ export default function Login() {
         >
           <div className="flex flex-col items-start gap-2 relative self-stretch w-full flex-[0_0_auto]">
             <div className="flex items-center justify-center gap-3 relative self-stretch w-full flex-[0_0_auto]">
+              
+              {/* BAGIAN LOGO FORK.SVG */}
               <div className="w-10 h-10 items-center justify-center bg-[#3852b4] rounded-[10px] flex relative">
                 <div className="absolute top-[calc(50.00%_-_20px)] left-[calc(50.00%_-_20px)] w-10 h-10 bg-[#ffffff01] rounded-[10px] shadow-[0px_4px_6px_-4px_#3852b44c,0px_10px_15px_-3px_#3852b44c]" />
                 <div className="inline-flex flex-col items-center relative flex-[0_0_auto]">
-                  <div
-                    aria-hidden="true"
-                    className="relative flex items-center justify-center w-[17.61px] h-5 mt-[-1.00px] [font-family:'Font_Awesome_5_Free-Solid',Helvetica] font-normal text-white text-xl text-center tracking-[0] leading-5 whitespace-nowrap"
-                  >
-                    
-                  </div>
+                  {/* Memanggil gambar sendok garpu */}
+                  <img src={forkIcon} alt="Logo" className="w-5 h-5 object-contain" />
                 </div>
               </div>
+              
               <div className="inline-flex flex-col items-center relative flex-[0_0_auto]">
                 <div className="relative flex items-center justify-center w-[232px] h-8 mt-[-1.00px] [font-family:'Inter-Bold',Helvetica] font-bold text-gray-900 text-2xl text-center tracking-[-0.60px] leading-8 whitespace-nowrap">
                   Admin Polycanteen
@@ -134,11 +135,10 @@ export default function Login() {
                     className="relative self-stretch w-full border-[none] [background:none] h-5 mt-[-1.00px] [font-family:'Inter-Regular',Helvetica] font-normal text-gray-700 placeholder:text-gray-400 text-base tracking-[0] leading-[normal] p-0 focus:ring-0"
                     placeholder="admin@kantin.com"
                     type="email"
-                    value={data.email} // Hubungkan dengan useForm
-                    onChange={(e) => setData("email", e.target.value)} // Hubungkan dengan useForm
+                    value={data.email}
+                    onChange={(e) => setData("email", e.target.value)} 
                   />
                 </div>
-                {/* Ikon Email */}
                 <div aria-hidden="true" className="inline-flex h-full items-center pl-3.5 pr-0 py-0 absolute top-0 left-0">
                   <div className="inline-flex flex-col items-start relative flex-[0_0_auto]">
                     <div className="w-[16.2px] [font-family:'Font_Awesome_5_Free-Regular',Helvetica] relative flex items-center h-4 mt-[-1.00px] font-normal text-gray-400 text-base tracking-[0] leading-4 whitespace-nowrap">
@@ -147,7 +147,6 @@ export default function Login() {
                   </div>
                 </div>
               </div>
-              {/* Menampilkan pesan error jika email salah/tidak ditemukan */}
               {errors.email && <span className="text-red-500 text-xs mt-1">{errors.email}</span>}
             </div>
 
@@ -171,11 +170,10 @@ export default function Login() {
                     className="relative self-stretch w-full border-[none] [background:none] h-5 mt-[-1.00px] [font-family:'Inter-Regular',Helvetica] font-normal text-gray-700 placeholder:text-gray-400 text-base tracking-[0] leading-[normal] p-0 focus:ring-0"
                     placeholder="••••••••"
                     type={showPassword ? "text" : "password"}
-                    value={data.password} // Hubungkan dengan useForm
-                    onChange={(e) => setData("password", e.target.value)} // Hubungkan dengan useForm
+                    value={data.password} 
+                    onChange={(e) => setData("password", e.target.value)} 
                   />
                 </div>
-                {/* Ikon Gembok */}
                 <div aria-hidden="true" className="inline-flex h-full items-center pl-3.5 pr-0 py-0 absolute top-0 left-0">
                   <div className="inline-flex flex-col items-start relative flex-[0_0_auto]">
                     <div className="w-[14.18px] [font-family:'Font_Awesome_5_Free-Solid',Helvetica] relative flex items-center h-4 mt-[-1.00px] font-normal text-gray-400 text-base tracking-[0] leading-4 whitespace-nowrap">
@@ -183,7 +181,6 @@ export default function Login() {
                     </div>
                   </div>
                 </div>
-                {/* Tombol Tampilkan Password */}
                 <button
                   type="button"
                   aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
@@ -198,7 +195,6 @@ export default function Login() {
                   </div>
                 </button>
               </div>
-              {/* Menampilkan pesan error jika password salah */}
               {errors.password && <span className="text-red-500 text-xs mt-1">{errors.password}</span>}
             </div>
 
@@ -212,8 +208,8 @@ export default function Login() {
                   id={rememberMeId}
                   name="remember"
                   type="checkbox"
-                  checked={data.remember} // Hubungkan dengan useForm
-                  onChange={(e) => setData("remember", e.target.checked)} // Hubungkan dengan useForm
+                  checked={data.remember} 
+                  onChange={(e) => setData("remember", e.target.checked)} 
                   className="peer sr-only"
                 />
                 <div className="w-4 h-4 bg-white rounded-[2.5px] border-[#767676] relative border border-solid peer-checked:bg-[#3852b4] peer-checked:border-[#3852b4] flex items-center justify-center transition-colors">
@@ -232,7 +228,7 @@ export default function Login() {
             {/* Tombol Submit */}
             <button
               type="submit"
-              disabled={processing} // Cegah klik dobel saat sedang loading
+              disabled={processing}
               className={`all-[unset] box-border flex items-start justify-center px-4 py-3.5 relative self-stretch w-full flex-[0_0_auto] bg-[#3852b4] rounded-xl border border-solid border-transparent cursor-pointer hover:bg-[#2c4190] transition-colors ${processing ? 'opacity-75 cursor-wait' : ''}`}
             >
               <div className="absolute w-full h-full top-0 left-0 bg-[#ffffff01] rounded-xl shadow-[0px_2px_4px_-2px_#0000001a,0px_4px_6px_-1px_#0000001a]" />
