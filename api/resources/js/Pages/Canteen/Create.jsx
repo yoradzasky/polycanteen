@@ -1,7 +1,7 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, Link, useForm, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import MapPickerModal from '@/Components/MapPickerModal';
+import MapPickerModal from '@/Components/Modals/MapPickerModal';
 
 function FormField({ label, required, helper, error, children }) {
     return (
