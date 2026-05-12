@@ -130,7 +130,6 @@ export default function ActivityTable({ aktivitas = [] }) {
                       />
                       <div>
                         <p className="font-medium text-gray-900">{item.nama}</p>
-                        <p className="text-xs text-gray-500">ID: #{item.userId}</p>
                       </div>
                     </div>
                   </td>

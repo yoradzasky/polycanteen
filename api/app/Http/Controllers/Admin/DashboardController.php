@@ -19,7 +19,7 @@ class DashboardController extends Controller
     {
         $totalTransaksi = Pesanan::where('status_pesanan', 'selesai')->sum('total_harga');
         $totalPembeli = User::where('role', 'mahasiswa')->count();
-        $totalKantin = User::where('role', 'kantin')->count();
+        $totalKantin = \Illuminate\Support\Facades\DB::table('kantin')->count();
 
         // Oper parameter request ke fungsi agar bisa membaca nomor halaman (?page=2)
         $aktivitas = $this->getRecentActivities($request);
