@@ -1,8 +1,7 @@
 import AdminLayout from '@/Layouts/AdminLayout';
-import Sidebar from '@/Components/UI/Sidebar';
-import TopNavbar from '@/Components/UI/TopNavbar';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState, useEffect, useRef } from 'react';
+import DeleteConfirmModal from '@/Components/Modals/DeleteConfirmModal';
 
 // ── Helper Functions ──────────────────────────────────────────────
 
@@ -72,11 +71,10 @@ function Avatar({ src, nama, size = 'w-8 h-8', textSize = 'text-xs' }) {
 function StatusBadge({ status }) {
     const isBuka = status === 'buka';
     return (
-        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
-            isBuka
+        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${isBuka
                 ? 'bg-emerald-50 text-emerald-600'
                 : 'bg-gray-100 text-gray-500'
-        }`}>
+            }`}>
             <span className={`w-1.5 h-1.5 rounded-full ${isBuka ? 'bg-emerald-500' : 'bg-gray-400'}`} />
             {isBuka ? 'Buka' : 'Tutup'}
         </span>
@@ -85,13 +83,7 @@ function StatusBadge({ status }) {
 
 // ── Action Buttons ────────────────────────────────────────────────
 
-function ActionButtons({ canteen }) {
-    const handleNonaktifkan = () => {
-        if (window.confirm('Yakin ingin menonaktifkan kantin ini?')) {
-            router.delete(route('admin.canteens.destroy', canteen.id));
-        }
-    };
-
+function ActionButtons({ canteen, onShowDelete }) {
     return (
         <div className="flex items-center gap-2">
             <Link
@@ -116,9 +108,9 @@ function ActionButtons({ canteen }) {
                 Edit
             </Link>
             <button
-                onClick={handleNonaktifkan}
+                onClick={() => onShowDelete({ id: canteen.id, nama_kantin: canteen.nama_kantin, logo_path: canteen.logo_path })}
                 className="inline-flex items-center justify-center w-8 h-8 text-[#EF4444] bg-red-50 rounded-lg hover:bg-red-100 hover:text-red-600 transition-colors"
-                title="Nonaktifkan"
+                title="Hapus Kantin"
             >
                 {/* Ban / Stop icon */}
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -162,11 +154,10 @@ function Pagination({ links }) {
                         key={i}
                         href={link.url || '#'}
                         preserveState
-                        className={`flex items-center justify-center min-w-[32px] h-8 px-2 text-sm rounded-lg transition-colors ${
-                            link.active
+                        className={`flex items-center justify-center min-w-[32px] h-8 px-2 text-sm rounded-lg transition-colors ${link.active
                                 ? 'bg-[#3852b4] text-white font-semibold shadow-sm'
                                 : 'text-gray-600 hover:bg-gray-100'
-                        }`}
+                            }`}
                         dangerouslySetInnerHTML={{ __html: link.label }}
                     />
                 );
@@ -180,6 +171,8 @@ function Pagination({ links }) {
 export default function Index({ canteens, filters }) {
     const [search, setSearch] = useState(filters.nama_kantin || '');
     const [perPage, setPerPage] = useState(canteens.per_page || 8);
+    const [deleteTarget, setDeleteTarget] = useState(null); // { id, nama_kantin, logo_path }
+    const [isDeleting, setIsDeleting]     = useState(false);
     const debounceTimer = useRef(null);
 
     // Debounced search
@@ -329,7 +322,7 @@ export default function Index({ canteens, filters }) {
                                             </td>
                                             {/* Aksi */}
                                             <td className="px-6 py-4 text-center">
-                                                <ActionButtons canteen={kantin} />
+                                                <ActionButtons canteen={kantin} onShowDelete={setDeleteTarget} />
                                             </td>
                                         </tr>
                                     ))
@@ -381,6 +374,23 @@ export default function Index({ canteens, filters }) {
                     </div>
                 </div>
             </div>
+
+            <DeleteConfirmModal
+                isOpen={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                namaKantin={deleteTarget?.nama_kantin ?? ''}
+                logoPath={deleteTarget?.logo_path}
+                isDeleting={isDeleting}
+                onConfirm={() => {
+                    setIsDeleting(true);
+                    router.delete(route('admin.canteens.destroy', deleteTarget.id), {
+                        onFinish: () => {
+                            setIsDeleting(false);
+                            setDeleteTarget(null);
+                        },
+                    });
+                }}
+            />
         </AdminLayout>
     );
 }

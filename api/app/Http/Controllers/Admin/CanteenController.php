@@ -100,7 +100,7 @@ class CanteenController extends Controller
         $data = $this->canteenService->getCanteenProfileAndStats($id);
 
         return Inertia::render('Canteen/Edit', [
-            'canteen' => $data['kantin'],
+            'kantin' => $data['kantin'],
         ]);
     }
 

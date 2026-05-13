@@ -51,6 +51,9 @@ class CanteenService
             $query->where('status_toko', $filters['status_toko']);
         }
 
+        // Urutkan dari yang terbaru
+        $query->latest();
+
         return $query->paginate($perPage);
     }
 
@@ -64,8 +67,8 @@ class CanteenService
      */
     public function getCanteenProfileAndStats(int $id): array
     {
-        // Ambil data kantin dengan relasi pemilik dan user
-        $kantin = Kantin::with('pemilik.user')->findOrFail($id);
+        // Ambil data kantin dengan relasi pemilik dan user serta pegawai
+        $kantin = Kantin::with(['pemilik.user', 'pegawai.user'])->findOrFail($id);
 
         // Hitung total penjualan (Rp) dari pesanan selesai
         $totalPenjualan = $kantin->pesanan()
@@ -145,7 +148,7 @@ class CanteenService
                 $kantin = Kantin::create([
 
                     'nama_kantin'    => $data['nama_kantin'],
-                    'lokasi_lengkap' => $data['lokasi_gedung'],
+                    'lokasi_lengkap' => $data['lokasi_lengkap'],
                     'latitude'       => $data['latitude'] ?? null,
                     'longitude'      => $data['longitude'] ?? null,
                     'status_toko'    => 'tutup',
@@ -153,8 +156,9 @@ class CanteenService
 
                 // Tahap 2: Buat akun user untuk pemilik
                 $userPemilik = User::create([
+                    'username'    => strstr($data['email'], '@', true) . rand(1000, 9999),
                     'email'       => $data['email'],
-                    'password'    => Hash::make($data['password']),
+                    'password'    => Hash::make('password'),
                     'role'        => 'pemilik',
                     'status_akun' => 'aktif',
                 ]);
@@ -164,7 +168,7 @@ class CanteenService
                     'kantin_id'    => $kantin->id,
                     'user_id'      => $userPemilik->id,
                     'nama_pemilik' => $data['nama_pemilik'],
-                    'no_telp'      => $data['no_hp'],
+                    'no_telp'      => $data['no_telp'],
                 ]);
 
                 // Tahap 4: Buat karyawan (opsional) jika data karyawan tersedia
@@ -172,8 +176,9 @@ class CanteenService
                     foreach ($data['karyawan'] as $karyawan) {
                         // Buat akun user untuk setiap karyawan
                         $userKaryawan = User::create([
+                            'username'    => strstr($karyawan['email'], '@', true) . rand(1000, 9999),
                             'email'       => $karyawan['email'],
-                            'password'    => Hash::make($karyawan['password']),
+                            'password'    => Hash::make('password'),
                             'role'        => 'pegawai',
                             'status_akun' => 'aktif',
                         ]);
@@ -216,7 +221,7 @@ class CanteenService
                 $kantin = Kantin::findOrFail($id);
                 $kantin->update([
                     'nama_kantin'    => $data['nama_kantin'],
-                    'lokasi_lengkap' => $data['lokasi_gedung'],
+                    'lokasi_lengkap' => $data['lokasi_lengkap'],
                     'latitude'       => $data['latitude'] ?? $kantin->latitude,
                     'longitude'      => $data['longitude'] ?? $kantin->longitude,
                 ]);
@@ -224,7 +229,7 @@ class CanteenService
                 // Tahap 2: Update profil pemilik
                 $kantin->pemilik()->update([
                     'nama_pemilik' => $data['nama_pemilik'],
-                    'no_telp'      => $data['no_hp'],
+                    'no_telp'      => $data['no_telp'],
                 ]);
 
                 // Tahap 3: Update email pemilik jika berubah
@@ -246,6 +251,17 @@ class CanteenService
                 }
 
                 // Tahap 4: Sinkronisasi data karyawan
+                $payloadPegawaiIds = collect($data['karyawan'] ?? [])->pluck('id')->filter()->toArray();
+
+                // Suspend akun & hapus record pegawai yang tidak ada di form (dihapus oleh admin)
+                $pegawaiDihapus = $kantin->pegawai()->whereNotIn('id', $payloadPegawaiIds)->get();
+                foreach ($pegawaiDihapus as $pegawai) {
+                    if ($pegawai->user) {
+                        $pegawai->user->update(['status_akun' => 'suspend']);
+                    }
+                    $pegawai->delete();
+                }
+
                 if (isset($data['karyawan']) && is_array($data['karyawan'])) {
                     foreach ($data['karyawan'] as $karyawanData) {
                         if (!empty($karyawanData['id'])) {
@@ -265,8 +281,9 @@ class CanteenService
                         } else {
                             // Buat user dan pegawai baru
                             $userBaru = User::create([
+                                'username'    => strstr($karyawanData['email'], '@', true) . rand(1000, 9999),
                                 'email'       => $karyawanData['email'],
-                                'password'    => Hash::make($karyawanData['password']),
+                                'password'    => Hash::make('password'),
                                 'role'        => 'pegawai',
                                 'status_akun' => 'aktif',
                             ]);
