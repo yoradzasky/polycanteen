@@ -55,12 +55,12 @@ function Avatar({ src, nama, size = 'w-8 h-8', textSize = 'text-xs' }) {
             <img
                 src={src}
                 alt={nama}
-                className={`${size} rounded-full object-cover ring-2 ring-white`}
+                className={`${size} rounded-full object-cover ring-2 ring-white flex-shrink-0`}
             />
         );
     }
     return (
-        <div className={`${size} ${colors[colorIndex]} rounded-full flex items-center justify-center ring-2 ring-white`}>
+        <div className={`${size} ${colors[colorIndex]} rounded-full flex items-center justify-center ring-2 ring-white flex-shrink-0`}>
             <span className={`${textSize} font-semibold text-white`}>{inisial}</span>
         </div>
     );
@@ -98,7 +98,7 @@ function ActionButtons({ canteen, onShowDelete }) {
                 Detail
             </Link>
             <Link
-                href={route('admin.canteens.edit', canteen.id)}
+                href={route('admin.canteens.edit', { id: canteen.id, from: 'index' })}
                 className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-orange-600 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors"
             >
                 {/* Pencil icon */}
@@ -141,13 +141,11 @@ function Pagination({ links }) {
                     return (
                         <span
                             key={i}
-                            className="flex items-center justify-center w-8 h-8 text-sm text-gray-300 rounded-lg"
+                            className="flex items-center justify-center min-w-[32px] h-8 px-2 text-sm text-gray-300 rounded-lg"
                             dangerouslySetInnerHTML={{ __html: link.label }}
                         />
                     );
                 }
-
-                const isPageNumber = !link.label.includes('&') && link.label !== '...';
 
                 return (
                     <Link

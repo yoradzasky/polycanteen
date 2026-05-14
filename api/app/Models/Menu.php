@@ -9,7 +9,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Menu extends Model
 {
     protected $table = 'menu';
-    protected $fillable = ['kantin_id', 'nama_item', 'kategori', 'harga', 'foto_menu', 'status_stok'];
+    protected $fillable = [
+        'kantin_id', 'nama_item', 'kategori', 'harga', 'foto_menu', 'status_stok',
+        'deskripsi', 'estimasi_waktu', 'pilihan_layanan', 'varian', 'topping',
+    ];
+
+    protected $casts = [
+        'pilihan_layanan' => 'array',
+        'varian' => 'array',
+        'topping' => 'array',
+    ];
 
     public function kantin(): BelongsTo
     {

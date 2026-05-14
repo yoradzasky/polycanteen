@@ -76,9 +76,7 @@ export default function Edit({ kantin }) {
     };
 
     const handleSubmit = () => {
-        put(route('admin.canteens.update', kantin.id), {
-            onSuccess: () => router.visit(route('admin.canteens.show', kantin.id)),
-        });
+        put(route('admin.canteens.update', { id: kantin.id, from: props.from || 'index' }));
     };
 
     return (
@@ -89,6 +87,14 @@ export default function Edit({ kantin }) {
                     <Link href={route('admin.canteens.index')} className="text-blue-600 hover:underline font-medium">
                         Daftar Kantin
                     </Link>
+                    {props.from === 'show' && (
+                        <>
+                            <span className="text-gray-300">›</span>
+                            <Link href={route('admin.canteens.show', kantin.id)} className="text-blue-600 hover:underline font-medium">
+                                Detail
+                            </Link>
+                        </>
+                    )}
                     <span className="text-gray-300">›</span>
                     <span className="text-gray-500">Edit</span>
                 </span>
@@ -317,7 +323,7 @@ export default function Edit({ kantin }) {
                             <span>Field bertanda <span className="text-red-500">*</span> wajib diisi</span>
                         </div>
                         <div className="flex items-center space-x-3 w-full sm:w-auto">
-                            <Link href={route('admin.canteens.index')} className="flex-1 sm:flex-none flex justify-center items-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm">
+                            <Link href={props.from === 'show' ? route('admin.canteens.show', kantin.id) : route('admin.canteens.index')} className="flex-1 sm:flex-none flex justify-center items-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm">
                                 × Batal
                             </Link>
                             <button type="button" onClick={handleSubmit} disabled={processing} className="flex-1 sm:flex-none flex justify-center items-center space-x-2 px-5 py-2.5 text-sm font-medium text-white bg-blue-700 border border-transparent rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-colors shadow-sm">

@@ -13,7 +13,14 @@ class PesananDetail extends Model
         'menu_id', 
         'harga_saat_beli', 
         'jumlah_pesanan', 
-        'subtotal'
+        'subtotal',
+        'varian_snapshot',
+        'topping_snapshot',
+    ];
+
+    protected $casts = [
+        'varian_snapshot' => 'array',
+        'topping_snapshot' => 'array',
     ];
 
     public function pesanan(): BelongsTo

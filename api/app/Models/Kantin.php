@@ -44,4 +44,9 @@ class Kantin extends Model
     {
         return $this->hasMany(Pegawai::class, 'kantin_id', 'id');
     }
+
+    public function ulasan(): HasMany
+    {
+        return $this->hasMany(Ulasan::class);
+    }
 }

@@ -26,14 +26,15 @@ class CanteenController extends Controller
     public function index(Request $request): Response
     {
         $filters = $request->only(['nama_kantin', 'status_toko']);
+        $perPage = $request->input('per_page', 8);
 
         $canteens = $this->canteenService
-            ->getPaginatedCanteens($filters)
+            ->getPaginatedCanteens($filters, (int) $perPage)
             ->withQueryString();
 
         return Inertia::render('Canteen/Index', [
             'canteens' => $canteens,
-            'filters'  => $filters,
+            'filters'  => array_merge($filters, ['per_page' => $perPage]),
         ]);
     }
 
@@ -92,15 +93,17 @@ class CanteenController extends Controller
     /**
      * Menampilkan halaman form Edit Kantin (pre-filled dengan data existing).
      *
+     * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
      * @return \Inertia\Response
      */
-    public function edit(int $id): Response
+    public function edit(Request $request, int $id): Response
     {
         $data = $this->canteenService->getCanteenProfileAndStats($id);
 
         return Inertia::render('Canteen/Edit', [
             'kantin' => $data['kantin'],
+            'from'   => $request->query('from', 'index'),
         ]);
     }
 
@@ -116,8 +119,15 @@ class CanteenController extends Controller
         try {
             $this->canteenService->updateCanteen($id, $request->validated());
 
+            $from = $request->input('from', 'index');
+            if ($from === 'show') {
+                return redirect()
+                    ->route('admin.canteens.show', $id)
+                    ->with('success', 'Kantin berhasil diperbarui.');
+            }
+
             return redirect()
-                ->route('admin.canteens.show', $id)
+                ->route('admin.canteens.index')
                 ->with('success', 'Kantin berhasil diperbarui.');
         } catch (\Exception $e) {
             return redirect()

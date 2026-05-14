@@ -10,7 +10,7 @@ class Pemilik extends Model
 {
     protected $table = 'pemilik';
     // kantin_id ditambahkan sesuai ERD baru
-    protected $fillable = ['user_id', 'kantin_id', 'nama_pemilik', 'no_telp'];
+    protected $fillable = ['user_id', 'kantin_id', 'nama_pemilik', 'no_telp', 'foto_profil_path'];
 
     public function user(): BelongsTo
     {

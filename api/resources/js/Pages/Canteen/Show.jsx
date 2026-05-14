@@ -58,7 +58,16 @@ export default function Show({ kantin, total_penjualan, total_menu_terjual, menu
     const aktFrom = (aktPage - 1) * AKT_PER_PAGE + 1;
     const aktTo = Math.min(aktPage * AKT_PER_PAGE, aktivitas.length);
     const owner = kantin?.pemilik;
-    const chartData = [...(aktivitas || [])].reverse();
+    let chartData = [...(aktivitas || [])].reverse();
+    if (chartData.length === 1) {
+        const d = new Date(chartData[0].tanggal);
+        d.setDate(d.getDate() - 1);
+        chartData.unshift({
+            tanggal: d.toISOString().split('T')[0],
+            jumlah_pesanan: 0,
+            total_pendapatan: 0
+        });
+    }
     const isBuka = kantin?.status_toko === 'buka';
 
     const handleMenuPage = (page) => { router.get(route('admin.canteens.show', kantin.id), { menu_page: page }, { preserveState: true, replace: true }) };
@@ -75,7 +84,7 @@ export default function Show({ kantin, total_penjualan, total_menu_terjual, menu
             </div>
         } rightContent={
             <div className="flex items-center gap-3">
-                <Link href={route('admin.canteens.edit', kantin.id)} className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#2d3a8c] hover:bg-[#252f73] text-white text-sm font-semibold rounded-xl transition-all">
+                <Link href={route('admin.canteens.edit', { id: kantin.id, from: 'show' })} className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#2d3a8c] hover:bg-[#252f73] text-white text-sm font-semibold rounded-xl transition-all">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                     Edit Kantin
                 </Link>
@@ -100,11 +109,56 @@ export default function Show({ kantin, total_penjualan, total_menu_terjual, menu
                             </div>
                         )}
                         <div className="flex-1 grid grid-cols-2 md:grid-cols-5 gap-6">
-                            <div><p className="text-xs text-gray-400 mb-1">Nama Kantin</p><p className="text-sm font-bold text-gray-900">{kantin?.nama_kantin}</p></div>
-                            <div className="flex items-center gap-2"><div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center"><span className="text-xs font-bold text-orange-600">{getInisial(owner?.nama_pemilik)}</span></div><div><p className="text-xs text-gray-400 mb-1">Nama Pemilik</p><p className="text-sm font-semibold text-gray-900">{owner?.nama_pemilik || '-'}</p></div></div>
-                            <div><p className="text-xs text-gray-400 mb-1">Email / Kontak</p><p className="text-sm text-blue-600">{owner?.user?.email || '-'}</p><p className="text-xs text-gray-400">{owner?.no_hp || owner?.no_telp || '-'}</p></div>
-                            <div><p className="text-xs text-gray-400 mb-1">Lokasi</p><div className="flex items-center gap-1"><svg className="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" /></svg><p className="text-sm font-semibold text-gray-900">{kantin?.lokasi_lengkap || kantin?.lokasi_lengkap || '-'}</p></div><p className="text-xs text-gray-400 ml-5">{kantin?.lokasi_kampus || ''}</p></div>
-                            <div><p className="text-xs text-gray-400 mb-1">Status</p><span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${isBuka ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}><span className={`w-1.5 h-1.5 rounded-full ${isBuka ? 'bg-emerald-500' : 'bg-red-500'}`} />{isBuka ? 'Buka' : 'Tutup'}</span></div>
+                            {/* Col 1: Nama Kantin */}
+                            <div className="flex flex-col justify-start">
+                                <p className="text-xs text-gray-400 mb-1.5">Nama Kantin</p>
+                                <p className="text-sm font-bold text-gray-900">{kantin?.nama_kantin}</p>
+                            </div>
+
+                            {/* Col 2: Nama Pemilik */}
+                            <div className="flex flex-col justify-start">
+                                <p className="text-xs text-gray-400 mb-1.5">Nama Pemilik</p>
+                                <div className="flex items-center gap-2.5">
+                                    <div className="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <span className="text-[10px] font-bold text-orange-600">{getInisial(owner?.nama_pemilik)}</span>
+                                    </div>
+                                    <p className="text-sm font-semibold text-gray-900 truncate" title={owner?.nama_pemilik}>{owner?.nama_pemilik || '-'}</p>
+                                </div>
+                            </div>
+
+                            {/* Col 3: Email / Kontak */}
+                            <div className="flex flex-col justify-start">
+                                <p className="text-xs text-gray-400 mb-1.5">Email / Kontak</p>
+                                <div className="flex flex-col">
+                                    <p className="text-sm font-medium text-blue-600 truncate" title={owner?.user?.email}>{owner?.user?.email || '-'}</p>
+                                    <p className="text-xs text-gray-500 mt-0.5">{owner?.no_hp || owner?.no_telp || '-'}</p>
+                                </div>
+                            </div>
+
+                            {/* Col 4: Lokasi */}
+                            <div className="flex flex-col justify-start">
+                                <p className="text-xs text-gray-400 mb-1.5">Lokasi</p>
+                                <div className="flex items-start gap-1.5">
+                                    <svg className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                    </svg>
+                                    <div className="flex flex-col">
+                                        <p className="text-sm font-semibold text-gray-900 line-clamp-2 leading-snug" title={kantin?.lokasi_lengkap}>{kantin?.lokasi_lengkap || '-'}</p>
+                                        {kantin?.lokasi_kampus && <p className="text-xs text-gray-500 mt-0.5">{kantin?.lokasi_kampus}</p>}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Col 5: Status */}
+                            <div className="flex flex-col justify-start">
+                                <p className="text-xs text-gray-400 mb-1.5">Status</p>
+                                <div>
+                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${isBuka ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+                                        <span className={`w-1.5 h-1.5 rounded-full ${isBuka ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                                        {isBuka ? 'Buka' : 'Tutup'}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
