@@ -19,17 +19,15 @@ use Faker\Factory as Faker;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
         $faker = Faker::create('id_ID');
 
         // 1. Admin (User)
         User::create([
-            'username' => 'Admin Kantin',
+            'username' => 'Admin Utama',
             'email' => 'admin@kantin.com',
+            'password' => Hash::make('password123'),
             'password' => Hash::make('password123'),
             'role' => 'admin',
             'status_akun' => 'aktif',

@@ -1,7 +1,9 @@
 import React, { useId, useState } from "react";
 import { Head, useForm } from "@inertiajs/react"; 
 import heroImage from "../../Components/UI/hero-dashboard.svg";
-import forkIcon from "../../Components/UI/fork.svg"; // Import ikon sendok garpu
+import forkIcon from "../../Components/UI/fork.svg";
+import mailIcon from "../../Components/UI/mail.svg";
+import lockIcon from "../../Components/UI/lock.svg";
 
 const featureHeadingLines = ["Kelola Kantin dengan", "Mudah & Terpusat"];
 const featureDescriptionLines = [
@@ -41,10 +43,6 @@ export default function Login() {
           aria-hidden="true"
           className="absolute w-full h-full top-0 left-0 opacity-20 overflow-hidden pointer-events-none"
         >
-          <div className="relative w-[60px] h-[60px]">
-            {/* Mengganti background vector.svg dengan forkIcon agar tidak error */}
-            <img src={forkIcon} alt="" className="w-10 h-10 object-contain opacity-50" />
-          </div>
         </div>
         <div className="inline-flex flex-col min-w-[448px] max-w-md items-start gap-4 relative flex-[0_0_auto]">
           <div className="relative self-stretch w-full max-h-80 h-80 bg-[#ffffff01] rounded-2xl overflow-hidden shadow-[0px_25px_50px_-12px_#00000040]">
@@ -117,6 +115,7 @@ export default function Login() {
             {/* Input Email */}
             <div className="flex flex-col items-start gap-1.5 relative self-stretch w-full flex-[0_0_auto]">
               <div className="flex flex-col items-start relative self-stretch w-full flex-[0_0_auto]">
+                
                 <label
                   htmlFor={emailId}
                   className="relative flex items-center self-stretch mt-[-1.00px] [font-family:'Inter-Medium',Helvetica] font-medium text-gray-700 text-sm tracking-[0] leading-5"
@@ -141,8 +140,9 @@ export default function Login() {
                 </div>
                 <div aria-hidden="true" className="inline-flex h-full items-center pl-3.5 pr-0 py-0 absolute top-0 left-0">
                   <div className="inline-flex flex-col items-start relative flex-[0_0_auto]">
-                    <div className="w-[16.2px] [font-family:'Font_Awesome_5_Free-Regular',Helvetica] relative flex items-center h-4 mt-[-1.00px] font-normal text-gray-400 text-base tracking-[0] leading-4 whitespace-nowrap">
-                      
+                    <div className="inline-flex flex-col items-center relative flex-[0_0_auto]">
+                      {/* Memanggil gambar sendok garpu */}
+                      <img src={mailIcon} alt="Logo" className="w-5 h-5 object-contain" />
                     </div>
                   </div>
                 </div>
@@ -161,7 +161,7 @@ export default function Login() {
                 </label>
               </div>
               <div className="flex flex-col items-start relative self-stretch w-full flex-[0_0_auto]">
-                <div className="flex flex-col items-start px-10 py-3.5 self-stretch w-full flex-[0_0_auto] bg-[#f9fafb80] rounded-xl overflow-hidden border shadow-[0px_1px_2px_#0000000d] relative border-solid">
+                <div className="flex flex-col items-start px-10 pr-14 py-3.5 self-stretch w-full flex-[0_0_auto] bg-[#f9fafb80] rounded-xl overflow-hidden border shadow-[0px_1px_2px_#0000000d] relative border-solid">
                   <input
                     id={passwordId}
                     name="password"
@@ -176,8 +176,8 @@ export default function Login() {
                 </div>
                 <div aria-hidden="true" className="inline-flex h-full items-center pl-3.5 pr-0 py-0 absolute top-0 left-0">
                   <div className="inline-flex flex-col items-start relative flex-[0_0_auto]">
-                    <div className="w-[14.18px] [font-family:'Font_Awesome_5_Free-Solid',Helvetica] relative flex items-center h-4 mt-[-1.00px] font-normal text-gray-400 text-base tracking-[0] leading-4 whitespace-nowrap">
-                      
+                    <div className="inline-flex flex-col items-center relative flex-[0_0_auto]">
+                      <img src={lockIcon} alt="Logo" className="w-5 h-5 object-contain" />
                     </div>
                   </div>
                 </div>
@@ -186,13 +186,25 @@ export default function Login() {
                   aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
                   aria-pressed={showPassword}
                   onClick={() => setShowPassword((current) => !current)}
-                  className="all-[unset] box-border inline-flex h-full items-center pl-0 pr-3.5 py-[17px] absolute top-0 right-0 cursor-pointer"
+                  className="all-[unset] box-border inline-flex h-full items-center justify-center w-12 absolute top-0 right-0 cursor-pointer"
                 >
-                  <div className="inline-flex flex-col items-center relative flex-[0_0_auto] mt-[-1.00px] mb-[-1.00px]">
-                    <div className="justify-center w-[20.12px] [font-family:'Font_Awesome_5_Free-Regular',Helvetica] text-center relative flex items-center h-4 mt-[-1.00px] font-normal text-gray-400 text-base tracking-[0] leading-4 whitespace-nowrap">
-                      
-                    </div>
-                  </div>
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="text-gray-500"
+                    aria-hidden="true"
+                  >
+                    {showPassword ? (
+                      <path d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7Zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" fill="currentColor" />
+                    ) : (
+                      <>
+                        <path d="M12 5c-3.26 0-6.28 1.64-8.4 4.2l1.46 1.46C6.75 8.65 9.24 7.5 12 7.5c4.64 0 8.24 3.14 9.27 7.5-.46 1.64-1.28 3.13-2.34 4.32l1.42 1.42C21.17 18.24 22 15.24 22 12c-1.73-3.89-6-7-11-7Zm-9.19-.19L2.81 1.81 22.19 21.19l-1.42 1.42L14.83 16.7C13.53 17.27 12.05 17.5 10.5 17.5 5.86 17.5 2.26 14.36 1.23 10.8c.5-1.78 1.45-3.39 2.73-4.62L2.81 4.81ZM12 15a3 3 0 0 0 2.83-4H6.17a3 3 0 0 0 5.83 4Zm0-6a3 3 0 0 0-2.83 4h5.66A3 3 0 0 0 12 9Z" fill="currentColor" />
+                      </>
+                    )}
+                  </svg>
                 </button>
               </div>
               {errors.password && <span className="text-red-500 text-xs mt-1">{errors.password}</span>}

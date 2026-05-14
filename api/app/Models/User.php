@@ -19,6 +19,7 @@ class User extends Authenticatable
         'password',
         'status_akun',
         'role', // admin, mahasiswa, pemilik, pegawai
+        'foto_profile',
     ];
 
     protected $hidden = [
