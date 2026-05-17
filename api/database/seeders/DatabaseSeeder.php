@@ -28,7 +28,6 @@ class DatabaseSeeder extends Seeder
             'username' => 'Admin Utama',
             'email' => 'admin@kantin.com',
             'password' => Hash::make('password123'),
-            'password' => Hash::make('password123'),
             'role' => 'admin',
             'status_akun' => 'aktif',
         ]);

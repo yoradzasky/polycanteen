@@ -19,7 +19,7 @@ use App\Http\Controllers\Api\AuthController;
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
-    
+
     // Rute profil user bawaan
     Route::get('/user', function (Request $request) {
         return $request->user();
@@ -29,6 +29,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/menus', [MenuController::class, 'index']);
 
     Route::post('/logout', [AuthController::class, 'logout']);
-    
-    
+
+    // Seller Routes
+    Route::prefix('pemilik')->group(function () {
+        Route::apiResource('menus', \App\Http\Controllers\Api\Seller\MenuController::class);
+        Route::patch('menus/{menu}/toggle-status', [\App\Http\Controllers\Api\Seller\MenuController::class, 'toggleStatus']);
+    });
 });
