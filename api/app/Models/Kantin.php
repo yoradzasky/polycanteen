@@ -12,7 +12,6 @@ class Kantin extends Model
     use SoftDeletes;
     protected $table = 'kantin';
 
-    // HAPUS pemilik_id. Tambahkan lokasi_gedung
     protected $fillable = [
         'nama_kantin',
         'lokasi_lengkap',
@@ -44,5 +43,10 @@ class Kantin extends Model
     public function pegawai(): HasMany
     {
         return $this->hasMany(Pegawai::class, 'kantin_id', 'id');
+    }
+
+    public function ulasan(): HasMany
+    {
+        return $this->hasMany(Ulasan::class);
     }
 }

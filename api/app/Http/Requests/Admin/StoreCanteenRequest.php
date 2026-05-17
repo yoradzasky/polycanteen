@@ -28,57 +28,88 @@ class StoreCanteenRequest extends FormRequest
     public function rules(): array
     {
         $kantinId = $this->route('id');
+        $userIdPemilik = null;
 
-        return [
+        // Ambil user_id pemilik jika sedang proses update
+        if ($kantinId) {
+            $pemilik = \App\Models\Pemilik::where('kantin_id', $kantinId)->first();
+            if ($pemilik) {
+                $userIdPemilik = $pemilik->user_id;
+            }
+        }
+
+        // Kumpulkan user_id milik karyawan existing agar bisa di-exclude dari unique check
+        $karyawanUserIds = [];
+        if ($kantinId && $this->has('karyawan')) {
+            foreach ($this->input('karyawan', []) as $index => $karyawanData) {
+                if (!empty($karyawanData['id'])) {
+                    $pegawai = \App\Models\Pegawai::find($karyawanData['id']);
+                    if ($pegawai) {
+                        $karyawanUserIds[$index] = $pegawai->user_id;
+                    }
+                }
+            }
+        }
+
+        // Build aturan email per karyawan secara dinamis
+        $karyawanEmailRules = [];
+        foreach ($this->input('karyawan', []) as $index => $karyawanData) {
+            $emailRule = [
+                'required_with:karyawan.*',
+                'email',
+                'max:255',
+                'distinct',
+                'different:email',
+            ];
+
+            // Jika karyawan existing (punya id), exclude user_id-nya dari unique
+            if (isset($karyawanUserIds[$index])) {
+                $emailRule[] = Rule::unique('users', 'email')->ignore($karyawanUserIds[$index]);
+            } else {
+                $emailRule[] = Rule::unique('users', 'email');
+            }
+
+            $karyawanEmailRules["karyawan.{$index}.email"] = $emailRule;
+        }
+
+        $rules = [
             // ── Data Kantin ──────────────────────────────────────────
 
-            'nama_kantin'   => ['required', 'string', 'max:100'],
-            'lokasi_gedung' => ['required', 'string', 'max:255'],
-            'latitude'      => ['required', 'numeric', 'between:-90,90'],
-            'longitude'     => ['required', 'numeric', 'between:-180,180'],
+            'nama_kantin' => ['required', 'string', 'max:100'],
+            'lokasi_lengkap' => ['required', 'string', 'max:255'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
 
             // ── Data Pemilik ─────────────────────────────────────────
             'nama_pemilik' => ['required', 'string', 'max:100'],
-            'no_hp'        => [
+            'no_telp' => [
                 'required',
                 'string',
                 'max:15',
                 'regex:/^(\+62|62|0)8[1-9][0-9]{6,10}$/',
             ],
-            'email_pemilik' => [
+            'email' => [
                 'required',
                 'email',
                 'max:255',
-                // Ignore berdasarkan kantin_id dari route — developer perlu menyesuaikan
-                // jika relasi ke user_id lebih kompleks (misal: resolve user_id dari pemilik).
-                Rule::unique('users', 'email')->ignore($kantinId, 'kantin_id'),
-            ],
-            'password_pemilik' => [
-                Rule::requiredIf($this->isMethod('post')),
-                'nullable',
-                'string',
-                'min:8',
-                'confirmed',
+                // Ignore user_id milik pemilik saat ini jika sedang update
+                $userIdPemilik ? Rule::unique('users', 'email')->ignore($userIdPemilik) : Rule::unique('users', 'email'),
             ],
 
             // ── Data Karyawan (opsional) ─────────────────────────────
-            'karyawan'                    => ['nullable', 'array'],
-            'karyawan.*.nama_karyawan'    => ['required_with:karyawan.*', 'string', 'max:100'],
-            'karyawan.*.email_karyawan'   => [
-                'required_with:karyawan.*',
-                'email',
-                'max:255',
-                'distinct',
-                Rule::unique('users', 'email'),
-            ],
-            'karyawan.*.no_hp_karyawan'   => ['nullable', 'string', 'max:15'],
-            'karyawan.*.password_karyawan' => [
-                Rule::requiredIf($this->isMethod('post')),
+            'karyawan' => ['nullable', 'array'],
+            'karyawan.*.id' => ['nullable', 'integer'],
+            'karyawan.*.nama_karyawan' => ['required_with:karyawan.*', 'string', 'max:100'],
+            'karyawan.*.no_telp' => [
                 'nullable',
                 'string',
-                'min:8',
+                'max:15',
+                'regex:/^(\+62|62|0)8[1-9][0-9]{6,10}$/',
             ],
         ];
+
+        // Merge aturan email karyawan yang sudah di-build per-index
+        return array_merge($rules, $karyawanEmailRules);
     }
 
     /**
@@ -90,19 +121,19 @@ class StoreCanteenRequest extends FormRequest
     {
         return [
 
-            'nama_kantin.required'              => 'Nama kantin wajib diisi.',
-            'lokasi_gedung.required'            => 'Lokasi gedung wajib diisi.',
-            'latitude.between'                  => 'Latitude harus antara -90 dan 90.',
-            'longitude.between'                 => 'Longitude harus antara -180 dan 180.',
-            'nama_pemilik.required'             => 'Nama pemilik wajib diisi.',
-            'no_hp.required'                    => 'Nomor HP wajib diisi.',
-            'no_hp.regex'                       => 'Format nomor HP tidak valid (contoh: 08123456789).',
-            'email_pemilik.required'            => 'Email pemilik wajib diisi.',
-            'email_pemilik.unique'              => 'Email ini sudah terdaftar.',
-            'password_pemilik.required_if'      => 'Password wajib diisi saat menambah kantin baru.',
-            'password_pemilik.min'              => 'Password minimal 8 karakter.',
-            'karyawan.*.email_karyawan.distinct' => 'Email karyawan tidak boleh duplikat.',
-            'karyawan.*.email_karyawan.unique'  => 'Email karyawan sudah terdaftar.',
+            'nama_kantin.required' => 'Nama kantin wajib diisi.',
+            'lokasi_lengkap.required' => 'Lokasi kantin wajib diisi.',
+            'latitude.between' => 'Latitude harus antara -90 dan 90.',
+            'longitude.between' => 'Longitude harus antara -180 dan 180.',
+            'nama_pemilik.required' => 'Nama pemilik wajib diisi.',
+            'no_telp.required' => 'Nomor HP wajib diisi.',
+            'no_telp.regex' => 'Format nomor HP tidak valid (contoh: 08123456789).',
+            'email.required' => 'Email pemilik wajib diisi.',
+            'email.unique' => 'Email ini sudah terdaftar.',
+            'karyawan.*.email.distinct' => 'Email karyawan tidak boleh duplikat satu sama lain.',
+            'karyawan.*.email.different' => 'Email karyawan tidak boleh sama dengan email pemilik.',
+            'karyawan.*.email.unique' => 'Email karyawan sudah terdaftar.',
+            'karyawan.*.no_telp.regex' => 'Format nomor HP karyawan tidak valid (contoh: 08123456789).',
         ];
     }
 
@@ -115,14 +146,14 @@ class StoreCanteenRequest extends FormRequest
     {
         return [
 
-            'nama_kantin'                => 'nama kantin',
-            'lokasi_gedung'              => 'lokasi gedung',
-            'nama_pemilik'               => 'nama pemilik',
-            'no_hp'                      => 'nomor HP',
-            'email_pemilik'              => 'email pemilik',
-            'password_pemilik'           => 'password pemilik',
-            'karyawan.*.nama_karyawan'   => 'nama karyawan',
-            'karyawan.*.email_karyawan'  => 'email karyawan',
+            'nama_kantin' => 'nama kantin',
+            'lokasi_lengkap' => 'lokasi kantin',
+            'nama_pemilik' => 'nama pemilik',
+            'no_telp' => 'nomor HP',
+            'email' => 'email pemilik',
+            'karyawan.*.nama_karyawan' => 'nama karyawan',
+            'karyawan.*.email' => 'email karyawan',
+            'karyawan.*.no_telp' => 'nomor HP karyawan',
         ];
     }
 }

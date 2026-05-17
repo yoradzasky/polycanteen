@@ -11,13 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tracking', function (Blueprint $table) {
+        Schema::create('ulasan', function (Blueprint $table) {
             $table->id();
             $table->foreignId('pesanan_id')->constrained('pesanan')->onDelete('cascade');
-            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
-            $table->string('lokasi_pembeli')->nullable();
-            $table->string('lokasi_pegawai')->nullable();
+            $table->foreignId('mahasiswa_id')->constrained('mahasiswa')->onDelete('cascade');
+            $table->foreignId('kantin_id')->constrained('kantin')->onDelete('cascade');
+            $table->tinyInteger('rating'); // 1–5
+            $table->text('komentar')->nullable();
             $table->timestamps();
+
+            // Satu pesanan hanya bisa diulas sekali
+            $table->unique('pesanan_id');
         });
     }
 
@@ -26,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tracking');
+        Schema::dropIfExists('ulasan');
     }
 };

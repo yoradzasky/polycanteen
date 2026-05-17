@@ -13,7 +13,7 @@ class Pegawai extends Model
     protected $table = 'pegawai';
 
     // Pastikan user_id ada di sini agar tersimpan saat createCanteen()
-    protected $fillable = ['user_id', 'kantin_id', 'nama_karyawan', 'no_telp'];
+    protected $fillable = ['user_id', 'kantin_id', 'nama_karyawan', 'no_telp', 'foto_profil_path'];
 
     // Relasi ke akun User untuk login
     public function user(): BelongsTo

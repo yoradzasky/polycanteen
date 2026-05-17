@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\CanteenController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\DashboardController;
 use Inertia\Inertia;
 
 /*
@@ -23,42 +24,29 @@ Route::get('/', function () {
 
 Route::prefix('admin')->middleware(['auth', 'role:admin'])->name('admin.')->group(function () {
 
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard/Index');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->name('dashboard');
 
     Route::get('/canteens', [CanteenController::class, 'index'])
         ->name('canteens.index');
 
     Route::get('/canteens/create', [CanteenController::class, 'create'])
         ->name('canteens.create');
-    // URL: GET /admin/kantin/create
-    // Name: admin.canteens.create
 
     Route::post('/canteens', [CanteenController::class, 'store'])
         ->name('canteens.store');
-    // URL: POST /admin/kantin
-    // Name: admin.canteens.store
 
     Route::get('/canteens/{id}', [CanteenController::class, 'show'])
         ->name('canteens.show');
-    // URL: GET /admin/kantin/{id}
-    // Name: admin.canteens.show
 
     Route::get('/canteens/{id}/edit', [CanteenController::class, 'edit'])
         ->name('canteens.edit');
-    // URL: GET /admin/kantin/{id}/edit
-    // Name: admin.canteens.edit
 
     Route::put('/canteens/{id}', [CanteenController::class, 'update'])
         ->name('canteens.update');
-    // URL: PUT /admin/kantin/{id}
-    // Name: admin.canteens.update
 
     Route::delete('/canteens/{id}', [CanteenController::class, 'destroy'])
         ->name('canteens.destroy');
-    // URL: DELETE /admin/kantin/{id}
-    // Name: admin.canteens.destroy
 
 });
 
