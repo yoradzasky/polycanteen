@@ -1,7 +1,122 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  // Controller untuk menangkap inputan user
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  
+  bool _isLoading = false;
+
+  // Fungsi untuk memanggil API Login
+  // Fungsi untuk memanggil API Login
+  Future<void> _login() async {
+    final String email = _emailController.text.trim();
+    final String password = _passwordController.text;
+
+    // Validasi kosong di sisi Flutter
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Email dan Kata Sandi tidak boleh kosong')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // - Pakai IP WiFi Laptop (contoh: 192.168.1.5) JIKA kamu pakai HP Fisik
+      final Uri url = Uri.parse('http://192.168.100.8:8000/api/login'); 
+      
+      // Tambahkan .timeout agar loading otomatis berhenti jika server mati/tidak nyambung
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+        }),
+      ).timeout(const Duration(seconds: 10)); // Batas waktu tunggu 10 detik
+
+      final responseData = jsonDecode(response.body);
+
+      // Cek apakah response sukses dari Laravel
+      if (response.statusCode == 200 && responseData['success'] == true) {
+        
+        final String token = responseData['data']['token']; 
+        final SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('api_token', token);
+
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Login Berhasil!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+      } else {
+        // --- PENANGANAN JIKA ERROR (AKUN SALAH ATAU EMAIL NGACOK) ---
+        if (!mounted) return;
+        
+        String errorMessage = responseData['message'] ?? 'Login gagal.';
+
+        // Jika Laravel membalas error validasi (422), misalnya: "The email must be a valid email address."
+        if (responseData['errors'] != null) {
+          // Ambil pesan error pertama dari daftar error Laravel
+          errorMessage = responseData['errors'].values.first[0];
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      // --- PENANGANAN JIKA SERVER MATI / KONEKSI GAGAL ---
+      if (!mounted) return;
+      
+      // Print ke debug console agar kamu bisa lihat error aslinya
+      print('ERROR LOGIN: $e');
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Gagal terhubung ke server. Pastikan API menyala!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      // Akhiri loading (tombol muter) APAPUN YANG TERJADI (sukses/gagal/error)
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,14 +175,20 @@ class LoginScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 32),
-                      _PhoneField(),
+                      
+                      // Input Email
+                      _EmailField(controller: _emailController),
                       const SizedBox(height: 16),
-                      _PasswordField(),
+                      
+                      // Input Password
+                      _PasswordField(controller: _passwordController),
                       const SizedBox(height: 24),
+                      
+                      // Tombol Login
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: _isLoading ? null : _login,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF2D50EE),
                             shape: RoundedRectangleBorder(
@@ -75,14 +196,20 @@ class LoginScreen extends StatelessWidget {
                             ),
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
-                          child: const Text(
-                            'Masuk',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                          child: _isLoading 
+                            ? const SizedBox(
+                                height: 24, 
+                                width: 24, 
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                              )
+                            : const Text(
+                                'Masuk',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -126,6 +253,10 @@ class LoginScreen extends StatelessWidget {
     );
   }
 }
+
+// =========================================================================
+// WIDGET REGISTER SCREEN & HELPER COMPONENTS
+// =========================================================================
 
 class RegisterScreen extends StatelessWidget {
   const RegisterScreen({super.key});
@@ -180,15 +311,15 @@ class RegisterScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 32),
-                      _RegisterField(label: 'Nama Lengkap', hint: 'Masukkan nama lengkapmu'),
+                      const _RegisterField(label: 'Nama Lengkap', hint: 'Masukkan nama lengkapmu'),
                       const SizedBox(height: 16),
-                      _RegisterField(label: 'Email', hint: 'Masukkan emailmu', keyboardType: TextInputType.emailAddress),
+                      const _RegisterField(label: 'Email', hint: 'Masukkan emailmu', keyboardType: TextInputType.emailAddress),
                       const SizedBox(height: 16),
-                      _PhoneField(),
+                      const _PhoneField(),
                       const SizedBox(height: 16),
-                      _RegisterField(label: 'Kata Sandi', hint: 'Buat kata sandi', obscureText: true),
+                      const _RegisterField(label: 'Kata Sandi', hint: 'Buat kata sandi', obscureText: true),
                       const SizedBox(height: 16),
-                      _RegisterField(label: 'Konfirmasi Kata Sandi', hint: 'Ulangi kata sandi', obscureText: true),
+                      const _RegisterField(label: 'Konfirmasi Kata Sandi', hint: 'Ulangi kata sandi', obscureText: true),
                       const SizedBox(height: 24),
                       SizedBox(
                         width: double.infinity,
@@ -212,34 +343,34 @@ class RegisterScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 20),
-                        Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              const Text(
-                                'Sudah punya akun?',
-                                textAlign: TextAlign.center,
+                      Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const Text(
+                              'Sudah punya akun?',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Color(0xFF757575),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: const Text(
+                                'Masuk',
                                 style: TextStyle(
-                                  color: Color(0xFF757575),
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w400,
+                                  color: Color(0xFF2D50EE),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: const Text(
-                                  'Masuk',
-                                  style: TextStyle(
-                                    color: Color(0xFF2D50EE),
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
+                      ),
                     ],
                   ),
                 ),
@@ -328,79 +459,65 @@ class RegisterScreen extends StatelessWidget {
   }
 }
 
-class _PhoneField extends StatelessWidget {
-  const _PhoneField({super.key});
+// Widget Input Email Khusus Halaman Login
+class _EmailField extends StatelessWidget {
+  final TextEditingController controller;
+  
+  const _EmailField({required this.controller});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Nomor Handphone',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Colors.black,
+      children: [
+        const Text(
+          'Email',
+          style: TextStyle(
+            color: Color(0xFF1A1A1A),
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          keyboardType: TextInputType.emailAddress,
+          decoration: InputDecoration(
+            hintText: 'Masukkan email',
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF2D50EE), width: 1.5),
             ),
           ),
-          const SizedBox(height: 8),
-          TextFormField(
-            keyboardType: TextInputType.phone,
-            decoration: InputDecoration(
-              hintText: '81234567890',
-              hintStyle: const TextStyle(color: Color(0xFF9E9E9E)),
-              contentPadding: const EdgeInsets.symmetric(vertical: 16),
-              // 1. Menggunakan prefixIcon agar +62 menyatu di dalam border
-              prefixIcon: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                margin: const EdgeInsets.only(right: 12),
-                // Membuat garis pembatas vertikal tipis di sebelah kanan +62
-                decoration: const BoxDecoration(
-                  border: Border(
-                    right: BorderSide(
-                      color: Color(0xFFE0E0E0), 
-                      width: 1,
-                    ),
-                  ),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      '+62',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // 2. Desain border kotak tunggal
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFF2D50EE), width: 1.5),
-              ),
-            ),
-          ),
-        ],
-      );
+        ),
+      ],
+    );
   }
 }
 
-class _PasswordField extends StatelessWidget {
-  const _PasswordField({super.key});
+// Widget Input Kata Sandi Khusus Halaman Login (Bisa lihat/sembunyikan password)
+class _PasswordField extends StatefulWidget {
+  final TextEditingController controller;
+  
+  const _PasswordField({required this.controller});
+
+  @override
+  State<_PasswordField> createState() => _PasswordFieldState();
+}
+
+class _PasswordFieldState extends State<_PasswordField> {
+  bool _obscureText = true;
 
   @override
   Widget build(BuildContext context) {
@@ -417,13 +534,24 @@ class _PasswordField extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         TextFormField(
-          obscureText: true,
+          controller: widget.controller,
+          obscureText: _obscureText,
           decoration: InputDecoration(
             hintText: 'Masukkan kata sandi',
             filled: true,
             fillColor: Colors.white,
             contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
-            suffixIcon: const Icon(Icons.visibility_off, color: Color(0xFF757575)),
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscureText ? Icons.visibility_off : Icons.visibility,
+                color: const Color(0xFF757575)
+              ),
+              onPressed: () {
+                setState(() {
+                  _obscureText = !_obscureText;
+                });
+              },
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
@@ -432,6 +560,10 @@ class _PasswordField extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
             ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF2D50EE), width: 1.5),
+            ),
           ),
         ),
       ],
@@ -439,6 +571,78 @@ class _PasswordField extends StatelessWidget {
   }
 }
 
+// Widget Input Nomor HP (Tetap dibiarkan untuk halaman Register)
+class _PhoneField extends StatelessWidget {
+  const _PhoneField({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Nomor Handphone',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.black,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          keyboardType: TextInputType.phone,
+          decoration: InputDecoration(
+            hintText: '81234567890',
+            hintStyle: const TextStyle(color: Color(0xFF9E9E9E)),
+            contentPadding: const EdgeInsets.symmetric(vertical: 16),
+            filled: true,
+            fillColor: Colors.white,
+            prefixIcon: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              margin: const EdgeInsets.only(right: 12),
+              decoration: const BoxDecoration(
+                border: Border(
+                  right: BorderSide(
+                    color: Color(0xFFE0E0E0), 
+                    width: 1,
+                  ),
+                ),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '+62',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF2D50EE), width: 1.5),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// Widget Input Generic untuk Register
 class _RegisterField extends StatelessWidget {
   const _RegisterField({
     super.key,
@@ -483,6 +687,10 @@ class _RegisterField extends StatelessWidget {
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF2D50EE), width: 1.5),
             ),
           ),
         ),
