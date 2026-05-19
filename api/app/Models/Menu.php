@@ -15,10 +15,21 @@ class Menu extends Model
     ];
 
     protected $casts = [
+        'status_stok' => 'boolean',
         'pilihan_layanan' => 'array',
         'varian' => 'array',
         'topping' => 'array',
     ];
+
+    protected $appends = ['status_stok_label'];
+
+    /**
+     * Accessor: konversi boolean status_stok ke label string
+     */
+    public function getStatusStokLabelAttribute(): string
+    {
+        return $this->status_stok ? 'tersedia' : 'habis';
+    }
 
     public function kantin(): BelongsTo
     {

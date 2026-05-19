@@ -25,9 +25,6 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
-    // Pindahkan rute menu ke dalam sini agar aman
-    Route::get('/menus', [MenuController::class, 'index']);
-
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // Seller Routes

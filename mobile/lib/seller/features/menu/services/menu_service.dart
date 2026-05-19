@@ -56,19 +56,24 @@ class Menu {
     final topList = parseJsonList(json['topping']);
 
     return Menu(
-      id: json['id'],
-      namaItem: json['nama_item'] ?? '',
-      harga: json['harga'] is int ? json['harga'] : int.tryParse(json['harga'].toString()) ?? 0,
-      fotoMenu: json['foto_menu'],
-      statusStok: json['status_stok'] ?? 'tersedia',
-      kategori: json['kategori'] ?? '',
-      deskripsi: json['deskripsi'],
+      id: json['id'] is int ? json['id'] : int.tryParse(json['id'].toString()) ?? 0,
+      namaItem: (json['nama_item'] ?? '').toString(),
+      harga: json['harga'] is int
+          ? json['harga']
+          : json['harga'] is double
+              ? (json['harga'] as double).toInt()
+              : int.tryParse(json['harga'].toString().split('.').first) ?? 0,
+      fotoMenu: json['foto_menu']?.toString(),
+      statusStok: json['status_stok_label']?.toString() ??
+          (json['status_stok'] == true || json['status_stok'] == 1 ? 'tersedia' : 'habis'),
+      kategori: (json['kategori'] ?? '').toString(),
+      deskripsi: json['deskripsi']?.toString(),
       estimasiWaktu: json['estimasi_waktu'] != null
           ? (json['estimasi_waktu'] is int
               ? json['estimasi_waktu']
               : int.tryParse(json['estimasi_waktu'].toString()))
           : null,
-      pilihanLayanan: layList != null ? List<String>.from(layList) : null,
+      pilihanLayanan: layList != null ? List<String>.from(layList.map((e) => e.toString())) : null,
       varian: varList != null
           ? List<Map<String, dynamic>>.from(
               varList.map((e) => Map<String, dynamic>.from(e)),
@@ -170,12 +175,17 @@ class MenuService {
         final list = body['data'] as List;
         return list.map((e) => Menu.fromJson(e)).toList();
       }
-      throw Exception(body['message'] ?? 'Gagal mengambil data menu');
+      throw Exception((body['message'] ?? 'Gagal mengambil data menu').toString());
     } on DioException catch (e) {
       final data = e.response?.data;
-      final msg = (data is Map && data.containsKey('message')) 
-          ? data['message'] 
-          : 'Terjadi kesalahan jaringan (Kode: ${e.response?.statusCode})';
+      String msg;
+      if (data is Map && data.containsKey('message')) {
+        msg = data['message'].toString();
+      } else if (data is String && data.isNotEmpty) {
+        msg = data;
+      } else {
+        msg = 'Terjadi kesalahan jaringan (Kode: ${e.response?.statusCode})';
+      }
       throw Exception(msg);
     }
   }
@@ -187,8 +197,12 @@ class MenuService {
         'nama_item': data.namaItem,
         'harga': data.harga,
         'kategori': data.kategori,
-        'pilihan_layanan': data.pilihanLayanan,
       };
+
+      // Kirim pilihan_layanan sebagai array terpisah agar Laravel menerimanya sebagai array
+      for (int i = 0; i < data.pilihanLayanan.length; i++) {
+        formMap['pilihan_layanan[$i]'] = data.pilihanLayanan[i];
+      }
 
       if (data.deskripsi != null && data.deskripsi!.isNotEmpty) {
         formMap['deskripsi'] = data.deskripsi;
@@ -226,9 +240,14 @@ class MenuService {
       }
     } on DioException catch (e) {
       final data = e.response?.data;
-      final msg = (data is Map && data.containsKey('message')) 
-          ? data['message'] 
-          : 'Terjadi kesalahan jaringan (Kode: ${e.response?.statusCode})';
+      String msg;
+      if (data is Map && data.containsKey('message')) {
+        msg = data['message'].toString();
+      } else if (data is String && data.isNotEmpty) {
+        msg = data;
+      } else {
+        msg = 'Terjadi kesalahan jaringan (Kode: ${e.response?.statusCode})';
+      }
       throw Exception(msg);
     }
   }
@@ -240,8 +259,12 @@ class MenuService {
         'nama_item': data.namaItem,
         'harga': data.harga,
         'kategori': data.kategori,
-        'pilihan_layanan': data.pilihanLayanan,
       };
+
+      // Kirim pilihan_layanan sebagai array terpisah agar Laravel menerimanya sebagai array
+      for (int i = 0; i < data.pilihanLayanan.length; i++) {
+        formMap['pilihan_layanan[$i]'] = data.pilihanLayanan[i];
+      }
 
       if (data.deskripsi != null) {
         formMap['deskripsi'] = data.deskripsi;
@@ -281,9 +304,14 @@ class MenuService {
       }
     } on DioException catch (e) {
       final data = e.response?.data;
-      final msg = (data is Map && data.containsKey('message')) 
-          ? data['message'] 
-          : 'Terjadi kesalahan jaringan (Kode: ${e.response?.statusCode})';
+      String msg;
+      if (data is Map && data.containsKey('message')) {
+        msg = data['message'].toString();
+      } else if (data is String && data.isNotEmpty) {
+        msg = data;
+      } else {
+        msg = 'Terjadi kesalahan jaringan (Kode: ${e.response?.statusCode})';
+      }
       throw Exception(msg);
     }
   }
@@ -305,9 +333,14 @@ class MenuService {
       }
     } on DioException catch (e) {
       final data = e.response?.data;
-      final msg = (data is Map && data.containsKey('message')) 
-          ? data['message'] 
-          : 'Terjadi kesalahan jaringan (Kode: ${e.response?.statusCode})';
+      String msg;
+      if (data is Map && data.containsKey('message')) {
+        msg = data['message'].toString();
+      } else if (data is String && data.isNotEmpty) {
+        msg = data;
+      } else {
+        msg = 'Terjadi kesalahan jaringan (Kode: ${e.response?.statusCode})';
+      }
       throw Exception(msg);
     }
   }
@@ -330,9 +363,14 @@ class MenuService {
       throw Exception(body['message'] ?? 'Gagal mengubah status stok');
     } on DioException catch (e) {
       final data = e.response?.data;
-      final msg = (data is Map && data.containsKey('message')) 
-          ? data['message'] 
-          : 'Terjadi kesalahan jaringan (Kode: ${e.response?.statusCode})';
+      String msg;
+      if (data is Map && data.containsKey('message')) {
+        msg = data['message'].toString();
+      } else if (data is String && data.isNotEmpty) {
+        msg = data;
+      } else {
+        msg = 'Terjadi kesalahan jaringan (Kode: ${e.response?.statusCode})';
+      }
       throw Exception(msg);
     }
   }

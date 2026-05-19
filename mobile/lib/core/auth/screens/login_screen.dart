@@ -1,7 +1,8 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../seller/features/menu/screens/menu_list_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,7 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   // Controller untuk menangkap inputan user
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  
+
   bool _isLoading = false;
 
   // Fungsi untuk memanggil API Login
@@ -26,7 +27,9 @@ class _LoginScreenState extends State<LoginScreen> {
     // Validasi kosong di sisi Flutter
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Email dan Kata Sandi tidak boleh kosong')),
+        const SnackBar(
+          content: Text('Email dan Kata Sandi tidak boleh kosong'),
+        ),
       );
       return;
     }
@@ -37,29 +40,29 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       // - Pakai IP WiFi Laptop (contoh: 192.168.1.5) JIKA kamu pakai HP Fisik
-      final Uri url = Uri.parse('http://192.168.100.8:8000/api/login'); 
-      
+      final Uri url = Uri.parse('http://127.0.0.1:8000/api/login');
+
       // Tambahkan .timeout agar loading otomatis berhenti jika server mati/tidak nyambung
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: jsonEncode({
-          'email': email,
-          'password': password,
-        }),
-      ).timeout(const Duration(seconds: 10)); // Batas waktu tunggu 10 detik
+      final response = await http
+          .post(
+            url,
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+            body: jsonEncode({'email': email, 'password': password}),
+          )
+          .timeout(const Duration(seconds: 10)); // Batas waktu tunggu 10 detik
 
       final responseData = jsonDecode(response.body);
 
       // Cek apakah response sukses dari Laravel
       if (response.statusCode == 200 && responseData['success'] == true) {
-        
-        final String token = responseData['data']['token']; 
+        final String token = responseData['data']['token'];
+        final String userRole = responseData['data']['user']['role'] ?? 'pegawai';
         final SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('api_token', token);
+        await prefs.setString('auth_token', token);
+        await prefs.setString('user_role', userRole);
 
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -69,10 +72,16 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
 
+        // Redirect ke halaman kelola menu
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => const MenuListScreen(),
+          ),
+        );
       } else {
         // --- PENANGANAN JIKA ERROR (AKUN SALAH ATAU EMAIL NGACOK) ---
         if (!mounted) return;
-        
+
         String errorMessage = responseData['message'] ?? 'Login gagal.';
 
         // Jika Laravel membalas error validasi (422), misalnya: "The email must be a valid email address."
@@ -82,16 +91,13 @@ class _LoginScreenState extends State<LoginScreen> {
         }
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
         );
       }
     } catch (e) {
       // --- PENANGANAN JIKA SERVER MATI / KONEKSI GAGAL ---
       if (!mounted) return;
-      
+
       // Print ke debug console agar kamu bisa lihat error aslinya
       print('ERROR LOGIN: $e');
 
@@ -175,15 +181,15 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       const SizedBox(height: 32),
-                      
+
                       // Input Email
                       _EmailField(controller: _emailController),
                       const SizedBox(height: 16),
-                      
+
                       // Input Password
                       _PasswordField(controller: _passwordController),
                       const SizedBox(height: 24),
-                      
+
                       // Tombol Login
                       SizedBox(
                         width: double.infinity,
@@ -196,20 +202,23 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
-                          child: _isLoading 
-                            ? const SizedBox(
-                                height: 24, 
-                                width: 24, 
-                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
-                              )
-                            : const Text(
-                                'Masuk',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text(
+                                  'Masuk',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                              ),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -311,15 +320,30 @@ class RegisterScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 32),
-                      const _RegisterField(label: 'Nama Lengkap', hint: 'Masukkan nama lengkapmu'),
+                      const _RegisterField(
+                        label: 'Nama Lengkap',
+                        hint: 'Masukkan nama lengkapmu',
+                      ),
                       const SizedBox(height: 16),
-                      const _RegisterField(label: 'Email', hint: 'Masukkan emailmu', keyboardType: TextInputType.emailAddress),
+                      const _RegisterField(
+                        label: 'Email',
+                        hint: 'Masukkan emailmu',
+                        keyboardType: TextInputType.emailAddress,
+                      ),
                       const SizedBox(height: 16),
                       const _PhoneField(),
                       const SizedBox(height: 16),
-                      const _RegisterField(label: 'Kata Sandi', hint: 'Buat kata sandi', obscureText: true),
+                      const _RegisterField(
+                        label: 'Kata Sandi',
+                        hint: 'Buat kata sandi',
+                        obscureText: true,
+                      ),
                       const SizedBox(height: 16),
-                      const _RegisterField(label: 'Konfirmasi Kata Sandi', hint: 'Ulangi kata sandi', obscureText: true),
+                      const _RegisterField(
+                        label: 'Konfirmasi Kata Sandi',
+                        hint: 'Ulangi kata sandi',
+                        obscureText: true,
+                      ),
                       const SizedBox(height: 24),
                       SizedBox(
                         width: double.infinity,
@@ -387,7 +411,9 @@ class RegisterScreen extends StatelessWidget {
       context: context,
       builder: (dialogContext) {
         return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+          ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
             child: Column(
@@ -400,20 +426,13 @@ class RegisterScreen extends StatelessWidget {
                     color: Color(0xFF34D399),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.check,
-                    size: 40,
-                    color: Colors.white,
-                  ),
+                  child: const Icon(Icons.check, size: 40, color: Colors.white),
                 ),
                 const SizedBox(height: 24),
                 const Text(
                   'Pendaftaran Berhasil!',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 12),
                 const Text(
@@ -462,7 +481,7 @@ class RegisterScreen extends StatelessWidget {
 // Widget Input Email Khusus Halaman Login
 class _EmailField extends StatelessWidget {
   final TextEditingController controller;
-  
+
   const _EmailField({required this.controller});
 
   @override
@@ -486,7 +505,10 @@ class _EmailField extends StatelessWidget {
             hintText: 'Masukkan email',
             filled: true,
             fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: 18,
+              horizontal: 16,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
@@ -497,7 +519,10 @@ class _EmailField extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF2D50EE), width: 1.5),
+              borderSide: const BorderSide(
+                color: Color(0xFF2D50EE),
+                width: 1.5,
+              ),
             ),
           ),
         ),
@@ -509,7 +534,7 @@ class _EmailField extends StatelessWidget {
 // Widget Input Kata Sandi Khusus Halaman Login (Bisa lihat/sembunyikan password)
 class _PasswordField extends StatefulWidget {
   final TextEditingController controller;
-  
+
   const _PasswordField({required this.controller});
 
   @override
@@ -540,11 +565,14 @@ class _PasswordFieldState extends State<_PasswordField> {
             hintText: 'Masukkan kata sandi',
             filled: true,
             fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: 18,
+              horizontal: 16,
+            ),
             suffixIcon: IconButton(
               icon: Icon(
                 _obscureText ? Icons.visibility_off : Icons.visibility,
-                color: const Color(0xFF757575)
+                color: const Color(0xFF757575),
               ),
               onPressed: () {
                 setState(() {
@@ -562,7 +590,10 @@ class _PasswordFieldState extends State<_PasswordField> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF2D50EE), width: 1.5),
+              borderSide: const BorderSide(
+                color: Color(0xFF2D50EE),
+                width: 1.5,
+              ),
             ),
           ),
         ),
@@ -602,10 +633,7 @@ class _PhoneField extends StatelessWidget {
               margin: const EdgeInsets.only(right: 12),
               decoration: const BoxDecoration(
                 border: Border(
-                  right: BorderSide(
-                    color: Color(0xFFE0E0E0), 
-                    width: 1,
-                  ),
+                  right: BorderSide(color: Color(0xFFE0E0E0), width: 1),
                 ),
               ),
               child: const Row(
@@ -633,7 +661,10 @@ class _PhoneField extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF2D50EE), width: 1.5),
+              borderSide: const BorderSide(
+                color: Color(0xFF2D50EE),
+                width: 1.5,
+              ),
             ),
           ),
         ),
@@ -678,8 +709,13 @@ class _RegisterField extends StatelessWidget {
             hintText: hint,
             filled: true,
             fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
-            suffixIcon: obscureText ? const Icon(Icons.visibility_off, color: Color(0xFF757575)) : null,
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: 18,
+              horizontal: 16,
+            ),
+            suffixIcon: obscureText
+                ? const Icon(Icons.visibility_off, color: Color(0xFF757575))
+                : null,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
@@ -690,7 +726,10 @@ class _RegisterField extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF2D50EE), width: 1.5),
+              borderSide: const BorderSide(
+                color: Color(0xFF2D50EE),
+                width: 1.5,
+              ),
             ),
           ),
         ),

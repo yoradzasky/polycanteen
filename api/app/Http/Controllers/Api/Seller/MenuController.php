@@ -67,7 +67,7 @@ class MenuController extends Controller
             $query->where('nama_item', 'like', '%' . $request->search . '%');
         }
 
-        $menus = $query->select('id', 'nama_item', 'harga', 'foto_menu', 'status_stok', 'kategori')->get();
+        $menus = $query->get();
 
         return response()->json([
             'success' => true,
@@ -95,7 +95,7 @@ class MenuController extends Controller
         $validated = $request->validated();
         
         $validated['kantin_id'] = $kantinId;
-        $validated['status_stok'] = 'tersedia';
+        $validated['status_stok'] = true;
 
         if (isset($validated['varian'])) {
             $validated['varian'] = json_decode($validated['varian'], true);
@@ -206,7 +206,7 @@ class MenuController extends Controller
             ], 403);
         }
 
-        $menu->status_stok = $menu->status_stok === 'tersedia' ? 'habis' : 'tersedia';
+        $menu->status_stok = !$menu->status_stok;
         $menu->save();
 
         return response()->json([
