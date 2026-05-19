@@ -1,7 +1,7 @@
 import Sidebar from '@/Components/UI/Sidebar';
 import TopNavbar from '@/Components/UI/TopNavbar';
 
-export default function AdminLayout({ children, title, description, rightContent }) {
+export default function AdminLayout({ children, title, description, rightContent, leftContent }) {
     return (
         <div className="flex h-screen bg-[#f4f6fb] overflow-hidden">
             {/* Sidebar di Kiri */}
@@ -9,7 +9,12 @@ export default function AdminLayout({ children, title, description, rightContent
 
             {/* Konten Utama di Kanan */}
             <div className="flex-1 flex flex-col h-screen overflow-hidden">
-                <TopNavbar title={title} description={description} rightContent={rightContent} />
+                <TopNavbar 
+                    title={title} 
+                    description={description} 
+                    rightContent={rightContent} 
+                    leftContent={leftContent} 
+                />
                 
                 {/* Area ini yang akan berubah-ubah sesuai halaman */}
                 <main className="flex-1 overflow-x-hidden overflow-y-auto">

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Keranjang extends Model
 {
@@ -20,8 +21,8 @@ class Keranjang extends Model
         return $this->belongsTo(Mahasiswa::class);
     }
 
-    public function menu(): BelongsTo
+    public function menu(): HasMany
     {
-        return $this->belongsTo(Menu::class);
+        return $this->hasMany(Menu::class);
     }
 }

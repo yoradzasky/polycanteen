@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-import 'seller/features/menu/screens/menu_list_screen.dart';
+// 1. Import file login screen kamu (bisa pakai relative path seperti ini)
+import 'core/auth/screens/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,13 +28,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'PolyCanteen - Test Menu',
+      title: 'PolyCanteen',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF3949AB)),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MenuListScreen(),
+      // 2. Ganti home bawaan menjadi class LoginScreen kamu
+      home: const LoginScreen(),
     );
   }
 }
