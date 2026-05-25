@@ -45,6 +45,7 @@ return new class extends Migration
         Schema::table('pesanan', function (Blueprint $table) {
             $table->string('nomor_antrian')->nullable()->after('total_harga');
             $table->text('catatan_pesanan')->nullable()->after('nomor_antrian');
+            $table->text('alasan_penolakan')->nullable()->after('catatan_pesanan');
         });
 
         // PesananDetail: +varian_snapshot (JSON), topping_snapshot (JSON)
@@ -88,7 +89,7 @@ return new class extends Migration
         });
 
         Schema::table('pesanan', function (Blueprint $table) {
-            $table->dropColumn(['nomor_antrian', 'catatan_pesanan']);
+            $table->dropColumn(['nomor_antrian', 'catatan_pesanan', 'alasan_penolakan']);
         });
 
         Schema::table('pesanan_detail', function (Blueprint $table) {

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Pesanan extends Model
 {
     protected $table = 'pesanan';
+    
     protected $fillable = [
         'mahasiswa_id',
         'kantin_id',
@@ -18,6 +19,7 @@ class Pesanan extends Model
         'total_harga',
         'nomor_antrian',
         'catatan_pesanan',
+        'alasan_penolakan',
     ];
 
     /**
@@ -40,16 +42,28 @@ class Pesanan extends Model
 
     /**
      * Generate nomor antrian format "A-001" per kantin per hari.
+     * Menggunakan logika latest()->first() untuk mencegah bug duplikat antrian.
      */
     public static function generateNomorAntrian(int $kantinId): string
     {
         $today = now()->toDateString();
 
-        $lastNumber = static::where('kantin_id', $kantinId)
+        // Ambil pesanan terakhir yang sudah punya nomor antrian pada hari itu untuk kantin ini
+        $lastPesanan = static::where('kantin_id', $kantinId)
             ->whereDate('created_at', $today)
             ->whereNotNull('nomor_antrian')
-            ->count();
+            ->latest('id') // Mengurutkan dari ID terbaru/terbesar
+            ->first();
 
+        $lastNumber = 0;
+
+        if ($lastPesanan) {
+            // Ekstrak angka dari format "A-001"
+            // substr($string, 2) memotong 2 karakter pertama ("A-") sehingga tersisa angkanya saja
+            $lastNumber = (int) substr($lastPesanan->nomor_antrian, 2);
+        }
+
+        // Tambah 1 pada angka terakhir, lalu format ulang dengan padding 0 di kiri
         return 'A-' . str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
     }
 
@@ -72,7 +86,6 @@ class Pesanan extends Model
     {
         return $this->hasOne(Payment::class);
     }
-
 
     public function ulasan(): HasOne
     {

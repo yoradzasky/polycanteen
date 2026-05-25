@@ -9,6 +9,8 @@ import '../services/menu_service.dart';
 import 'add_menu_screen.dart';
 import 'edit_menu_screen.dart';
 
+import '../../orders/screens/order_list_screen.dart';
+
 // ──────────────────────────────────────────────
 // Warna utama
 // ──────────────────────────────────────────────
@@ -36,7 +38,8 @@ class _MenuListScreenState extends State<MenuListScreen> {
   Timer? _debounce;
   int _currentNavIndex = 1; // Kelola Menu aktif
 
-  Color get _primaryColor => _userRole == 'pegawai' ? const Color(0xFF5E7AC4) : _kPrimaryBlue;
+  Color get _primaryColor =>
+      _userRole == 'pegawai' ? const Color(0xFF5E7AC4) : _kPrimaryBlue;
 
   @override
   void initState() {
@@ -228,17 +231,18 @@ class _MenuListScreenState extends State<MenuListScreen> {
             )
           : null,
       bottomNavigationBar: SellerNavbar(
-        currentIndex: _currentNavIndex,
-        primaryColor: _primaryColor,
+        currentIndex: 1, // 1 menandakan ini tab Kelola Menu
         onTap: (index) {
-          if (index != _currentNavIndex) {
-            setState(() => _currentNavIndex = index);
-            // TODO: Navigate to appropriate screen
+          if (index == 0) {
+            // Jika tab Beranda (index 0) diklik, kembali ke halaman pesanan
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const OrderListScreen()),
+            );
           }
         },
-        onQrTap: () {
-          // TODO: Open QR scanner
-        },
+        onQrTap: () => debugPrint("Buka Scan QR"),
+        primaryColor: const Color(0xFF32479B),
       ),
     );
   }
@@ -255,12 +259,18 @@ class _MenuListScreenState extends State<MenuListScreen> {
           children: [
             Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 12),
-            Text(_error!, style: TextStyle(color: Colors.grey[600], fontSize: 14)),
+            Text(
+              _error!,
+              style: TextStyle(color: Colors.grey[600], fontSize: 14),
+            ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () => _fetchMenus(),
               style: ElevatedButton.styleFrom(backgroundColor: _primaryColor),
-              child: const Text('Coba Lagi', style: TextStyle(color: Colors.white)),
+              child: const Text(
+                'Coba Lagi',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         ),
@@ -366,7 +376,11 @@ class _MenuListScreenState extends State<MenuListScreen> {
                         const SizedBox(width: 6),
                         GestureDetector(
                           onTap: () => _navigateToEdit(menu),
-                          child: Icon(Icons.edit_outlined, size: 18, color: Colors.grey[500]),
+                          child: Icon(
+                            Icons.edit_outlined,
+                            size: 18,
+                            color: Colors.grey[500],
+                          ),
                         ),
                       ],
                     ],
@@ -421,6 +435,4 @@ class _MenuListScreenState extends State<MenuListScreen> {
       child: Icon(Icons.fastfood, size: 32, color: Colors.grey[400]),
     );
   }
-
-
 }
