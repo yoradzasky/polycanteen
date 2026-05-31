@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\Seller\FinanceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,5 +32,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('pemilik')->group(function () {
         Route::apiResource('menus', \App\Http\Controllers\Api\Seller\MenuController::class);
         Route::patch('menus/{menu}/toggle-status', [\App\Http\Controllers\Api\Seller\MenuController::class, 'toggleStatus']);
+
+        Route::prefix('finance')->name('pemilik.finance.')->group(function () {
+            Route::get('summary', [FinanceController::class, 'summary'])->name('summary');
+            Route::get('revenue', [FinanceController::class, 'revenue'])->name('revenue');
+            Route::get('withdrawals', [FinanceController::class, 'withdrawals'])->name('withdrawals');
+        });
     });
 });
