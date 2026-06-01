@@ -2,34 +2,41 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\Seller\OrderController;
+use App\Http\Controllers\Api\Seller\MenuController;
+use App\Http\Controllers\Api\Seller\KantinController;
 
 /*
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
 */
 
 Route::post('/login', [AuthController::class, 'login']);
 
+// Satu grup besar untuk semua yang butuh Login (Token Sanctum)
 Route::middleware('auth:sanctum')->group(function () {
 
-    // Rute profil user bawaan
+    // --- Rute Auth & Profil ---
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
-
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    // Seller Routes
+    // --- Grup Khusus Penjual (Prefix: /pemilik) ---
     Route::prefix('pemilik')->group(function () {
-        Route::apiResource('menus', \App\Http\Controllers\Api\Seller\MenuController::class);
-        Route::patch('menus/{menu}/toggle-status', [\App\Http\Controllers\Api\Seller\MenuController::class, 'toggleStatus']);
+        
+        // Modul Pesanan (Orders)
+        Route::get('/orders', [OrderController::class, 'index']);
+        Route::get('/orders/{id}', [OrderController::class, 'show']);
+        Route::patch('/orders/{id}/status', [OrderController::class, 'updateStatus']);
+        
+        // Modul Manajemen Menu
+        Route::apiResource('menus', MenuController::class);
+        Route::patch('menus/{menu}/toggle-status', [MenuController::class, 'toggleStatus']);
+        
+        Route::patch('/kantin/status', [KantinController::class, 'updateStatus']);
     });
+
 });
