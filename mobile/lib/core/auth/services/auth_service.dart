@@ -3,14 +3,14 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 
 class AuthService {
+  static final EncryptedSharedPreferences _prefs = EncryptedSharedPreferences();
+
   static final Dio _dio = Dio(
     BaseOptions(
       baseUrl: dotenv.env['BASE_URL'] ?? 'http://10.0.2.2:8000/api',
       headers: {'Accept': 'application/json'},
     ),
   );
-
-  static final EncryptedSharedPreferences _prefs = EncryptedSharedPreferences();
 
   static Future<String> login(String email, String password) async {
     try {
