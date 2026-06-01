@@ -2,9 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 
 import '../../../../core/widgets/seller_navbar.dart';
+import '../../profile/screens/profile.dart';
 import '../services/menu_service.dart';
 import 'add_menu_screen.dart';
 import 'edit_menu_screen.dart';
@@ -53,10 +54,11 @@ class _MenuListScreenState extends State<MenuListScreen> {
   }
 
   Future<void> _loadRole() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = EncryptedSharedPreferences();
+    final role = await prefs.getString('user_role');
     if (!mounted) return;
     setState(() {
-      _userRole = prefs.getString('user_role') ?? 'pegawai';
+      _userRole = role.isEmpty ? 'pegawai' : role;
     });
   }
 
@@ -231,6 +233,16 @@ class _MenuListScreenState extends State<MenuListScreen> {
         currentIndex: _currentNavIndex,
         primaryColor: _primaryColor,
         onTap: (index) {
+          if (index == 3) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const ProfileTokoScreen(),
+              ),
+            );
+            return;
+          }
+
           if (index != _currentNavIndex) {
             setState(() => _currentNavIndex = index);
             // TODO: Navigate to appropriate screen

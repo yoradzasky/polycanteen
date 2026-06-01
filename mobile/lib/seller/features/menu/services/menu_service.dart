@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 
 // ──────────────────────────────────────────────
 // Model: Menu
@@ -139,10 +139,10 @@ class MenuService {
   /// Base URL without /api, for building storage photo URLs
   String get baseUrlForStorage => _storageBase;
 
-  /// Ambil token dari SharedPreferences dan set di header
+  /// Ambil token dari EncryptedSharedPreferences dan set di header
   Future<Options> _authOptions({String? contentType}) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token') ?? '';
+    final prefs = EncryptedSharedPreferences();
+    final token = await prefs.getString('auth_token');
     return Options(
       headers: {'Authorization': 'Bearer $token'},
       contentType: contentType,
