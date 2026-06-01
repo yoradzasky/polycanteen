@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 
 import '../services/menu_service.dart';
 
@@ -81,9 +81,10 @@ class _EditMenuScreenState extends State<EditMenuScreen> {
   }
 
   Future<void> _loadRole() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = EncryptedSharedPreferences();
+    final role = await prefs.getString('user_role');
     if (!mounted) return;
-    setState(() => _userRole = prefs.getString('user_role') ?? 'pegawai');
+    setState(() => _userRole = role.isNotEmpty ? role : 'pegawai');
   }
 
   @override

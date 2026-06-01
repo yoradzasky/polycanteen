@@ -1,8 +1,9 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
-import '../../../seller/features/menu/screens/menu_list_screen.dart';
+
+import '../../../seller/features/main/screens/seller_main_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -93,10 +94,10 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
 
-        // Redirect ke halaman kelola menu
+        // Redirect ke halaman utama seller
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (_) => const MenuListScreen(),
+            builder: (_) => const SellerMainScreen(),
           ),
         );
       } else {
