@@ -159,7 +159,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
         actions: [
           if (_userRole == 'pemilik')
           Padding(
-            padding: const EdgeInsets.only(right: 20.0),
+            padding: const EdgeInsets.only(right: 20.0, top: 8.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [

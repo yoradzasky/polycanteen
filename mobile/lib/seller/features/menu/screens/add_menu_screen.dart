@@ -42,9 +42,7 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
   bool _pengantaran = false;
 
   // Variasi
-  final _variasiNamaController = TextEditingController();
-  String _variasiTipe = 'opsional'; // 'wajib' atau 'opsional'
-  final List<_VariasiPilihan> _variasiPilihanList = [];
+  final List<_VariasiItem> _variasiList = [_VariasiItem()];
   final _pilihanNamaController = TextEditingController();
   final _pilihanHargaController = TextEditingController();
 
@@ -56,7 +54,9 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
     _hargaController.dispose();
     _deskripsiController.dispose();
     _estimasiController.dispose();
-    _variasiNamaController.dispose();
+    for (var v in _variasiList) {
+      v.dispose();
+    }
     _pilihanNamaController.dispose();
     _pilihanHargaController.dispose();
     super.dispose();
@@ -138,16 +138,13 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
     try {
       // Build varian data
       List<Map<String, dynamic>>? varianData;
-      if (_variasiNamaController.text.isNotEmpty && _variasiPilihanList.isNotEmpty) {
-        varianData = [
-          {
-            'nama': _variasiNamaController.text,
-            'tipe': _variasiTipe,
-            'pilihan': _variasiPilihanList
-                .map((p) => {'nama': p.nama, 'harga': p.harga})
-                .toList(),
-          }
-        ];
+      final validVarians = _variasiList.where((v) => v.namaController.text.isNotEmpty && v.pilihanList.isNotEmpty).toList();
+      if (validVarians.isNotEmpty) {
+        varianData = validVarians.map((v) => {
+          'nama': v.namaController.text,
+          'tipe': v.tipe,
+          'pilihan': v.pilihanList.map((p) => {'nama': p.nama, 'harga': p.harga}).toList(),
+        }).toList();
       }
 
       final hargaText = _hargaController.text.replaceAll(RegExp(r'[^0-9]'), '');
@@ -190,7 +187,7 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
   }
 
   // ─── Tambah pilihan variasi ───
-  void _addVariasiPilihan() {
+  void _addVariasiPilihan(int index) {
     final nama = _pilihanNamaController.text.trim();
     if (nama.isEmpty) return;
 
@@ -198,7 +195,7 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
     final harga = int.tryParse(hargaText) ?? 0;
 
     setState(() {
-      _variasiPilihanList.add(_VariasiPilihan(nama: nama, harga: harga));
+      _variasiList[index].pilihanList.add(_VariasiPilihan(nama: nama, harga: harga));
       _pilihanNamaController.clear();
       _pilihanHargaController.clear();
     });
@@ -496,91 +493,126 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
   }
 
   Widget _buildVariasiSection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Nama Variasi
-          const Text('NAMA VARIASI', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey, letterSpacing: 0.5)),
-          const SizedBox(height: 6),
-          _buildTextField(controller: _variasiNamaController, hint: 'Contoh: Topping Tambahan'),
-          const SizedBox(height: 16),
+    return Column(
+      children: [
+        ..._variasiList.asMap().entries.map((entry) {
+          final index = entry.key;
+          final variasi = entry.value;
+          return Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey[300]!),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('NAMA VARIASI', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey, letterSpacing: 0.5)),
+                    if (_variasiList.length > 1)
+                      GestureDetector(
+                        onTap: () => setState(() => _variasiList.removeAt(index)),
+                        child: const Icon(Icons.close, size: 20, color: Colors.red),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                _buildTextField(controller: variasi.namaController, hint: 'Contoh: Topping Tambahan'),
+                const SizedBox(height: 16),
 
-          // Tipe Variasi
-          const Text('TIPE VARIASI', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey, letterSpacing: 0.5)),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              _tipeButton('Wajib', 'wajib'),
-              const SizedBox(width: 8),
-              _tipeButton('Opsional', 'opsional'),
-            ],
-          ),
-          const SizedBox(height: 16),
+                const Text('TIPE VARIASI', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey, letterSpacing: 0.5)),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    _tipeButton(variasi, 'Wajib', 'wajib'),
+                    const SizedBox(width: 8),
+                    _tipeButton(variasi, 'Opsional', 'opsional'),
+                  ],
+                ),
+                const SizedBox(height: 16),
 
-          // Pilihan Variasi & Harga
-          const Text('PILIHAN VARIASI & HARGA', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey, letterSpacing: 0.5)),
-          const SizedBox(height: 8),
-          ..._variasiPilihanList.asMap().entries.map((entry) {
-            final i = entry.key;
-            final p = entry.value;
-            return Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF5F5F5),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(p.nama, style: const TextStyle(fontSize: 13)),
-                  const SizedBox(width: 4),
-                  GestureDetector(
-                    onTap: () => setState(() => _variasiPilihanList.removeAt(i)),
-                    child: Icon(Icons.close, size: 16, color: Colors.grey[600]),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    p.harga > 0 ? '+ Rp ${_currencyFormat.format(p.harga)}' : 'Rp 0',
-                    style: const TextStyle(fontSize: 13, color: Colors.grey),
-                  ),
-                ],
-              ),
-            );
-          }),
+                const Text('PILIHAN VARIASI & HARGA', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey, letterSpacing: 0.5)),
+                const SizedBox(height: 8),
+                ...variasi.pilihanList.asMap().entries.map((pilihanEntry) {
+                  final i = pilihanEntry.key;
+                  final p = pilihanEntry.value;
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF5F5F5),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(p.nama, style: const TextStyle(fontSize: 13)),
+                        const SizedBox(width: 4),
+                        GestureDetector(
+                          onTap: () => setState(() => variasi.pilihanList.removeAt(i)),
+                          child: Icon(Icons.close, size: 16, color: Colors.grey[600]),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          p.harga > 0 ? '+ Rp ${_currencyFormat.format(p.harga)}' : 'Rp 0',
+                          style: const TextStyle(fontSize: 13, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
 
-          // Input baru
-          GestureDetector(
-            onTap: () => _showAddPilihanDialog(),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey[300]!, style: BorderStyle.solid),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text('Tambah pilihan...', style: TextStyle(color: Colors.grey[400], fontSize: 13)),
+                GestureDetector(
+                  onTap: () => _showAddPilihanDialog(index),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey[300]!, style: BorderStyle.solid),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text('Tambah pilihan...', style: TextStyle(color: Colors.grey[400], fontSize: 13)),
+                        ),
+                        const Icon(Icons.add, color: _kPrimaryBlue, size: 20),
+                      ],
+                    ),
                   ),
-                  const Icon(Icons.add, color: _kPrimaryBlue, size: 20),
-                ],
-              ),
+                ),
+              ],
+            ),
+          );
+        }),
+        GestureDetector(
+          onTap: () => setState(() => _variasiList.add(_VariasiItem())),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            decoration: BoxDecoration(
+              color: _kPrimaryBlue.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: _kPrimaryBlue.withValues(alpha: 0.5)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.add, color: _kPrimaryBlue, size: 20),
+                const SizedBox(width: 8),
+                const Text('Tambah Variasi Menu', style: TextStyle(color: _kPrimaryBlue, fontWeight: FontWeight.bold)),
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  void _showAddPilihanDialog() {
+  void _showAddPilihanDialog(int index) {
     _pilihanNamaController.clear();
     _pilihanHargaController.clear();
 
@@ -609,7 +641,7 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
           ElevatedButton(
             onPressed: () {
-              _addVariasiPilihan();
+              _addVariasiPilihan(index);
               Navigator.pop(ctx);
             },
             style: ElevatedButton.styleFrom(backgroundColor: _kPrimaryBlue),
@@ -620,11 +652,11 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
     );
   }
 
-  Widget _tipeButton(String label, String value) {
-    final isSelected = _variasiTipe == value;
+  Widget _tipeButton(_VariasiItem variasi, String label, String value) {
+    final isSelected = variasi.tipe == value;
     return Expanded(
       child: GestureDetector(
-        onTap: () => setState(() => _variasiTipe = value),
+        onTap: () => setState(() => variasi.tipe = value),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
@@ -683,6 +715,16 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
 // ──────────────────────────────────────────────
 // Helper models
 // ──────────────────────────────────────────────
+
+class _VariasiItem {
+  TextEditingController namaController = TextEditingController();
+  String tipe = 'opsional';
+  List<_VariasiPilihan> pilihanList = [];
+  
+  void dispose() {
+    namaController.dispose();
+  }
+}
 
 class _VariasiPilihan {
   final String nama;
