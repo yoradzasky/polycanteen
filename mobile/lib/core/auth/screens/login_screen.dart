@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -604,7 +604,7 @@ class _PasswordFieldState extends State<_PasswordField> {
 
 // Widget Input Nomor HP (Tetap dibiarkan untuk halaman Register)
 class _PhoneField extends StatelessWidget {
-  const _PhoneField({super.key});
+  const _PhoneField();
 
   @override
   Widget build(BuildContext context) {
@@ -676,7 +676,6 @@ class _PhoneField extends StatelessWidget {
 // Widget Input Generic untuk Register
 class _RegisterField extends StatelessWidget {
   const _RegisterField({
-    super.key,
     required this.label,
     required this.hint,
     this.keyboardType = TextInputType.text,
