@@ -3,74 +3,159 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreCanteenRequest;
 use App\Services\CanteenService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class CanteenController extends Controller
 {
-    // MENGAPA: Dependency Injection service di controller menggunakan 
-    // properti readonly sesuai arsitektur Laravel modern / standar OOP yang bersih. (Aturan 9)
+    /**
+     * Inject CanteenService via constructor.
+     */
     public function __construct(private readonly CanteenService $canteenService)
     {
     }
 
     /**
-     * Menampilkan daftar semua kantin.
+     * Menampilkan halaman daftar semua kantin (tabel utama dashboard).
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Inertia\Response
      */
-    public function index()
+    public function index(Request $request): Response
     {
-        // MENGAPA: Thin Controller, controller hanya bertugas memanggil service 
-        // dan tidak berisi query DB sama sekali. (Aturan 1 & 20)
-        $response = $this->canteenService->getAllCanteens();
+        $filters = $request->only(['nama_kantin', 'status_toko']);
+        $perPage = $request->input('per_page', 8);
 
-        if (!$response['success']) {
-            // MENGAPA: Jika Service mengembalikan false, Controller WAJIB 
-            // melakukan redirect back dengan flash message error. BUKAN melempar prop. (Aturan 21)
-            return redirect()->back()->with('error', $response['message']);
-        }
+        $canteens = $this->canteenService
+            ->getPaginatedCanteens($filters, (int) $perPage)
+            ->withQueryString();
 
-        // MENGAPA: Controller bertugas langsung return view menggunakan Inertia
-        // Data dari Service diteruskan ke Props React.
-        return Inertia::render('Canteens/Index', [
-            'canteens' => $response['data']
+        return Inertia::render('Canteen/Index', [
+            'canteens' => $canteens,
+            'filters' => array_merge($filters, ['per_page' => $perPage]),
         ]);
     }
 
     /**
-     * Menampilkan halaman formulir pembuatan kantin.
+     * Menampilkan halaman detail + analitik satu kantin.
+     *
+     * @param  int  $id
+     * @return \Inertia\Response
      */
-    public function create()
+    public function show(int $id): Response
     {
-        return Inertia::render('Canteens/Create');
+        $profileAndStats = $this->canteenService->getCanteenProfileAndStats($id);
+        $menus = $this->canteenService->getPaginatedMenus($id);
+        $salesActivity = $this->canteenService->getDailySalesActivity($id);
+
+        return Inertia::render('Canteen/Show', [
+            'kantin' => $profileAndStats['kantin'],
+            'total_penjualan' => $profileAndStats['total_penjualan'],
+            'total_menu_terjual' => $profileAndStats['total_menu_terjual'],
+            'menus' => $menus,
+            'sales_activity' => $salesActivity,
+        ]);
     }
 
     /**
-     * Menyimpan data kantin dari form.
+     * Menampilkan halaman form Tambah Kantin (kosong).
+     *
+     * @return \Inertia\Response
      */
-    public function store(Request $request)
+    public function create(): Response
     {
-        // MENGAPA: Validasi diletakkan di layer Controller (atau FormRequest)
-        // sebelum menyentuh layer Service untuk memastikan data steril. (Aturan 1)
-        $validated = $request->validate([
-            'nama_kantin' => 'required|string|max:255',
-            'lokasi_lengkap' => 'nullable|string|max:500',
-            'nama_pemilik' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'nim' => 'required|string|min:5|max:20', // Akan digunakan sbg password akun pemilik
-            'no_telp' => 'nullable|string|max:20',
-        ]);
+        return Inertia::render('Canteen/Create');
+    }
 
-        // MENGAPA: Pemanggilan satu method dari Service yang berisi seluruh logika bisnis 
-        // (Transaksi DB, pembuatan relasi, sinkronisasi Firestore) (Aturan 2)
-        $response = $this->canteenService->createCanteen($validated);
+    /**
+     * Memproses form Tambah Kantin dan menyimpan data baru.
+     *
+     * @param  \App\Http\Requests\Admin\StoreCanteenRequest  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function store(StoreCanteenRequest $request): RedirectResponse
+    {
+        try {
+            $this->canteenService->createCanteen($request->validated());
 
-        if (!$response['success']) {
-            // MENGAPA: Jika service mereturn false, redirect back beserta pesan error flash (Aturan 21)
-            return redirect()->back()->with('error', $response['message']);
+            return redirect()
+                ->route('admin.canteens.index')
+                ->with('success', 'Kantin berhasil ditambahkan.');
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->with('error', 'Gagal menambahkan kantin.');
         }
+    }
 
-        // MENGAPA: Redirect ke halaman daftar menggunakan Inertia dengan membawa flash message sukses
-        return redirect()->route('admin.canteens.index')->with('success', $response['message']);
+    /**
+     * Menampilkan halaman form Edit Kantin (pre-filled dengan data existing).
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Inertia\Response
+     */
+    public function edit(Request $request, int $id): Response
+    {
+        $data = $this->canteenService->getCanteenProfileAndStats($id);
+
+        return Inertia::render('Canteen/Edit', [
+            'kantin' => $data['kantin'],
+            'from' => $request->query('from', 'index'),
+        ]);
+    }
+
+    /**
+     * Memproses form Edit dan memperbarui data kantin.
+     *
+     * @param  \App\Http\Requests\Admin\StoreCanteenRequest  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function update(StoreCanteenRequest $request, int $id): RedirectResponse
+    {
+        try {
+            $this->canteenService->updateCanteen($id, $request->validated());
+
+            $from = $request->input('from', 'index');
+            if ($from === 'show') {
+                return redirect()
+                    ->route('admin.canteens.show', $id)
+                    ->with('success', 'Kantin berhasil diperbarui.');
+            }
+
+            return redirect()
+                ->route('admin.canteens.index')
+                ->with('success', 'Kantin berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->with('error', 'Gagal memperbarui kantin.');
+        }
+    }
+
+    /**
+     * Menonaktifkan (soft delete + suspend) kantin.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function destroy(int $id): RedirectResponse
+    {
+        try {
+            $this->canteenService->deleteCanteen($id);
+
+            return redirect()
+                ->route('admin.canteens.index')
+                ->with('success', 'Kantin berhasil dinonaktifkan.');
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->with('error', 'Gagal menonaktifkan kantin.');
+        }
     }
 }
