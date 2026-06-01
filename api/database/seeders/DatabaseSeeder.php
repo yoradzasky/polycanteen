@@ -32,6 +32,36 @@ class DatabaseSeeder extends Seeder
             'status_akun' => 'aktif',
         ]);
 
+        // === TEST USER (Bu Mariyam) ===
+        $testKantin = Kantin::create([
+            'nama_kantin' => 'Kantin Bu Mariyam',
+            'lokasi_lengkap' => 'Kampus Politeknik',
+            'longitude' => 107.6015,
+            'latitude' => -6.8957,
+            'status_toko' => 'buka',
+            'deskripsi' => 'Kantin favorit mahasiswa',
+            'alamat' => 'Jl. Teknik Raya No. 1, Bandung',
+            'foto_kantin' => null
+        ]);
+
+        $testUser = User::create([
+            'username' => 'Bu Mariyam',
+            'email' => 'pemilik1@example.com',
+            'password' => Hash::make('password123'),
+            'role' => 'pemilik',
+            'status_akun' => 'aktif',
+            'foto_profile' => null,
+        ]);
+
+        Pemilik::create([
+            'user_id' => $testUser->id,
+            'kantin_id' => $testKantin->id,
+            'nama_pemilik' => 'Bu Mariyam',
+            'no_telp' => '081290142199',
+            'foto_profil_path' => null
+        ]);
+
+        // === REGULAR DATA (10 KANTINS) ===
         // 2. Kantin (10 records)
         $kantins = [];
         for ($i = 1; $i <= 10; $i++) {

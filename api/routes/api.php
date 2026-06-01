@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,6 +25,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
+
+    // Profile routes
+    Route::get('/profile', [ProfileController::class, 'show']);
+    Route::post('/profile', [ProfileController::class, 'update']);
+    
+    // Kantin profile routes
+    Route::get('/kantin/profile', [ProfileController::class, 'getKantinProfile']);
+    Route::post('/kantin/profile', [ProfileController::class, 'updateKantinProfile']);
+    
+    // Password routes
+    Route::put('/change-password', [ProfileController::class, 'changePassword']);
 
     Route::post('/logout', [AuthController::class, 'logout']);
 
