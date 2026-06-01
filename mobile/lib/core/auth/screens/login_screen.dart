@@ -1,8 +1,9 @@
 ﻿import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 import '../../../seller/features/menu/screens/menu_list_screen.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -39,8 +40,12 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      // - Pakai IP WiFi Laptop (contoh: 192.168.1.5) JIKA kamu pakai HP Fisik
-      final Uri url = Uri.parse('http://127.0.0.1:8000/api/login');
+      // 1. AMBIL IP DARI FILE .env 
+      // Jika gagal terbaca, baru dia pakai localhost sebagai cadangan
+      final String baseUrl = dotenv.env['BASE_URL'] ?? 'http://127.0.0.1:8000/api';
+      
+      // 2. GABUNGKAN BASE_URL dengan endpoint '/login'
+      final Uri url = Uri.parse('$baseUrl/login');
 
       // Tambahkan .timeout agar loading otomatis berhenti jika server mati/tidak nyambung
       final response = await http
@@ -60,7 +65,23 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response.statusCode == 200 && responseData['success'] == true) {
         final String token = responseData['data']['token'];
         final String userRole = responseData['data']['user']['role'] ?? 'pegawai';
-        final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+        // Cek apakah role adalah admin - jika iya, tolak login
+        if (userRole == 'admin') {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Admin tidak dapat login melalui aplikasi mobile'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          setState(() {
+            _isLoading = false;
+          });
+          return;
+        }
+
+        final prefs = EncryptedSharedPreferences();
         await prefs.setString('auth_token', token);
         await prefs.setString('user_role', userRole);
 
@@ -84,9 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
         String errorMessage = responseData['message'] ?? 'Login gagal.';
 
-        // Jika Laravel membalas error validasi (422), misalnya: "The email must be a valid email address."
         if (responseData['errors'] != null) {
-          // Ambil pesan error pertama dari daftar error Laravel
           errorMessage = responseData['errors'].values.first[0];
         }
 
@@ -98,8 +117,7 @@ class _LoginScreenState extends State<LoginScreen> {
       // --- PENANGANAN JIKA SERVER MATI / KONEKSI GAGAL ---
       if (!mounted) return;
 
-      // Print ke debug console agar kamu bisa lihat error aslinya
-      print('ERROR LOGIN: $e');
+      debugPrint('ERROR LOGIN: $e');
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -108,7 +126,6 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
     } finally {
-      // Akhiri loading (tombol muter) APAPUN YANG TERJADI (sukses/gagal/error)
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -267,8 +284,56 @@ class _LoginScreenState extends State<LoginScreen> {
 // WIDGET REGISTER SCREEN & HELPER COMPONENTS
 // =========================================================================
 
-class RegisterScreen extends StatelessWidget {
+class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
+
+  @override
+  State<RegisterScreen> createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
+  final TextEditingController _fullNameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+
+  bool _isFormValid = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fullNameController.addListener(_updateFormValid);
+    _emailController.addListener(_updateFormValid);
+    _phoneController.addListener(_updateFormValid);
+    _passwordController.addListener(_updateFormValid);
+    _confirmPasswordController.addListener(_updateFormValid);
+  }
+
+  @override
+  void dispose() {
+    _fullNameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  void _updateFormValid() {
+    final isValid = _fullNameController.text.trim().isNotEmpty &&
+        _emailController.text.trim().isNotEmpty &&
+        _phoneController.text.trim().isNotEmpty &&
+        _passwordController.text.isNotEmpty &&
+        _confirmPasswordController.text.isNotEmpty &&
+        _passwordController.text == _confirmPasswordController.text;
+
+    if (isValid != _isFormValid) {
+      setState(() {
+        _isFormValid = isValid;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -320,26 +385,30 @@ class RegisterScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 32),
-                      const _RegisterField(
+                      _RegisterField(
+                        controller: _fullNameController,
                         label: 'Nama Lengkap',
                         hint: 'Masukkan nama lengkapmu',
                       ),
                       const SizedBox(height: 16),
-                      const _RegisterField(
+                      _RegisterField(
+                        controller: _emailController,
                         label: 'Email',
                         hint: 'Masukkan emailmu',
                         keyboardType: TextInputType.emailAddress,
                       ),
                       const SizedBox(height: 16),
-                      const _PhoneField(),
+                      _PhoneField(controller: _phoneController),
                       const SizedBox(height: 16),
-                      const _RegisterField(
+                      _RegisterField(
+                        controller: _passwordController,
                         label: 'Kata Sandi',
                         hint: 'Buat kata sandi',
                         obscureText: true,
                       ),
                       const SizedBox(height: 16),
-                      const _RegisterField(
+                      _RegisterField(
+                        controller: _confirmPasswordController,
                         label: 'Konfirmasi Kata Sandi',
                         hint: 'Ulangi kata sandi',
                         obscureText: true,
@@ -348,7 +417,9 @@ class RegisterScreen extends StatelessWidget {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () => _showSuccessDialog(context),
+                          onPressed: _isFormValid
+                              ? () => _showSuccessDialog(context)
+                              : null,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF2D50EE),
                             shape: RoundedRectangleBorder(
@@ -604,7 +675,9 @@ class _PasswordFieldState extends State<_PasswordField> {
 
 // Widget Input Nomor HP (Tetap dibiarkan untuk halaman Register)
 class _PhoneField extends StatelessWidget {
-  const _PhoneField();
+  final TextEditingController controller;
+
+  const _PhoneField({required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -621,6 +694,7 @@ class _PhoneField extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         TextFormField(
+          controller: controller,
           keyboardType: TextInputType.phone,
           decoration: InputDecoration(
             hintText: '81234567890',
@@ -676,12 +750,14 @@ class _PhoneField extends StatelessWidget {
 // Widget Input Generic untuk Register
 class _RegisterField extends StatelessWidget {
   const _RegisterField({
+    required this.controller,
     required this.label,
     required this.hint,
     this.keyboardType = TextInputType.text,
     this.obscureText = false,
   });
 
+  final TextEditingController controller;
   final String label;
   final String hint;
   final TextInputType keyboardType;
