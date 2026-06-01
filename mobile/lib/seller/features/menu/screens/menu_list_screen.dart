@@ -231,29 +231,6 @@ class _MenuListScreenState extends State<MenuListScreen> {
               child: const Icon(Icons.add, color: Colors.white, size: 28),
             )
           : null,
-      bottomNavigationBar: SellerNavbar(
-        currentIndex: _currentNavIndex,
-        primaryColor: _primaryColor,
-        onTap: (index) {
-          if (index == 3) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const ProfileTokoScreen(),
-              ),
-            );
-            return;
-          }
-
-          if (index != _currentNavIndex) {
-            setState(() => _currentNavIndex = index);
-            // TODO: Navigate to appropriate screen
-          }
-        },
-        onQrTap: () {
-          // TODO: Open QR scanner
-        },
-      ),
     );
   }
 

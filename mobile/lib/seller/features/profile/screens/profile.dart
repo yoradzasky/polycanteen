@@ -111,27 +111,6 @@ class _ProfileTokoScreenState extends State<ProfileTokoScreen> {
           );
         },
       ),
-      bottomNavigationBar: SellerNavbar(
-        currentIndex: 3,
-        onTap: (index) {
-          if (index == 3) return;
-          if (index == 0 || index == 1) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const MenuListScreen()),
-            );
-            return;
-          }
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Fitur Laporan belum tersedia.')),
-          );
-        },
-        onQrTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('QR scanner belum diimplementasikan.')),
-          );
-        },
-      ),
     );
   }
 }
