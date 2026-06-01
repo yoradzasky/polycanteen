@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
+import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 
 import '../../../../core/widgets/seller_navbar.dart';
 import '../../profile/screens/profile.dart';
@@ -37,7 +38,8 @@ class _MenuListScreenState extends State<MenuListScreen> {
   Timer? _debounce;
   int _currentNavIndex = 1; // Kelola Menu aktif
 
-  Color get _primaryColor => _userRole == 'pegawai' ? const Color(0xFF5E7AC4) : _kPrimaryBlue;
+  Color get _primaryColor =>
+      _userRole == 'pegawai' ? const Color(0xFF5E7AC4) : _kPrimaryBlue;
 
   @override
   void initState() {
@@ -58,7 +60,7 @@ class _MenuListScreenState extends State<MenuListScreen> {
     final role = await prefs.getString('user_role');
     if (!mounted) return;
     setState(() {
-      _userRole = role.isEmpty ? 'pegawai' : role;
+      _userRole = role.isNotEmpty ? role : 'pegawai';
     });
   }
 
@@ -267,12 +269,18 @@ class _MenuListScreenState extends State<MenuListScreen> {
           children: [
             Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 12),
-            Text(_error!, style: TextStyle(color: Colors.grey[600], fontSize: 14)),
+            Text(
+              _error!,
+              style: TextStyle(color: Colors.grey[600], fontSize: 14),
+            ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () => _fetchMenus(),
               style: ElevatedButton.styleFrom(backgroundColor: _primaryColor),
-              child: const Text('Coba Lagi', style: TextStyle(color: Colors.white)),
+              child: const Text(
+                'Coba Lagi',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         ),
@@ -378,7 +386,11 @@ class _MenuListScreenState extends State<MenuListScreen> {
                         const SizedBox(width: 6),
                         GestureDetector(
                           onTap: () => _navigateToEdit(menu),
-                          child: Icon(Icons.edit_outlined, size: 18, color: Colors.grey[500]),
+                          child: Icon(
+                            Icons.edit_outlined,
+                            size: 18,
+                            color: Colors.grey[500],
+                          ),
                         ),
                       ],
                     ],
@@ -433,6 +445,4 @@ class _MenuListScreenState extends State<MenuListScreen> {
       child: Icon(Icons.fastfood, size: 32, color: Colors.grey[400]),
     );
   }
-
-
 }

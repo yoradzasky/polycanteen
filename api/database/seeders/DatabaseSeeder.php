@@ -172,10 +172,10 @@ class DatabaseSeeder extends Seeder
             $pesanan = Pesanan::create([
                 'mahasiswa_id' => $mahasiswas[$i]->id,
                 'kantin_id' => $menus[$i]->kantin_id,
-                'tipe_pesanan' => 'dine_in',
-                'status_pesanan' => 'selesai',
+                'tipe_pesanan' => $faker->randomElement(['dine_in', 'take_away']),
+                // Status dibuat acak agar semua Tab di Flutter terisi
+                'status_pesanan' => $faker->randomElement(['dibayar', 'dimasak', 'dalam_perjalanan', 'selesai', 'ditolak']),
                 'total_harga' => $total_harga,
-                // nomor_antrian generates automatically on status change or we can force it
                 'nomor_antrian' => 'A-0' . str_pad($i + 1, 2, '0', STR_PAD_LEFT),
                 'catatan_pesanan' => $faker->sentence
             ]);

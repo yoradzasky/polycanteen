@@ -117,6 +117,7 @@ class MenuFormData {
 // ──────────────────────────────────────────────
 
 class MenuService {
+  final EncryptedSharedPreferences _prefs = EncryptedSharedPreferences();
   late final Dio _dio;
   late final String _storageBase;
 
@@ -141,8 +142,7 @@ class MenuService {
 
   /// Ambil token dari EncryptedSharedPreferences dan set di header
   Future<Options> _authOptions({String? contentType}) async {
-    final prefs = EncryptedSharedPreferences();
-    final token = await prefs.getString('auth_token');
+    final token = await _prefs.getString('auth_token');
     return Options(
       headers: {'Authorization': 'Bearer $token'},
       contentType: contentType,
