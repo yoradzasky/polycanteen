@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 
-import '../../../../core/widgets/seller_navbar.dart';
-import '../../orders/screens/order_list_screen.dart';
-import '../../menu/screens/menu_list_screen.dart';
+import '../widgets/seller_navbar.dart';
+import '../../seller/features/orders/screens/order_list_screen.dart';
+import '../../seller/features/menu/screens/menu_list_screen.dart';
 
-class SellerMainScreen extends StatefulWidget {
-  const SellerMainScreen({super.key});
+class SellerMainLayout extends StatefulWidget {
+  const SellerMainLayout({super.key});
 
   @override
-  State<SellerMainScreen> createState() => _SellerMainScreenState();
+  State<SellerMainLayout> createState() => _SellerMainLayoutState();
 }
 
-class _SellerMainScreenState extends State<SellerMainScreen> {
+class _SellerMainLayoutState extends State<SellerMainLayout> {
   int _selectedIndex = 0;
   String _userRole = 'pegawai';
   bool _isLoadingRole = true;

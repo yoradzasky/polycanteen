@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 
-import '../../../seller/features/main/screens/seller_main_screen.dart';
+import '../../layouts/seller_main_layout.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -97,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
         // Redirect ke halaman utama seller
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (_) => const SellerMainScreen(),
+            builder: (_) => const SellerMainLayout(),
           ),
         );
       } else {
