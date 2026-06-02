@@ -79,7 +79,7 @@ class ProfileController extends Controller
             'email' => 'sometimes|email|unique:users,email,' . $user->id,
             'nama_pemilik' => 'sometimes|string|max:255',
             'no_telp' => 'sometimes|string|max:20',
-            $photoField => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048',
+            $photoField => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:10240',
         ]);
 
         // Update user data
@@ -137,6 +137,7 @@ class ProfileController extends Controller
         ]);
     }
 
+    
     // Get kantin profile
     public function getKantinProfile(Request $request)
     {
@@ -160,6 +161,10 @@ class ProfileController extends Controller
 
         $fotoKantin = $this->getFullUrl($kantin->logo_path);
 
+        // Menghitung rata-rata rating dari tabel ulasan
+        $rataRataRating = \App\Models\Ulasan::where('kantin_id', $kantin->id)->avg('rating');
+        $ratingFinal = $rataRataRating ? round($rataRataRating, 1) : 0.0;
+
         return response()->json([
             'success' => true,
             'data' => [
@@ -168,7 +173,7 @@ class ProfileController extends Controller
                 'deskripsi' => $kantin->deskripsi ?? '',
                 'alamat' => $kantin->alamat ?? '',
                 'foto_kantin' => $fotoKantin,
-                'rating' => $kantin->rating ?? 4.5,
+                'rating' => $ratingFinal,
                 'total_pesanan' => $kantin->total_pesanan ?? 0,
             ]
         ]);
@@ -199,7 +204,7 @@ class ProfileController extends Controller
             'nama_kantin' => 'sometimes|string|max:255',
             'deskripsi' => 'sometimes|string|max:1000',
             'alamat' => 'sometimes|string|max:500',
-            'foto_kantin' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'foto_kantin' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:10240',
         ]);
 
         if (isset($validated['nama_kantin'])) {

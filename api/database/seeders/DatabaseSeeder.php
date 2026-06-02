@@ -32,16 +32,14 @@ class DatabaseSeeder extends Seeder
             'status_akun' => 'aktif',
         ]);
 
-        // === TEST USER (Bu Mariyam) ===
+        // === TEST USER PEMILIK (Bu Mariyam) ===
         $testKantin = Kantin::create([
             'nama_kantin' => 'Kantin Bu Mariyam',
             'lokasi_lengkap' => 'Kampus Politeknik',
             'longitude' => 107.6015,
             'latitude' => -6.8957,
             'status_toko' => 'buka',
-            'deskripsi' => 'Kantin favorit mahasiswa',
-            'alamat' => 'Jl. Teknik Raya No. 1, Bandung',
-            'foto_kantin' => null
+            'logo_path' => null // Diubah dari foto_kantin menjadi logo_path
         ]);
 
         $testUser = User::create([
@@ -58,6 +56,24 @@ class DatabaseSeeder extends Seeder
             'kantin_id' => $testKantin->id,
             'nama_pemilik' => 'Bu Mariyam',
             'no_telp' => '081290142199',
+            'foto_profil_path' => null
+        ]);
+
+        // === TEST USER PEGAWAI (Pak Budi) ===
+        $testUserPegawai = User::create([
+            'username' => 'Pak Budi Pegawai',
+            'email' => 'pegawai1@example.com',
+            'password' => Hash::make('password123'),
+            'role' => 'pegawai',
+            'status_akun' => 'aktif',
+            'foto_profile' => null,
+        ]);
+
+        Pegawai::create([
+            'user_id' => $testUserPegawai->id,
+            'kantin_id' => $testKantin->id,
+            'nama_karyawan' => 'Pak Budi',
+            'no_telp' => '081234567890',
             'foto_profil_path' => null
         ]);
 
@@ -173,7 +189,6 @@ class DatabaseSeeder extends Seeder
                 'mahasiswa_id' => $mahasiswas[$i]->id,
                 'kantin_id' => $menus[$i]->kantin_id,
                 'tipe_pesanan' => $faker->randomElement(['dine_in', 'take_away']),
-                // Status dibuat acak agar semua Tab di Flutter terisi
                 'status_pesanan' => $faker->randomElement(['dibayar', 'dimasak', 'dalam_perjalanan', 'selesai', 'ditolak']),
                 'total_harga' => $total_harga,
                 'nomor_antrian' => 'A-0' . str_pad($i + 1, 2, '0', STR_PAD_LEFT),
