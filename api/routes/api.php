@@ -2,56 +2,54 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Controllers\Api\Seller\FinanceController;
+use App\Http\Controllers\Api\Seller\KantinController;
+use App\Http\Controllers\Api\Seller\MenuController;
+use App\Http\Controllers\Api\Seller\OrderController;
 
 /*
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
 */
 
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
 
-    // Rute profil user bawaan
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
 
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    // ===== CART ROUTES (AC 1) =====
     Route::prefix('cart')->group(function () {
-        Route::get('/', [CartController::class, 'index']); // GET /api/cart - List semua item
-        Route::post('/', [CartController::class, 'store']); // POST /api/cart - Tambah item
-        Route::put('/{id}', [CartController::class, 'update']); // PUT /api/cart/{id} - Update item
-        Route::delete('/{id}', [CartController::class, 'destroy']); // DELETE /api/cart/{id} - Hapus item
-        Route::delete('/clear/all', [CartController::class, 'clearAll']); // DELETE /api/cart/clear/all - Clear semua
+        Route::get('/', [CartController::class, 'index']);
+        Route::post('/', [CartController::class, 'store']);
+        Route::put('/{id}', [CartController::class, 'update']);
+        Route::delete('/{id}', [CartController::class, 'destroy']);
+        Route::delete('/clear/all', [CartController::class, 'clearAll']);
     });
 
-    // ===== CHECKOUT ROUTES (AC 2 & AC 3) =====
     Route::prefix('checkout')->group(function () {
-        Route::post('/', [CheckoutController::class, 'checkout']); // POST /api/checkout - Process checkout
-        Route::get('/preview', [CheckoutController::class, 'preview']); // GET /api/checkout/preview - Preview biaya
+        Route::post('/', [CheckoutController::class, 'checkout']);
+        Route::get('/preview', [CheckoutController::class, 'preview']);
     });
 
-    // ===== ORDERS ROUTES =====
-    Route::get('/pesanan/{id}', [CheckoutController::class, 'getOrder']); // GET /api/pesanan/{id} - View order detail
+    Route::get('/pesanan/{id}', [CheckoutController::class, 'getOrder']);
 
-    // Seller Routes
     Route::prefix('pemilik')->group(function () {
-        Route::apiResource('menus', \App\Http\Controllers\Api\Seller\MenuController::class);
-        Route::patch('menus/{menu}/toggle-status', [\App\Http\Controllers\Api\Seller\MenuController::class, 'toggleStatus']);
+        Route::get('/orders', [OrderController::class, 'index']);
+        Route::get('/orders/{id}', [OrderController::class, 'show']);
+        Route::patch('/orders/{id}/status', [OrderController::class, 'updateStatus']);
+
+        Route::apiResource('menus', MenuController::class);
+        Route::patch('menus/{menu}/toggle-status', [MenuController::class, 'toggleStatus']);
+
+        Route::patch('/kantin/status', [KantinController::class, 'updateStatus']);
 
         Route::prefix('finance')->name('pemilik.finance.')->group(function () {
             Route::get('summary', [FinanceController::class, 'summary'])->name('summary');
@@ -59,4 +57,5 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('withdrawals', [FinanceController::class, 'withdrawals'])->name('withdrawals');
         });
     });
+
 });

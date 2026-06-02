@@ -16,10 +16,8 @@ return new class extends Migration
             $table->foreignId('mahasiswa_id')->constrained('mahasiswa')->onDelete('cascade');
             $table->foreignId('kantin_id')->constrained('kantin')->onDelete('cascade');
             
-            // TIPE PENGIRIMAN: dine_in, takeaway, delivery
-            $table->enum('tipe_pesanan', ['dine_in', 'takeaway', 'delivery'])->default('dine_in');
-            $table->enum('status_pesanan', ['pending', 'dibayar', 'diproses', 'siap', 'selesai', 'dibatalkan'])->default('pending');
-            
+            $table->string('tipe_pesanan'); // misal: dine_in, take_away
+            $table->string('status_pesanan'); // misal: pending, dibayar, diproses, selesai
             $table->decimal('total_harga', 10, 2);
             $table->decimal('biaya_layanan', 10, 2)->default(0); // Service fee untuk delivery
             

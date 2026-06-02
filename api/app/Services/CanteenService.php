@@ -32,9 +32,11 @@ class CanteenService
             ->with('pemilik.user')
             ->withCount('menus')
             ->withSum(
-                ['pesanan as pesanan_sum_total_harga' => function ($q) {
-                    $q->where('status_pesanan', 'selesai');
-                }],
+                [
+                    'pesanan as pesanan_sum_total_harga' => function ($q) {
+                        $q->where('status_pesanan', 'selesai');
+                    }
+                ],
                 'total_harga'
             );
 
@@ -78,12 +80,12 @@ class CanteenService
         // Hitung total menu terjual (qty) dari detail pesanan yang selesai
         $totalMenuTerjual = PesananDetail::whereHas('pesanan', function ($q) use ($id) {
             $q->where('kantin_id', $id)
-              ->where('status_pesanan', 'selesai');
+                ->where('status_pesanan', 'selesai');
         })->sum('jumlah_pesanan');
 
         return [
-            'kantin'             => $kantin,
-            'total_penjualan'    => $totalPenjualan,
+            'kantin' => $kantin,
+            'total_penjualan' => $totalPenjualan,
             'total_menu_terjual' => (int) $totalMenuTerjual,
         ];
     }
@@ -101,12 +103,14 @@ class CanteenService
     {
         return Menu::where('kantin_id', $id)
             ->withSum(
-                ['pesananDetails as pesanan_details_sum_jumlah_pesanan' => function ($q) {
-                    // Hanya hitung dari pesanan induk yang berstatus selesai
-                    $q->whereHas('pesanan', function ($query) {
-                        $query->where('status_pesanan', 'selesai');
-                    });
-                }],
+                [
+                    'pesananDetails as pesanan_details_sum_jumlah_pesanan' => function ($q) {
+                        // Hanya hitung dari pesanan induk yang berstatus selesai
+                        $q->whereHas('pesanan', function ($query) {
+                            $query->where('status_pesanan', 'selesai');
+                        });
+                    }
+                ],
                 'jumlah_pesanan'
             )
             ->paginate($perPage);
@@ -147,28 +151,28 @@ class CanteenService
                 // Tahap 1: Buat record kantin
                 $kantin = Kantin::create([
 
-                    'nama_kantin'    => $data['nama_kantin'],
+                    'nama_kantin' => $data['nama_kantin'],
                     'lokasi_lengkap' => $data['lokasi_lengkap'],
-                    'latitude'       => $data['latitude'] ?? null,
-                    'longitude'      => $data['longitude'] ?? null,
-                    'status_toko'    => 'tutup',
+                    'latitude' => $data['latitude'] ?? null,
+                    'longitude' => $data['longitude'] ?? null,
+                    'status_toko' => 'tutup',
                 ]);
 
                 // Tahap 2: Buat akun user untuk pemilik
                 $userPemilik = User::create([
-                    'username'    => strstr($data['email'], '@', true) . rand(1000, 9999),
-                    'email'       => $data['email'],
-                    'password'    => Hash::make('password'),
-                    'role'        => 'pemilik',
+                    'username' => strstr($data['email'], '@', true) . rand(1000, 9999),
+                    'email' => $data['email'],
+                    'password' => Hash::make('password'),
+                    'role' => 'pemilik',
                     'status_akun' => 'aktif',
                 ]);
 
                 // Tahap 3: Buat profil pemilik yang terhubung ke kantin dan user
                 Pemilik::create([
-                    'kantin_id'    => $kantin->id,
-                    'user_id'      => $userPemilik->id,
+                    'kantin_id' => $kantin->id,
+                    'user_id' => $userPemilik->id,
                     'nama_pemilik' => $data['nama_pemilik'],
-                    'no_telp'      => $data['no_telp'],
+                    'no_telp' => $data['no_telp'],
                 ]);
 
                 // Tahap 4: Buat karyawan (opsional) jika data karyawan tersedia
@@ -176,19 +180,19 @@ class CanteenService
                     foreach ($data['karyawan'] as $karyawan) {
                         // Buat akun user untuk setiap karyawan
                         $userKaryawan = User::create([
-                            'username'    => strstr($karyawan['email'], '@', true) . rand(1000, 9999),
-                            'email'       => $karyawan['email'],
-                            'password'    => Hash::make('password'),
-                            'role'        => 'pegawai',
+                            'username' => strstr($karyawan['email'], '@', true) . rand(1000, 9999),
+                            'email' => $karyawan['email'],
+                            'password' => Hash::make('password'),
+                            'role' => 'pegawai',
                             'status_akun' => 'aktif',
                         ]);
 
                         // Buat record pegawai yang terhubung ke user dan kantin
                         Pegawai::create([
-                            'user_id'       => $userKaryawan->id,
-                            'kantin_id'     => $kantin->id,
+                            'user_id' => $userKaryawan->id,
+                            'kantin_id' => $kantin->id,
                             'nama_karyawan' => $karyawan['nama_karyawan'] ?? null,
-                            'no_telp'       => $karyawan['no_telp'] ?? null,
+                            'no_telp' => $karyawan['no_telp'] ?? null,
                         ]);
                     }
                 }
@@ -220,16 +224,16 @@ class CanteenService
                 // Tahap 1: Update data kantin
                 $kantin = Kantin::findOrFail($id);
                 $kantin->update([
-                    'nama_kantin'    => $data['nama_kantin'],
+                    'nama_kantin' => $data['nama_kantin'],
                     'lokasi_lengkap' => $data['lokasi_lengkap'],
-                    'latitude'       => $data['latitude'] ?? $kantin->latitude,
-                    'longitude'      => $data['longitude'] ?? $kantin->longitude,
+                    'latitude' => $data['latitude'] ?? $kantin->latitude,
+                    'longitude' => $data['longitude'] ?? $kantin->longitude,
                 ]);
 
                 // Tahap 2: Update profil pemilik
                 $kantin->pemilik()->update([
                     'nama_pemilik' => $data['nama_pemilik'],
-                    'no_telp'      => $data['no_telp'],
+                    'no_telp' => $data['no_telp'],
                 ]);
 
                 // Tahap 3: Update email pemilik jika berubah
@@ -269,7 +273,7 @@ class CanteenService
                             $pegawai = Pegawai::findOrFail($karyawanData['id']);
                             $pegawai->update([
                                 'nama_karyawan' => $karyawanData['nama_karyawan'] ?? $pegawai->nama_karyawan,
-                                'no_telp'       => $karyawanData['no_telp'] ?? $pegawai->no_telp,
+                                'no_telp' => $karyawanData['no_telp'] ?? $pegawai->no_telp,
                             ]);
 
                             // Update email user karyawan jika tersedia
@@ -281,18 +285,18 @@ class CanteenService
                         } else {
                             // Buat user dan pegawai baru
                             $userBaru = User::create([
-                                'username'    => strstr($karyawanData['email'], '@', true) . rand(1000, 9999),
-                                'email'       => $karyawanData['email'],
-                                'password'    => Hash::make('password'),
-                                'role'        => 'pegawai',
+                                'username' => strstr($karyawanData['email'], '@', true) . rand(1000, 9999),
+                                'email' => $karyawanData['email'],
+                                'password' => Hash::make('password'),
+                                'role' => 'pegawai',
                                 'status_akun' => 'aktif',
                             ]);
 
                             Pegawai::create([
-                                'user_id'       => $userBaru->id,
-                                'kantin_id'     => $kantin->id,
+                                'user_id' => $userBaru->id,
+                                'kantin_id' => $kantin->id,
                                 'nama_karyawan' => $karyawanData['nama_karyawan'] ?? null,
-                                'no_telp'       => $karyawanData['no_telp'] ?? null,
+                                'no_telp' => $karyawanData['no_telp'] ?? null,
                             ]);
                         }
                     }

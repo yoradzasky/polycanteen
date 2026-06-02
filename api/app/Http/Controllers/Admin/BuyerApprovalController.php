@@ -6,7 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Services\Admin\ApprovalService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
+use Inertia\Response;
 use RuntimeException;
 use Throwable;
 
@@ -14,6 +18,29 @@ class BuyerApprovalController extends Controller
 {
     public function __construct(private readonly ApprovalService $approvalService)
     {
+    }
+
+    public function index(): Response
+    {
+        $applications = DB::table('buyer_applications')
+            ->where('status', 'pending')
+            ->orderByDesc('created_at')
+            ->paginate(10);
+
+        return Inertia::render('Approvals/Index', [
+            'applications' => $applications,
+        ]);
+    }
+
+    public function show(int $application): Response
+    {
+        $applicationData = DB::table('buyer_applications')->find($application);
+
+        abort_if(! $applicationData, 404, 'Application not found');
+
+        return Inertia::render('Approvals/Show', [
+            'application' => $applicationData,
+        ]);
     }
 
     public function approve(int $application): RedirectResponse
@@ -40,10 +67,14 @@ class BuyerApprovalController extends Controller
         }
     }
 
-    public function reject(int $application): RedirectResponse
+    public function reject(Request $request, int $application): RedirectResponse
     {
+        $validated = $request->validate([
+            'reason' => ['nullable', 'string', 'max:255'],
+        ]);
+
         try {
-            $this->approvalService->reject($application);
+            $this->approvalService->reject($application, $validated['reason'] ?? null);
 
             return redirect()
                 ->back()

@@ -43,8 +43,17 @@ return new class extends Migration
 
         // Pesanan: +nomor_antrian, catatan_pesanan
         Schema::table('pesanan', function (Blueprint $table) {
-            $table->string('nomor_antrian')->nullable()->after('total_harga');
-            $table->text('catatan_pesanan')->nullable()->after('nomor_antrian');
+            if (! Schema::hasColumn('pesanan', 'nomor_antrian')) {
+                $table->string('nomor_antrian')->nullable()->after('total_harga');
+            }
+
+            if (! Schema::hasColumn('pesanan', 'catatan_pesanan')) {
+                $table->text('catatan_pesanan')->nullable()->after('nomor_antrian');
+            }
+
+            if (! Schema::hasColumn('pesanan', 'alasan_penolakan')) {
+                $table->text('alasan_penolakan')->nullable()->after('catatan_pesanan');
+            }
         });
 
         // PesananDetail: +varian_snapshot (JSON), topping_snapshot (JSON)
@@ -88,7 +97,14 @@ return new class extends Migration
         });
 
         Schema::table('pesanan', function (Blueprint $table) {
-            $table->dropColumn(['nomor_antrian', 'catatan_pesanan']);
+            $columns = array_filter(
+                ['nomor_antrian', 'catatan_pesanan', 'alasan_penolakan'],
+                fn (string $column): bool => Schema::hasColumn('pesanan', $column)
+            );
+
+            if ($columns) {
+                $table->dropColumn($columns);
+            }
         });
 
         Schema::table('pesanan_detail', function (Blueprint $table) {
