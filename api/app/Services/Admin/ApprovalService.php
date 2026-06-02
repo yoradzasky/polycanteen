@@ -7,19 +7,13 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use Kreait\Firebase\Contract\Firestore;
 use RuntimeException;
 
 class ApprovalService
 {
     private const DEFAULT_PASSWORD = 'password123';
-
-    public function __construct(private readonly ?Firestore $firestore = null)
-    {
-    }
 
     /**
      * Approve a buyer application and promote it into the main MySQL users table.
@@ -83,8 +77,6 @@ class ApprovalService
                     'updated_at' => now(),
                 ]);
 
-            $this->syncToFirestore($user);
-
             return $user;
         });
     }
@@ -116,32 +108,5 @@ class ApprovalService
     public function defaultPassword(): string
     {
         return self::DEFAULT_PASSWORD;
-    }
-
-    private function syncToFirestore(User $user): void
-    {
-        if (! $this->firestore) {
-            return;
-        }
-
-        try {
-            $this->firestore
-                ->database()
-                ->collection('users')
-                ->document((string) $user->id)
-                ->set([
-                    'id' => $user->id,
-                    'username' => $user->username,
-                    'email' => $user->email,
-                    'role' => $user->role,
-                    'created_at' => $user->created_at?->toIso8601String(),
-                    'status' => 'active',
-                ]);
-        } catch (\Throwable $exception) {
-            Log::error('Failed to sync approved buyer to Firestore.', [
-                'user_id' => $user->id,
-                'exception' => $exception,
-            ]);
-        }
     }
 }

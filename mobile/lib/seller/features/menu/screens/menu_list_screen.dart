@@ -33,7 +33,6 @@ class _MenuListScreenState extends State<MenuListScreen> {
   String? _error;
   String _userRole = 'pegawai';
   Timer? _debounce;
-  int _currentNavIndex = 1; // Kelola Menu aktif
 
   Color get _primaryColor =>
       _userRole == 'pegawai' ? const Color(0xFF5E7AC4) : _kPrimaryBlue;

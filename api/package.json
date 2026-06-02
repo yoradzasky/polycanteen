@@ -21,7 +21,6 @@
     },
     "dependencies": {
         "dayjs": "^1.11.20",
-        "firebase": "^12.12.1",
         "leaflet": "^1.9.4",
         "react-leaflet": "^4.2.1",
         "recharts": "^3.8.1"

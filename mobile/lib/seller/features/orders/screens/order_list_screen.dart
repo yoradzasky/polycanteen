@@ -183,29 +183,28 @@ class _OrderListScreenState extends State<OrderListScreen> {
                           String statusString = val ? 'buka' : 'tutup';
                           await _orderService.updateStatusKantin(statusString);
 
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Kantin sekarang $statusString'),
-                                backgroundColor: Colors.green,
-                                duration: const Duration(seconds: 2),
-                              ),
-                            );
-                          }
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Kantin sekarang $statusString'),
+                              backgroundColor: Colors.green,
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
                         } catch (e) {
+                          if (!context.mounted) return;
+
                           // 4. Jika gagal, kembalikan posisi toggle ke semula
                           setState(() {
                             _isBuka = oldStatus;
                           });
 
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Gagal mengubah status: $e'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Gagal mengubah status: $e'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
                         }
                       },
                       activeThumbColor: Colors.white,

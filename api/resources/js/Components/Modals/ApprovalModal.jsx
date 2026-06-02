@@ -42,7 +42,7 @@ export default function ApprovalModal({ isOpen, onClose, application }) {
                                     <div className="mt-3">
                                         <p className="text-sm text-gray-500">
                                             Are you sure you want to approve the application for <strong>{application.name}</strong>? 
-                                            This will create a new user account, assign a default password, and immediately sync their profile to Firestore.
+                                            This will create a new user account and assign a default password.
                                         </p>
                                     </div>
                                 </div>
