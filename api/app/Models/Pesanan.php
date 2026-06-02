@@ -16,8 +16,12 @@ class Pesanan extends Model
         'tipe_pesanan',
         'status_pesanan',
         'total_harga',
+        'biaya_layanan',
         'nomor_antrian',
         'catatan_pesanan',
+        'alamat_pengiriman',
+        'latitude',
+        'longitude',
     ];
 
     /**

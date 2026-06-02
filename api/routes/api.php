@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CartController;
+use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Controllers\Api\Seller\FinanceController;
 
 /*
@@ -27,6 +29,24 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    // ===== CART ROUTES (AC 1) =====
+    Route::prefix('cart')->group(function () {
+        Route::get('/', [CartController::class, 'index']); // GET /api/cart - List semua item
+        Route::post('/', [CartController::class, 'store']); // POST /api/cart - Tambah item
+        Route::put('/{id}', [CartController::class, 'update']); // PUT /api/cart/{id} - Update item
+        Route::delete('/{id}', [CartController::class, 'destroy']); // DELETE /api/cart/{id} - Hapus item
+        Route::delete('/clear/all', [CartController::class, 'clearAll']); // DELETE /api/cart/clear/all - Clear semua
+    });
+
+    // ===== CHECKOUT ROUTES (AC 2 & AC 3) =====
+    Route::prefix('checkout')->group(function () {
+        Route::post('/', [CheckoutController::class, 'checkout']); // POST /api/checkout - Process checkout
+        Route::get('/preview', [CheckoutController::class, 'preview']); // GET /api/checkout/preview - Preview biaya
+    });
+
+    // ===== ORDERS ROUTES =====
+    Route::get('/pesanan/{id}', [CheckoutController::class, 'getOrder']); // GET /api/pesanan/{id} - View order detail
 
     // Seller Routes
     Route::prefix('pemilik')->group(function () {

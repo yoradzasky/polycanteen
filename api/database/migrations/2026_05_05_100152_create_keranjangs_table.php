@@ -15,8 +15,20 @@ return new class extends Migration
             $table->id();
             $table->foreignId('mahasiswa_id')->constrained('mahasiswa')->onDelete('cascade');
             $table->foreignId('menu_id')->constrained('menu')->onDelete('cascade');
+            $table->foreignId('kantin_id')->constrained('kantin')->onDelete('cascade'); // FK ke kantin
+            
             $table->integer('jumlah');
+            
+            // VARIAN & TOPPING SELECTION
+            // JSON untuk menyimpan pilihan varian dan topping yang dipilih
+            // Format: [{ id, nama, harga }, ...]
+            $table->json('varian_selected')->nullable();
+            $table->json('topping_selected')->nullable();
+            
+            // UNIQUE CONSTRAINT untuk mencegah duplikasi item dengan varian sama
+            // Setiap kombinasi mahasiswa-menu-varian harus unik
             $table->timestamps();
+            $table->unique(['mahasiswa_id', 'menu_id', 'varian_selected', 'topping_selected'], 'unique_cart_item');
         });
     }
 
