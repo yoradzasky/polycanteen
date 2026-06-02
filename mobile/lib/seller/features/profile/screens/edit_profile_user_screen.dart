@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 import '../widgets/profile_header_curve.dart';
 import '../models/user_profile.dart';
 import '../services/profile_service.dart';
+
 
 class EditProfileUserScreen extends StatefulWidget {
   const EditProfileUserScreen({super.key});
@@ -97,15 +102,71 @@ class _EditProfileUserScreenState extends State<EditProfileUserScreen> {
     }
   }
 
+  Future<File?> _compressImage(File file) async {
+    final tempDir = await getTemporaryDirectory();
+    final path = tempDir.path;
+    final targetPath = "$path/${DateTime.now().millisecondsSinceEpoch}.jpg";
+
+    final result = await FlutterImageCompress.compressAndGetFile(
+      file.absolute.path,
+      targetPath,
+      quality: 70, // Kompres ke kualitas 70%
+    );
+
+    return result != null ? File(result.path) : null;
+  }
+
   Future<void> _pickImage() async {
     try {
       final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      
+      final source = await showModalBottomSheet<ImageSource>(
+        context: context,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (ctx) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ListTile(
+                  leading: const Icon(Icons.camera_alt, color: Color(0xFF3852B4)),
+                  title: const Text('Kamera'),
+                  onTap: () => Navigator.pop(ctx, ImageSource.camera),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo_library, color: Color(0xFF3852B4)),
+                  title: const Text('Galeri'),
+                  onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      if (source == null) return;
+
+      final pickedFile = await picker.pickImage(source: source);
 
       if (pickedFile != null) {
-        setState(() {
-          _selectedImage = File(pickedFile.path);
-        });
+        final compressedFile = await _compressImage(File(pickedFile.path));
+        if (compressedFile != null) {
+          setState(() {
+            _selectedImage = compressedFile;
+          });
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -115,6 +176,7 @@ class _EditProfileUserScreenState extends State<EditProfileUserScreen> {
       }
     }
   }
+  
 
   @override
   void dispose() {
@@ -159,18 +221,16 @@ class _EditProfileUserScreenState extends State<EditProfileUserScreen> {
                             )
                           : (_profile?.fotoProfil != null
                               ? Image.network(
-                                  "${_profile!.fotoProfil!}?v=${DateTime.now().millisecondsSinceEpoch}",
+                                  _profile!.fotoProfil!,
                                   width: 80,
                                   height: 80,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Image.asset(
-                                      "assets/images/profile.jpg",
-                                      width: 80,
-                                      height: 80,
-                                      fit: BoxFit.cover,
-                                    );
-                                  },
+                                  errorBuilder: (context, url, error) => Image.asset(
+                                    "assets/images/profile.jpg",
+                                    width: 80,
+                                    height: 80,
+                                    fit: BoxFit.cover,
+                                  ),
                                 )
                               : Image.asset(
                                   "assets/images/profile.jpg",
@@ -206,7 +266,7 @@ class _EditProfileUserScreenState extends State<EditProfileUserScreen> {
                   _buildTextField(_namaController, hint: 'Masukkan nama Anda'),
                   const SizedBox(height: 16),
 
-                  _buildInputLabel('Nomor Telefon'),
+                  _buildInputLabel('Nomor Telepon'),
                   _buildTextField(_phoneController, isNumber: true),
                   const SizedBox(height: 16),
 
@@ -257,6 +317,7 @@ class _EditProfileUserScreenState extends State<EditProfileUserScreen> {
     return TextField(
       controller: controller,
       keyboardType: isNumber ? TextInputType.phone : TextInputType.emailAddress,
+      inputFormatters: isNumber ? [FilteringTextInputFormatter.digitsOnly] : [],
       decoration: InputDecoration(
         hintText: hint,
         filled: true,

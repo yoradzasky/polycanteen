@@ -4,6 +4,7 @@ import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 import 'dart:io';
 import 'dart:developer' as developer;
 import '../models/user_profile.dart';
+import '../models/kantin_profile.dart';
 
 class ProfileService {
   static final Dio _dio = Dio(
@@ -158,12 +159,12 @@ class ProfileService {
 
 
   // Get kantin profile
-  static Future<Map<String, dynamic>> getKantinProfile() async {
+  static Future<KantinProfile> getKantinProfile() async {
     _setupDio();
     try {
       final response = await _dio.get('/kantin/profile');
       if (response.statusCode == 200 && response.data['success'] == true) {
-        return response.data['data'] as Map<String, dynamic>;
+        return KantinProfile.fromJson(response.data['data']);
       }
       throw Exception(response.data['message'] ?? 'Gagal mengambil profil kantin');
     } on DioException catch (exception) {
@@ -175,7 +176,7 @@ class ProfileService {
   }
 
   // Update kantin profile
-  static Future<Map<String, dynamic>> updateKantinProfile({
+  static Future<KantinProfile> updateKantinProfile({
     required String namaKantin,
     File? fotoKantin,
   }) async {
@@ -198,7 +199,7 @@ class ProfileService {
       final response = await _dio.post('/kantin/profile', data: formData);
 
       if (response.statusCode == 200 && response.data['success'] == true) {
-        return response.data['data'] as Map<String, dynamic>;
+        return KantinProfile.fromJson(response.data['data']);
       }
 
       throw Exception(response.data['message'] ?? 'Gagal memperbarui profil kantin');

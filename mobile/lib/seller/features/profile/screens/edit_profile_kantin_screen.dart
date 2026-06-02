@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:io';
 import 'dart:developer' as developer;
+import 'package:path_provider/path_provider.dart';
 import '../widgets/profile_header_curve.dart';
 import '../services/profile_service.dart';
+import '../models/kantin_profile.dart';
 
 class EditProfileKantinScreen extends StatefulWidget {
   const EditProfileKantinScreen({super.key});
@@ -14,7 +18,7 @@ class EditProfileKantinScreen extends StatefulWidget {
 
 class _EditProfileKantinScreenState extends State<EditProfileKantinScreen> {
   late TextEditingController _namaKantinController;
-  Map<String, dynamic>? _kantinData;
+  KantinProfile? _kantinData;
   File? _selectedImage;
   bool _isLoading = true;
   bool _isSaving = false;
@@ -31,7 +35,7 @@ class _EditProfileKantinScreenState extends State<EditProfileKantinScreen> {
       final data = await ProfileService.getKantinProfile();
       setState(() {
         _kantinData = data;
-        _namaKantinController.text = data['nama_kantin'] ?? '';
+        _namaKantinController.text = data.namaKantin;
         _isLoading = false;
       });
     } catch (e) {
@@ -45,16 +49,72 @@ class _EditProfileKantinScreenState extends State<EditProfileKantinScreen> {
     }
   }
 
+  Future<File?> _compressImage(File file) async {
+    final tempDir = await getTemporaryDirectory();
+    final path = tempDir.path;
+    final targetPath = "$path/${DateTime.now().millisecondsSinceEpoch}_kantin.jpg";
+
+    final result = await FlutterImageCompress.compressAndGetFile(
+      file.absolute.path,
+      targetPath,
+      quality: 70, // Kompres ke kualitas 70%
+    );
+
+    return result != null ? File(result.path) : null;
+  }
+
   Future<void> _pickImage() async {
     try {
       final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      
+      final source = await showModalBottomSheet<ImageSource>(
+        context: context,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (ctx) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ListTile(
+                  leading: const Icon(Icons.camera_alt, color: Color(0xFF3852B4)),
+                  title: const Text('Kamera'),
+                  onTap: () => Navigator.pop(ctx, ImageSource.camera),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo_library, color: Color(0xFF3852B4)),
+                  title: const Text('Galeri'),
+                  onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      if (source == null) return;
+
+      final pickedFile = await picker.pickImage(source: source);
       
       if (pickedFile != null) {
-        setState(() {
-          _selectedImage = File(pickedFile.path);
-        });
-        developer.log('Image selected: ${pickedFile.path}');
+        final compressedFile = await _compressImage(File(pickedFile.path));
+        if (compressedFile != null) {
+          setState(() {
+            _selectedImage = compressedFile;
+          });
+          developer.log('Image compressed and selected: ${compressedFile.path}');
+        }
       }
     } catch (e) {
       developer.log('Error picking image: $e');
@@ -77,7 +137,7 @@ class _EditProfileKantinScreenState extends State<EditProfileKantinScreen> {
     try {
       setState(() => _isSaving = true);
 
-      final updatedData = await ProfileService.updateKantinProfile(
+      await ProfileService.updateKantinProfile(
         namaKantin: _namaKantinController.text,
         fotoKantin: _selectedImage,
       );
@@ -131,10 +191,11 @@ class _EditProfileKantinScreenState extends State<EditProfileKantinScreen> {
                     ),
                     child: CircleAvatar(
                       radius: 40,
+                      backgroundColor: Colors.grey[200],
                       backgroundImage: _selectedImage != null
                           ? FileImage(_selectedImage!)
-                          : (_kantinData?['foto_kantin'] != null
-                              ? NetworkImage("${_kantinData!['foto_kantin']}?v=${DateTime.now().millisecondsSinceEpoch}")
+                          : (_kantinData?.fotoKantin != null
+                              ? NetworkImage(_kantinData!.fotoKantin!)
                               : const AssetImage("assets/images/profile.jpg") as ImageProvider),
                     ),
                   ),

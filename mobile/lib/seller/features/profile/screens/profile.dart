@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:developer' as developer;
 import '../../../../core/widgets/seller_navbar.dart';
 import '../../../../core/auth/services/auth_service.dart';
@@ -8,6 +9,8 @@ import 'edit_profile_user_screen.dart';
 import 'change_password_screen.dart';
 import 'edit_profile_kantin_screen.dart';
 import '../services/profile_service.dart';
+import '../models/kantin_profile.dart';
+import '../models/user_profile.dart';
 
 class ProfileTokoScreen extends StatefulWidget {
   const ProfileTokoScreen({super.key});
@@ -34,7 +37,18 @@ class _ProfileTokoScreenState extends State<ProfileTokoScreen> {
   Future<Map<String, dynamic>> _fetchProfileData() async {
     try {
       final profile = await ProfileService.getProfile();
-      final kantinData = await ProfileService.getKantinProfile();
+      KantinProfile? kantinData;
+
+      // Hanya ambil profil kantin jika role adalah pemilik
+      if (profile.role == 'pemilik') {
+        try {
+          kantinData = await ProfileService.getKantinProfile();
+        } catch (e) {
+          developer.log('Error loading kantin data: $e');
+          // Bisa ditangani lebih lanjut jika perlu, tapi biarkan null jika gagal
+        }
+      }
+
       return {
         'user': profile,
         'kantin': kantinData,
@@ -87,23 +101,26 @@ class _ProfileTokoScreenState extends State<ProfileTokoScreen> {
             );
           }
 
-          final userData = snapshot.data!['user'];
-          final kantinData = snapshot.data!['kantin'];
+          final UserProfile userData = snapshot.data!['user'];
+          final KantinProfile? kantinData = snapshot.data!['kantin'];
+          final bool isPemilik = userData.role == 'pemilik';
 
           return SingleChildScrollView(
             child: Column(
               children: [
                 _ProfileHeaderAndInfo(
                   userName: userData.namaPemilik ?? userData.username,
-                  kantinName: kantinData['nama_kantin'] ?? 'Kantin',
-                  rating: kantinData['rating'] ?? 4.5,
+                  kantinName: kantinData?.namaKantin ?? 'Pegawai',
+                  rating: kantinData?.rating ?? 0.0,
                   fotoProfile: userData.fotoProfil,
+                  isPemilik: isPemilik,
                   onRefresh: _loadProfileData,
                 ),
                 const SizedBox(height: 32),
                 _MenuSection(
                   onRefresh: _loadProfileData,
                   onLogout: _handleLogout,
+                  isPemilik: isPemilik,
                 ),
                 const SizedBox(height: 32),
               ],
@@ -120,6 +137,7 @@ class _ProfileHeaderAndInfo extends StatelessWidget {
   final String kantinName;
   final double rating;
   final String? fotoProfile;
+  final bool isPemilik;
   final VoidCallback onRefresh;
 
   const _ProfileHeaderAndInfo({
@@ -127,6 +145,7 @@ class _ProfileHeaderAndInfo extends StatelessWidget {
     required this.kantinName,
     required this.rating,
     this.fotoProfile,
+    required this.isPemilik,
     required this.onRefresh,
   });
 
@@ -164,26 +183,16 @@ class _ProfileHeaderAndInfo extends StatelessWidget {
             child: ClipOval(
               child: fotoProfile != null
                   ? Image.network(
-                      "$fotoProfile?v=${DateTime.now().millisecondsSinceEpoch}",
+                      fotoProfile!,
                       width: 88,
                       height: 88,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Image.asset(
-                          "assets/images/profile.jpg",
-                          width: 88,
-                          height: 88,
-                          fit: BoxFit.cover,
-                        );
-                      },
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return const SizedBox(
-                          width: 88,
-                          height: 88,
-                          child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                        );
-                      },
+                      errorBuilder: (context, error, stackTrace) => Image.asset(
+                        "assets/images/profile.jpg",
+                        width: 88,
+                        height: 88,
+                        fit: BoxFit.cover,
+                      ),
                     )
                   : Image.asset(
                       "assets/images/profile.jpg",
@@ -211,29 +220,30 @@ class _ProfileHeaderAndInfo extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.star, color: Colors.orange, size: 16),
-                const SizedBox(width: 4),
-                Text(
-                  rating.toStringAsFixed(1),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
+          if (isPemilik)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.star, color: Colors.orange, size: 16),
+                  const SizedBox(width: 4),
+                  Text(
+                    rating.toStringAsFixed(1),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 24),
+          if (isPemilik) const SizedBox(height: 24) else const SizedBox(height: 12),
           SizedBox(
             width: 160,
             height: 40,
@@ -269,8 +279,13 @@ class _ProfileHeaderAndInfo extends StatelessWidget {
 class _MenuSection extends StatelessWidget {
   final VoidCallback onRefresh;
   final VoidCallback onLogout;
+  final bool isPemilik;
 
-  const _MenuSection({required this.onRefresh, required this.onLogout});
+  const _MenuSection({
+    required this.onRefresh, 
+    required this.onLogout,
+    required this.isPemilik,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -300,28 +315,30 @@ class _MenuSection extends StatelessWidget {
               ).then((_) => onRefresh());
             },
           ),
-          const SizedBox(height: 24),
-          const Text(
-            'Kantin',
-            style: TextStyle(
-              color: Color(0xFF9CA3AF),
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+          if (isPemilik) ...[
+            const SizedBox(height: 24),
+            const Text(
+              'Kantin',
+              style: TextStyle(
+                color: Color(0xFF9CA3AF),
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          _CustomListTile(
-            icon: Icons.edit_note_outlined,
-            iconBgColor: const Color(0xFFDBEAFE),
-            iconColor: const Color(0xFF2563EB),
-            title: 'Ubah Profil Kantin',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const EditProfileKantinScreen()),
-              ).then((_) => onRefresh());
-            },
-          ),
+            const SizedBox(height: 12),
+            _CustomListTile(
+              icon: Icons.edit_note_outlined,
+              iconBgColor: const Color(0xFFDBEAFE),
+              iconColor: const Color(0xFF2563EB),
+              title: 'Ubah Profil Kantin',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const EditProfileKantinScreen()),
+                ).then((_) => onRefresh());
+              },
+            ),
+          ],
           const SizedBox(height: 32),
           SizedBox(
             width: double.infinity,

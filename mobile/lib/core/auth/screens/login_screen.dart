@@ -749,7 +749,7 @@ class _PhoneField extends StatelessWidget {
 }
 
 // Widget Input Generic untuk Register
-class _RegisterField extends StatelessWidget {
+class _RegisterField extends StatefulWidget {
   const _RegisterField({
     required this.controller,
     required this.label,
@@ -765,12 +765,25 @@ class _RegisterField extends StatelessWidget {
   final bool obscureText;
 
   @override
+  State<_RegisterField> createState() => _RegisterFieldState();
+}
+
+class _RegisterFieldState extends State<_RegisterField> {
+  late bool _isObscure;
+
+  @override
+  void initState() {
+    super.initState();
+    _isObscure = widget.obscureText;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          label,
+          widget.label,
           style: const TextStyle(
             color: Color(0xFF1A1A1A),
             fontSize: 14,
@@ -779,18 +792,29 @@ class _RegisterField extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         TextFormField(
-          keyboardType: keyboardType,
-          obscureText: obscureText,
+          controller: widget.controller,
+          keyboardType: widget.keyboardType,
+          obscureText: _isObscure,
           decoration: InputDecoration(
-            hintText: hint,
+            hintText: widget.hint,
             filled: true,
             fillColor: Colors.white,
             contentPadding: const EdgeInsets.symmetric(
               vertical: 18,
               horizontal: 16,
             ),
-            suffixIcon: obscureText
-                ? const Icon(Icons.visibility_off, color: Color(0xFF757575))
+            suffixIcon: widget.obscureText
+                ? IconButton(
+                    icon: Icon(
+                      _isObscure ? Icons.visibility_off : Icons.visibility,
+                      color: const Color(0xFF757575),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isObscure = !_isObscure;
+                      });
+                    },
+                  )
                 : null,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
