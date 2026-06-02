@@ -18,6 +18,8 @@ return new class extends Migration
             $table->decimal('harga_saat_beli', 10, 2);
             $table->integer('jumlah_pesanan');
             $table->decimal('subtotal', 10, 2);
+            $table->json('varian_snapshot')->nullable();
+            $table->json('topping_snapshot')->nullable();
             $table->timestamps();
         });
     }
