@@ -337,7 +337,7 @@ class _MenuListScreenState extends State<MenuListScreen> {
                       width: 70,
                       height: 70,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, _) => _placeholderImage(),
+                      errorBuilder: (context, error, stackTrace) => _placeholderImage(),
                     )
                   : _placeholderImage(),
             ),

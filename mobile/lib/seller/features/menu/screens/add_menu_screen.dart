@@ -434,7 +434,7 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
 
   Widget _buildDropdown() {
     return DropdownButtonFormField<String>(
-      value: _selectedKategori,
+      initialValue: _selectedKategori,
       decoration: InputDecoration(
         hintText: 'Pilih Kategori',
         hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),

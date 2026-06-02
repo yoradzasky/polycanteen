@@ -98,8 +98,8 @@ class _LoginScreenState extends State<LoginScreen> {
       // --- PENANGANAN JIKA SERVER MATI / KONEKSI GAGAL ---
       if (!mounted) return;
 
-      // Print ke debug console agar kamu bisa lihat error aslinya
-      print('ERROR LOGIN: $e');
+      // Log error menggunakan debugPrint untuk production
+      debugPrint('ERROR LOGIN: $e');
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -604,7 +604,7 @@ class _PasswordFieldState extends State<_PasswordField> {
 
 // Widget Input Nomor HP (Tetap dibiarkan untuk halaman Register)
 class _PhoneField extends StatelessWidget {
-  const _PhoneField({super.key});
+  const _PhoneField();
 
   @override
   Widget build(BuildContext context) {
@@ -676,7 +676,6 @@ class _PhoneField extends StatelessWidget {
 // Widget Input Generic untuk Register
 class _RegisterField extends StatelessWidget {
   const _RegisterField({
-    super.key,
     required this.label,
     required this.hint,
     this.keyboardType = TextInputType.text,

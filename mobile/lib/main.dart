@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 // 1. Import file login screen kamu (bisa pakai relative path seperti ini)
 import 'core/auth/screens/login_screen.dart';
+import 'core/theme/app_theme.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,11 +18,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'PolyCanteen',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-        textTheme: GoogleFonts.poppinsTextTheme(),
-      ),
+      theme: AppTheme.light,
       // 2. Ganti home bawaan menjadi class LoginScreen kamu
       home: const LoginScreen(),
     );
