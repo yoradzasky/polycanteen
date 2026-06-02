@@ -19,6 +19,11 @@ return new class extends Migration
             $table->decimal('harga', 10, 2);
             $table->string('foto_menu')->nullable();
             $table->boolean('status_stok')->default(true);
+            $table->text('deskripsi')->nullable();
+            $table->integer('estimasi_waktu')->nullable();
+            $table->json('pilihan_layanan')->nullable();
+            $table->json('varian')->nullable();
+            $table->json('topping')->nullable();
             $table->timestamps();
         });
     }

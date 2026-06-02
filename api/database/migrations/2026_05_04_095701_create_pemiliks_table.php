@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('kantin_id')->constrained('kantin')->onDelete('cascade');
             $table->string('nama_pemilik');
             $table->string('no_telp')->nullable();
+            $table->string('foto_profil_path')->nullable();
             $table->timestamps();
         });
     }
