@@ -3,22 +3,54 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\Seller\OrderController;
+use App\Http\Controllers\Api\Seller\MenuController;
+use App\Http\Controllers\Api\Seller\KantinController;
 
 /*
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+Route::post('/login', [AuthController::class, 'login']);
 
-    return $request->user();
+// Satu grup besar untuk semua yang butuh Login (Token Sanctum)
+Route::middleware('auth:sanctum')->group(function () {
+
+    // --- Rute Auth & Profil ---
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+
+    // Profile routes
+    Route::get('/profile', [ProfileController::class, 'show']);
+    Route::post('/profile', [ProfileController::class, 'update']);
+    
+    // Kantin profile routes
+    Route::get('/kantin/profile', [ProfileController::class, 'getKantinProfile']);
+    Route::post('/kantin/profile', [ProfileController::class, 'updateKantinProfile']);
+    
+    // Password routes
+    Route::put('/change-password', [ProfileController::class, 'changePassword']);
+
+    Route::post('/logout', [AuthController::class, 'logout']);
+
+    // --- Grup Khusus Penjual (Prefix: /pemilik) ---
+    Route::prefix('pemilik')->group(function () {
+        
+        // Modul Pesanan (Orders)
+        Route::get('/orders', [OrderController::class, 'index']);
+        Route::get('/orders/{id}', [OrderController::class, 'show']);
+        Route::patch('/orders/{id}/status', [OrderController::class, 'updateStatus']);
+        
+        // Modul Manajemen Menu
+        Route::apiResource('menus', MenuController::class);
+        Route::patch('menus/{menu}/toggle-status', [MenuController::class, 'toggleStatus']);
+        
+        Route::patch('/kantin/status', [KantinController::class, 'updateStatus']);
+    });
+
 });
-
-Route::post('/payment/token', [PaymentController::class, 'getToken']);
-Route::post('/midtrans-callback', [PaymentController::class, 'callback']);
