@@ -2,14 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 
-import '../../../../core/widgets/seller_navbar.dart';
 import '../services/menu_service.dart';
 import 'add_menu_screen.dart';
 import 'edit_menu_screen.dart';
-
-import '../../orders/screens/order_list_screen.dart';
 
 // ──────────────────────────────────────────────
 // Warna utama
@@ -56,10 +53,11 @@ class _MenuListScreenState extends State<MenuListScreen> {
   }
 
   Future<void> _loadRole() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = EncryptedSharedPreferences();
+    final role = await prefs.getString('user_role');
     if (!mounted) return;
     setState(() {
-      _userRole = prefs.getString('user_role') ?? 'pegawai';
+      _userRole = role.isNotEmpty ? role : 'pegawai';
     });
   }
 
@@ -230,20 +228,6 @@ class _MenuListScreenState extends State<MenuListScreen> {
               child: const Icon(Icons.add, color: Colors.white, size: 28),
             )
           : null,
-      bottomNavigationBar: SellerNavbar(
-        currentIndex: 1, // 1 menandakan ini tab Kelola Menu
-        onTap: (index) {
-          if (index == 0) {
-            // Jika tab Beranda (index 0) diklik, kembali ke halaman pesanan
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const OrderListScreen()),
-            );
-          }
-        },
-        onQrTap: () => debugPrint("Buka Scan QR"),
-        primaryColor: const Color(0xFF32479B),
-      ),
     );
   }
 
@@ -347,7 +331,7 @@ class _MenuListScreenState extends State<MenuListScreen> {
                       width: 70,
                       height: 70,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, _) => _placeholderImage(),
+                      errorBuilder: (_, _, _) => _placeholderImage(),
                     )
                   : _placeholderImage(),
             ),

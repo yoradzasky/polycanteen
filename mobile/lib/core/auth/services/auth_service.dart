@@ -1,8 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 
 class AuthService {
+  static final EncryptedSharedPreferences _prefs = EncryptedSharedPreferences();
+
   static final Dio _dio = Dio(
     BaseOptions(
       baseUrl: dotenv.env['BASE_URL'] ?? 'http://192.168.1.22:8000/api',
@@ -45,17 +47,15 @@ class AuthService {
   }
 
   static Future<void> _saveToken(String token) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('auth_token', token);
+    await _prefs.setString('auth_token', token);
   }
 
   static Future<String?> getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('auth_token');
+    final token = await _prefs.getString('auth_token');
+    return token.isEmpty ? null : token;
   }
 
   static Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('auth_token');
+    await _prefs.remove('auth_token');
   }
 }

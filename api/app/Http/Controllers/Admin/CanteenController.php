@@ -15,7 +15,9 @@ class CanteenController extends Controller
     /**
      * Inject CanteenService via constructor.
      */
-    public function __construct(private readonly CanteenService $canteenService) {}
+    public function __construct(private readonly CanteenService $canteenService)
+    {
+    }
 
     /**
      * Menampilkan halaman daftar semua kantin (tabel utama dashboard).
@@ -34,7 +36,7 @@ class CanteenController extends Controller
 
         return Inertia::render('Canteen/Index', [
             'canteens' => $canteens,
-            'filters'  => array_merge($filters, ['per_page' => $perPage]),
+            'filters' => array_merge($filters, ['per_page' => $perPage]),
         ]);
     }
 
@@ -47,15 +49,15 @@ class CanteenController extends Controller
     public function show(int $id): Response
     {
         $profileAndStats = $this->canteenService->getCanteenProfileAndStats($id);
-        $menus           = $this->canteenService->getPaginatedMenus($id);
-        $salesActivity   = $this->canteenService->getDailySalesActivity($id);
+        $menus = $this->canteenService->getPaginatedMenus($id);
+        $salesActivity = $this->canteenService->getDailySalesActivity($id);
 
         return Inertia::render('Canteen/Show', [
-            'kantin'            => $profileAndStats['kantin'],
-            'total_penjualan'   => $profileAndStats['total_penjualan'],
-            'total_menu_terjual'=> $profileAndStats['total_menu_terjual'],
-            'menus'             => $menus,
-            'sales_activity'    => $salesActivity,
+            'kantin' => $profileAndStats['kantin'],
+            'total_penjualan' => $profileAndStats['total_penjualan'],
+            'total_menu_terjual' => $profileAndStats['total_menu_terjual'],
+            'menus' => $menus,
+            'sales_activity' => $salesActivity,
         ]);
     }
 
@@ -103,7 +105,7 @@ class CanteenController extends Controller
 
         return Inertia::render('Canteen/Edit', [
             'kantin' => $data['kantin'],
-            'from'   => $request->query('from', 'index'),
+            'from' => $request->query('from', 'index'),
         ]);
     }
 

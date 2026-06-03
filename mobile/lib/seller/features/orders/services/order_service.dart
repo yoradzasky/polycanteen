@@ -1,13 +1,14 @@
 import 'dart:convert'; // Jangan lupa tambahkan ini untuk jsonDecode
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 
 // ──────────────────────────────────────────────
 // Service: OrderService
 // ──────────────────────────────────────────────
 
 class OrderService {
+  final EncryptedSharedPreferences _prefs = EncryptedSharedPreferences();
   late final Dio _dio;
 
   OrderService() {
@@ -25,8 +26,7 @@ class OrderService {
   }
 
   Future<Options> _authOptions() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token') ?? '';
+    final token = await _prefs.getString('auth_token');
     return Options(headers: {'Authorization': 'Bearer $token'});
   }
 

@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('nim')->unique();
             $table->string('no_telp')->nullable();
             $table->date('masa_aktif')->nullable();
+            $table->string('foto_profil_path')->nullable();
             $table->timestamps();
         });
     }

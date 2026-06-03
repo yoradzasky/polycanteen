@@ -18,6 +18,7 @@ return new class extends Migration {
             $table->string('password');
             $table->string('status_akun')->default('aktif');
             $table->enum('role', ['admin', 'mahasiswa', 'pemilik', 'pegawai', 'kurir', 'kantin']);
+            $table->string('foto_profile')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

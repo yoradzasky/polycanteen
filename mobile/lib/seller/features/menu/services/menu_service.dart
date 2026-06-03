@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 
 // ──────────────────────────────────────────────
 // Model: Menu
@@ -117,6 +117,7 @@ class MenuFormData {
 // ──────────────────────────────────────────────
 
 class MenuService {
+  final EncryptedSharedPreferences _prefs = EncryptedSharedPreferences();
   late final Dio _dio;
   late final String _storageBase;
 
@@ -141,8 +142,7 @@ class MenuService {
 
   /// Ambil token dari SharedPreferences dan set di header
   Future<Options> _authOptions({String? contentType}) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token') ?? '';
+    final token = await _prefs.getString('auth_token');
     return Options(
       headers: {'Authorization': 'Bearer $token'},
       contentType: contentType,

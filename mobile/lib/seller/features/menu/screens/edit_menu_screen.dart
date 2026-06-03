@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 
 import '../services/menu_service.dart';
 
@@ -28,7 +28,7 @@ class _EditMenuScreenState extends State<EditMenuScreen> {
   late final TextEditingController _hargaController;
   late final TextEditingController _deskripsiController;
   late final TextEditingController _estimasiController;
-  final _variasiNamaController = TextEditingController();
+  final List<_VariasiItem> _variasiList = [];
   final _pilihanNamaController = TextEditingController();
   final _pilihanHargaController = TextEditingController();
 
@@ -41,8 +41,6 @@ class _EditMenuScreenState extends State<EditMenuScreen> {
   bool _makanDiTempat = false;
   bool _dibungkus = false;
   bool _pengantaran = false;
-  String _variasiTipe = 'opsional';
-  final List<_VariasiPilihan> _variasiPilihanList = [];
 
   final List<String> _kategoriList = ['Makanan', 'Minuman', 'Snack', 'Lainnya'];
 
@@ -65,25 +63,31 @@ class _EditMenuScreenState extends State<EditMenuScreen> {
     _pengantaran = pl.contains('pengantaran');
 
     if (m.varian != null && m.varian!.isNotEmpty) {
-      final v = m.varian!.first;
-      _variasiNamaController.text = v['nama'] ?? '';
-      _variasiTipe = v['tipe'] ?? 'opsional';
-      final pilihan = v['pilihan'] as List<dynamic>? ?? [];
-      for (final p in pilihan) {
-        _variasiPilihanList.add(_VariasiPilihan(
-          nama: p['nama'] ?? '',
-          harga: (p['harga'] is int) ? p['harga'] : int.tryParse(p['harga'].toString()) ?? 0,
-        ));
+      for (final v in m.varian!) {
+        final item = _VariasiItem();
+        item.namaController.text = v['nama'] ?? '';
+        item.tipe = v['tipe'] ?? 'opsional';
+        final pilihan = v['pilihan'] as List<dynamic>? ?? [];
+        for (final p in pilihan) {
+          item.pilihanList.add(_VariasiPilihan(
+            nama: p['nama'] ?? '',
+            harga: (p['harga'] is int) ? p['harga'] : int.tryParse(p['harga'].toString()) ?? 0,
+          ));
+        }
+        _variasiList.add(item);
       }
+    } else {
+      _variasiList.add(_VariasiItem());
     }
 
     _loadRole();
   }
 
   Future<void> _loadRole() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = EncryptedSharedPreferences();
+    final role = await prefs.getString('user_role');
     if (!mounted) return;
-    setState(() => _userRole = prefs.getString('user_role') ?? 'pegawai');
+    setState(() => _userRole = role.isNotEmpty ? role : 'pegawai');
   }
 
   @override
@@ -92,7 +96,9 @@ class _EditMenuScreenState extends State<EditMenuScreen> {
     _hargaController.dispose();
     _deskripsiController.dispose();
     _estimasiController.dispose();
-    _variasiNamaController.dispose();
+    for (var v in _variasiList) {
+      v.dispose();
+    }
     _pilihanNamaController.dispose();
     _pilihanHargaController.dispose();
     super.dispose();
@@ -144,8 +150,13 @@ class _EditMenuScreenState extends State<EditMenuScreen> {
     setState(() => _isSubmitting = true);
     try {
       List<Map<String, dynamic>>? varianData;
-      if (_variasiNamaController.text.isNotEmpty && _variasiPilihanList.isNotEmpty) {
-        varianData = [{'nama': _variasiNamaController.text, 'tipe': _variasiTipe, 'pilihan': _variasiPilihanList.map((p) => {'nama': p.nama, 'harga': p.harga}).toList()}];
+      final validVarians = _variasiList.where((v) => v.namaController.text.isNotEmpty && v.pilihanList.isNotEmpty).toList();
+      if (validVarians.isNotEmpty) {
+        varianData = validVarians.map((v) => {
+          'nama': v.namaController.text,
+          'tipe': v.tipe,
+          'pilihan': v.pilihanList.map((p) => {'nama': p.nama, 'harga': p.harga}).toList(),
+        }).toList();
       }
       final hargaText = _hargaController.text.replaceAll(RegExp(r'[^0-9]'), '');
       final data = MenuFormData(
@@ -197,12 +208,12 @@ class _EditMenuScreenState extends State<EditMenuScreen> {
     }
   }
 
-  void _addVariasiPilihan() {
+  void _addVariasiPilihan(int index) {
     final nama = _pilihanNamaController.text.trim();
     if (nama.isEmpty) return;
     final hargaText = _pilihanHargaController.text.replaceAll(RegExp(r'[^0-9]'), '');
     setState(() {
-      _variasiPilihanList.add(_VariasiPilihan(nama: nama, harga: int.tryParse(hargaText) ?? 0));
+      _variasiList[index].pilihanList.add(_VariasiPilihan(nama: nama, harga: int.tryParse(hargaText) ?? 0));
       _pilihanNamaController.clear();
       _pilihanHargaController.clear();
     });
@@ -310,41 +321,78 @@ class _EditMenuScreenState extends State<EditMenuScreen> {
   }
 
   Widget _buildVariasiSection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.grey[300]!)),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('NAMA VARIASI', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey, letterSpacing: 0.5)),
-        const SizedBox(height: 6),
-        _field(controller: _variasiNamaController, hint: 'Contoh: Topping Tambahan'),
-        const SizedBox(height: 16),
-        const Text('TIPE VARIASI', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey, letterSpacing: 0.5)),
-        const SizedBox(height: 8),
-        Row(children: [_tipeBtn('Wajib', 'wajib'), const SizedBox(width: 8), _tipeBtn('Opsional', 'opsional')]),
-        const SizedBox(height: 16),
-        const Text('PILIHAN VARIASI & HARGA', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey, letterSpacing: 0.5)),
-        const SizedBox(height: 8),
-        ..._variasiPilihanList.asMap().entries.map((e) {
-          final p = e.value;
-          return Container(margin: const EdgeInsets.only(bottom: 8), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), decoration: BoxDecoration(color: const Color(0xFFF5F5F5), borderRadius: BorderRadius.circular(20)),
-            child: Row(mainAxisSize: MainAxisSize.min, children: [
-              Text(p.nama, style: const TextStyle(fontSize: 13)),
-              const SizedBox(width: 4),
-              GestureDetector(onTap: () => setState(() => _variasiPilihanList.removeAt(e.key)), child: Icon(Icons.close, size: 16, color: Colors.grey[600])),
-              const SizedBox(width: 8),
-              Text(p.harga > 0 ? '+ Rp ${_currencyFormat.format(p.harga)}' : 'Rp 0', style: const TextStyle(fontSize: 13, color: Colors.grey)),
-            ]));
-        }),
-        GestureDetector(
-          onTap: _showAddPilihanDialog,
-          child: Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12), decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.grey[300]!)),
-            child: Row(children: [Expanded(child: Text('Tambah pilihan...', style: TextStyle(color: Colors.grey[400], fontSize: 13))), const Icon(Icons.add, color: _kPrimaryBlue, size: 20)])),
+    return Column(children: [
+      ..._variasiList.asMap().entries.map((e) {
+        final i = e.key;
+        final v = e.value;
+        return Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.grey[300]!)),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('NAMA VARIASI', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey, letterSpacing: 0.5)),
+                if (_variasiList.length > 1)
+                  GestureDetector(onTap: () => setState(() => _variasiList.removeAt(i)), child: const Icon(Icons.close, size: 20, color: Colors.red)),
+              ],
+            ),
+            const SizedBox(height: 6),
+            _field(controller: v.namaController, hint: 'Contoh: Topping Tambahan'),
+            const SizedBox(height: 16),
+            const Text('TIPE VARIASI', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey, letterSpacing: 0.5)),
+            const SizedBox(height: 8),
+            Row(children: [_tipeBtn(v, 'Wajib', 'wajib'), const SizedBox(width: 8), _tipeBtn(v, 'Opsional', 'opsional')]),
+            const SizedBox(height: 16),
+            const Text('PILIHAN VARIASI & HARGA', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey, letterSpacing: 0.5)),
+            const SizedBox(height: 8),
+            ...v.pilihanList.asMap().entries.map((pE) {
+              final p = pE.value;
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(color: const Color(0xFFF5F5F5), borderRadius: BorderRadius.circular(20)),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  Text(p.nama, style: const TextStyle(fontSize: 13)),
+                  const SizedBox(width: 4),
+                  GestureDetector(onTap: () => setState(() => v.pilihanList.removeAt(pE.key)), child: Icon(Icons.close, size: 16, color: Colors.grey[600])),
+                  const SizedBox(width: 8),
+                  Text(p.harga > 0 ? '+ Rp ${_currencyFormat.format(p.harga)}' : 'Rp 0', style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                ])
+              );
+            }),
+            GestureDetector(
+              onTap: () => _showAddPilihanDialog(i),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.grey[300]!)),
+                child: Row(children: [Expanded(child: Text('Tambah pilihan...', style: TextStyle(color: Colors.grey[400], fontSize: 13))), const Icon(Icons.add, color: _kPrimaryBlue, size: 20)])
+              ),
+            ),
+          ]),
+        );
+      }),
+      GestureDetector(
+        onTap: () => setState(() => _variasiList.add(_VariasiItem())),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          decoration: BoxDecoration(color: _kPrimaryBlue.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12), border: Border.all(color: _kPrimaryBlue.withValues(alpha: 0.5))),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Icon(Icons.add, color: _kPrimaryBlue, size: 20),
+              SizedBox(width: 8),
+              Text('Tambah Variasi Menu', style: TextStyle(color: _kPrimaryBlue, fontWeight: FontWeight.bold)),
+            ],
+          ),
         ),
-      ]),
-    );
+      ),
+    ]);
   }
 
-  void _showAddPilihanDialog() {
+  void _showAddPilihanDialog(int index) {
     _pilihanNamaController.clear();
     _pilihanHargaController.clear();
     showDialog(context: context, builder: (ctx) => AlertDialog(
@@ -357,15 +405,15 @@ class _EditMenuScreenState extends State<EditMenuScreen> {
       ]),
       actions: [
         TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
-        ElevatedButton(onPressed: () { _addVariasiPilihan(); Navigator.pop(ctx); }, style: ElevatedButton.styleFrom(backgroundColor: _kPrimaryBlue), child: const Text('Tambah', style: TextStyle(color: Colors.white))),
+        ElevatedButton(onPressed: () { _addVariasiPilihan(index); Navigator.pop(ctx); }, style: ElevatedButton.styleFrom(backgroundColor: _kPrimaryBlue), child: const Text('Tambah', style: TextStyle(color: Colors.white))),
       ],
     ));
   }
 
-  Widget _tipeBtn(String label, String value) {
-    final sel = _variasiTipe == value;
+  Widget _tipeBtn(_VariasiItem v, String label, String value) {
+    final sel = v.tipe == value;
     return Expanded(child: GestureDetector(
-      onTap: () => setState(() => _variasiTipe = value),
+      onTap: () => setState(() => v.tipe = value),
       child: Container(padding: const EdgeInsets.symmetric(vertical: 10), decoration: BoxDecoration(color: sel ? _kPrimaryBlue.withValues(alpha: 0.08) : Colors.transparent, borderRadius: BorderRadius.circular(8), border: Border.all(color: sel ? _kPrimaryBlue : Colors.grey[300]!, width: sel ? 1.5 : 1)), alignment: Alignment.center, child: Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: sel ? _kPrimaryBlue : Colors.grey[600]))),
     ));
   }
@@ -378,6 +426,16 @@ class _EditMenuScreenState extends State<EditMenuScreen> {
           ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
           : const Text('Simpan Perubahan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
     ));
+  }
+}
+
+class _VariasiItem {
+  TextEditingController namaController = TextEditingController();
+  String tipe = 'opsional';
+  List<_VariasiPilihan> pilihanList = [];
+  
+  void dispose() {
+    namaController.dispose();
   }
 }
 

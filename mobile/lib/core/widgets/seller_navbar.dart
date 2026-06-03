@@ -5,6 +5,7 @@ class SellerNavbar extends StatelessWidget {
   final Function(int) onTap;
   final VoidCallback onQrTap;
   final Color primaryColor;
+  final String userRole;
 
   const SellerNavbar({
     super.key,
@@ -12,6 +13,7 @@ class SellerNavbar extends StatelessWidget {
     required this.onTap,
     required this.onQrTap,
     this.primaryColor = const Color(0xFF3949AB),
+    this.userRole = 'pemilik',
   });
 
   @override
@@ -68,8 +70,8 @@ class SellerNavbar extends StatelessWidget {
                     const Expanded(child: SizedBox.shrink()), // Empty space for QR button
                     Expanded(
                       child: _buildNavItem(
-                        icon: Icons.show_chart,
-                        label: 'Laporan',
+                        icon: userRole == 'pemilik' ? Icons.show_chart : Icons.schedule,
+                        label: userRole == 'pemilik' ? 'Laporan' : 'Riwayat',
                         index: 2,
                         isActive: currentIndex == 2,
                         activeColor: primaryColor,

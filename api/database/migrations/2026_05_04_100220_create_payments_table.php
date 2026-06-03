@@ -17,6 +17,10 @@ return new class extends Migration
             $table->string('metode_bayar');
             $table->string('status_bayar');
             $table->text('log_transaksi')->nullable();
+            $table->integer('nominal')->nullable();
+            $table->timestamp('waktu_bayar')->nullable();
+            $table->string('midtrans_order_id')->nullable();
+            $table->string('midtrans_snap_token')->nullable();
             $table->timestamps();
         });
     }

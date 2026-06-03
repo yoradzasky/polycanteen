@@ -3,8 +3,7 @@ import 'package:intl/intl.dart';
 // Sesuaikan path import order_service milikmu di sini:
 import '../services/order_service.dart';
 import 'order_detail_screen.dart';
-import '../../menu/screens/menu_list_screen.dart';
-import '../../../../core/widgets/seller_navbar.dart';
+import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 
 // ==========================================
 // ORDER LIST SCREEN (TERHUBUNG API)
@@ -27,11 +26,25 @@ class _OrderListScreenState extends State<OrderListScreen> {
   // State Data & Loading
   List<dynamic> _orders = [];
   bool _isLoading = true;
+  String _userRole = 'pegawai';
+
+  Color get _primaryColor =>
+      _userRole == 'pegawai' ? const Color(0xFF5E7AC4) : const Color(0xFF3949AB);
 
   @override
   void initState() {
     super.initState();
+    _loadRole();
     _fetchOrders(); // Ambil data saat layar pertama kali dibuka
+  }
+
+  Future<void> _loadRole() async {
+    final prefs = EncryptedSharedPreferences();
+    final role = await prefs.getString('user_role');
+    if (!mounted) return;
+    setState(() {
+      _userRole = role.isNotEmpty ? role : 'pegawai';
+    });
   }
 
   // --- FUNGSI AMBIL DATA API ---
@@ -75,8 +88,8 @@ class _OrderListScreenState extends State<OrderListScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(color: Color(0xFF3949AB)),
+      builder: (context) => Center(
+        child: CircularProgressIndicator(color: _primaryColor),
       ),
     );
 
@@ -118,7 +131,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6FB),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF3949AB),
+        backgroundColor: _primaryColor,
         elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.only(left: 16.0, top: 8, bottom: 8),
@@ -127,9 +140,9 @@ class _OrderListScreenState extends State<OrderListScreen> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.restaurant,
-              color: Color(0xFF3949AB),
+              color: _primaryColor,
               size: 20,
             ),
           ),
@@ -144,8 +157,9 @@ class _OrderListScreenState extends State<OrderListScreen> {
           ),
         ),
         actions: [
+          if (_userRole == 'pemilik')
           Padding(
-            padding: const EdgeInsets.only(right: 20.0),
+            padding: const EdgeInsets.only(right: 20.0, top: 8.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -218,15 +232,15 @@ class _OrderListScreenState extends State<OrderListScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: _fetchOrders, // Tarik ke bawah untuk refresh
-        color: const Color(0xFF3949AB),
+        color: _primaryColor,
         child: Column(
           children: [
             // HEADER BIRU MELENGKUNG
             Container(
               padding: const EdgeInsets.only(left: 20, right: 20, bottom: 24),
-              decoration: const BoxDecoration(
-                color: Color(0xFF3949AB),
-                borderRadius: BorderRadius.only(
+              decoration: BoxDecoration(
+                color: _primaryColor,
+                borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(24),
                   bottomRight: Radius.circular(24),
                 ),
@@ -326,9 +340,9 @@ class _OrderListScreenState extends State<OrderListScreen> {
             // LIST PESANAN ATAU LOADING
             Expanded(
               child: _isLoading
-                  ? const Center(
+                  ? Center(
                       child: CircularProgressIndicator(
-                        color: Color(0xFF3949AB),
+                        color: _primaryColor,
                       ),
                     )
                   : currentOrders.isEmpty
@@ -411,19 +425,6 @@ class _OrderListScreenState extends State<OrderListScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: SellerNavbar(
-        currentIndex: 0,
-        onTap: (index) {
-          if (index == 1) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const MenuListScreen()),
-            );
-          }
-        },
-        onQrTap: () => debugPrint("Buka Scan QR"),
-        primaryColor: const Color(0xFF3949AB),
-      ),
     );
   }
 
@@ -481,7 +482,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
         constraints: const BoxConstraints(minWidth: 120),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF3949AB) : Colors.white,
+          color: isSelected ? _primaryColor : Colors.white,
           borderRadius: BorderRadius.circular(24),
         ),
         child: Row(
@@ -502,13 +503,13 @@ class _OrderListScreenState extends State<OrderListScreen> {
                 radius: 10,
                 backgroundColor: isSelected
                     ? Colors.white
-                    : const Color(0xFF3949AB).withValues(alpha: 0.1),
+                    : _primaryColor.withValues(alpha: 0.1),
                 child: Text(
                   badgeCount.toString(),
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF3949AB),
+                    color: _primaryColor,
                   ),
                 ),
               ),

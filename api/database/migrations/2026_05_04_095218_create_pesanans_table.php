@@ -15,10 +15,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('mahasiswa_id')->constrained('mahasiswa')->onDelete('cascade');
             $table->foreignId('kantin_id')->constrained('kantin')->onDelete('cascade');
-            
-            $table->string('tipe_pesanan'); // misal: dine_in, take_away
-            $table->string('status_pesanan'); // misal: pending, dibayar, diproses, selesai
+            $table->string('tipe_pesanan');
+            $table->string('status_pesanan');
             $table->decimal('total_harga', 10, 2);
+            $table->string('nomor_antrian')->nullable();
+            $table->text('catatan_pesanan')->nullable();
+            $table->text('alasan_penolakan')->nullable();
             $table->timestamps();
         });
     }
