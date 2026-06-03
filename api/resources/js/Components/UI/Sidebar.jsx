@@ -35,7 +35,7 @@ const managementSections = [
       {
         label: "Persetujuan Akun Mahasiswa",
         multiline: true,
-        badge: 12, // Badge notifikasi ditambahkan di sini
+        badgeKey: 'pendingApprovals',
         // Ikon Persetujuan (Orang & Checklist)
         icon: (
           <svg className="w-[18px] h-[18px]" fill="currentColor" viewBox="0 0 20 20">
@@ -43,7 +43,7 @@ const managementSections = [
             <path fillRule="evenodd" d="M16.707 10.293a1 1 0 010 1.414l-3 3a1 1 0 01-1.414 0l-1.5-1.5a1 1 0 011.414-1.414L13 12.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" />
           </svg>
         ),
-        href: '#',
+        href: route('admin.approvals.index'),
         activePath: '/admin/approvals',
       },
     ],
@@ -51,7 +51,8 @@ const managementSections = [
 ];
 
 export default function Sidebar() {
-  const { url } = usePage();
+  const { url, props } = usePage();
+  const pendingApprovalsCount = Number(props.pendingApprovalsCount || 0);
   const isDashboardActive = url.startsWith('/admin/dashboard');
 
   return (
@@ -115,6 +116,7 @@ export default function Sidebar() {
             
             {section.items.map((item) => {
               const isActive = item.activePath ? url.startsWith(item.activePath) : false;
+              const badgeCount = item.badgeKey === 'pendingApprovals' ? pendingApprovalsCount : item.badge;
               
               return (
                 <Link
@@ -136,10 +138,9 @@ export default function Sidebar() {
                       <div className={`relative [font-family:'Inter-Medium',Helvetica] font-medium text-sm tracking-[0] leading-5 ${isActive ? 'text-white font-semibold' : 'text-blue-200'}`}>
                         Persetujuan Akun<br />Mahasiswa
                       </div>
-                      {/* Render Badge Notifikasi jika ada */}
-                      {item.badge && (
+                      {badgeCount > 0 && (
                         <div className="flex items-center justify-center px-2 py-0.5 bg-[#f08d39] rounded-full text-white text-xs font-bold">
-                          {item.badge}
+                          {badgeCount}
                         </div>
                       )}
                     </div>

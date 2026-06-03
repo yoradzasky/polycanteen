@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -34,6 +35,11 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'pendingApprovalsCount' => fn () => $request->user()?->role === 'admin'
+                ? User::where('role', 'mahasiswa')
+                    ->where('status_akun', 'pending')
+                    ->count()
+                : 0,
         ];
     }
 }

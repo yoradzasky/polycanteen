@@ -1,88 +1,93 @@
 import React from 'react';
-import { useForm } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
+
+const XIcon = ({ className = 'h-5 w-5' }) => (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+    </svg>
+);
+
+const WarningIcon = ({ className = 'h-5 w-5' }) => (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2.25 2.25 0 0 0 1.93 3.38h16.5A2.25 2.25 0 0 0 22.18 18L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+    </svg>
+);
 
 export default function RejectionModal({ isOpen, onClose, application }) {
-    const { data, setData, post, processing, errors, reset } = useForm({
-        reason: '',
-    });
+    const [processing, setProcessing] = React.useState(false);
 
     if (!isOpen || !application) return null;
 
-    const handleReject = (e) => {
-        e.preventDefault();
-        post(`/admin/approvals/${application.id}/reject`, {
+    const handleReject = () => {
+        router.post(`/admin/approvals/${application.id}/reject`, {}, {
             preserveScroll: true,
-            onSuccess: () => {
-                reset(); // reset form alasan
-                onClose(); // tutup modal
-            },
+            onStart: () => setProcessing(true),
+            onFinish: () => setProcessing(false),
+            onSuccess: () => onClose(),
         });
     };
 
     const handleClose = () => {
-        reset();
         onClose();
     };
 
     return (
         <div className="fixed inset-0 z-50 overflow-y-auto">
-            <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-                {/* Overlay Background */}
-                <div 
-                    className="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-50 backdrop-blur-sm" 
-                    aria-hidden="true" 
+            <div className="flex min-h-screen items-center justify-center px-4 py-8">
+                <button
+                    type="button"
+                    className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm"
+                    aria-label="Tutup modal"
                     onClick={handleClose}
-                ></div>
+                />
 
-                {/* Modal Panel */}
-                <div className="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-2xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                    <form onSubmit={handleReject}>
-                        <div className="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
-                            <div className="sm:flex sm:items-start">
-                                <div className="flex items-center justify-center flex-shrink-0 w-12 h-12 mx-auto bg-red-100 rounded-full sm:mx-0 sm:h-10 sm:w-10">
-                                    {/* Cross Icon */}
-                                    <svg className="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </div>
-                                <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                                    <h3 className="text-xl font-semibold leading-6 text-gray-900">Reject Application</h3>
-                                    <div className="mt-3">
-                                        <p className="text-sm text-gray-500 mb-4">
-                                            Are you sure you want to reject the application for <strong>{application.name}</strong>? 
-                                            Please provide a reason below. This will be recorded in the system.
-                                        </p>
-                                        <textarea
-                                            value={data.reason}
-                                            onChange={(e) => setData('reason', e.target.value)}
-                                            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${errors.reason ? 'border-red-300' : 'border-gray-300'}`}
-                                            rows="3"
-                                            placeholder="Reason for rejection (e.g., Invalid Student ID format, Documentation mismatch)"
-                                            required
-                                        ></textarea>
-                                        {errors.reason && <p className="mt-1 text-sm text-red-600 font-medium">{errors.reason}</p>}
-                                    </div>
-                                </div>
+                <div className="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+                    <button
+                        type="button"
+                        onClick={handleClose}
+                        disabled={processing}
+                        className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-60"
+                        aria-label="Tutup"
+                    >
+                        <XIcon />
+                    </button>
+
+                    <div className="pr-10">
+                        <h3 className="text-xl font-bold text-gray-900">Tolak Pengajuan</h3>
+                        <p className="mt-2 text-sm leading-6 text-gray-500">
+                            Akun {application.name} akan ditolak
+                        </p>
+                    </div>
+
+                    <div className="mt-6 rounded-xl border border-red-100 bg-red-50 p-4">
+                        <div className="flex gap-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600">
+                                <WarningIcon />
                             </div>
+                            <p className="text-sm font-semibold leading-6 text-red-700">
+                                Tindakan ini akan menolak pengajuan akun pembeli dan pemohon akan menerima notifikasi penolakan.
+                            </p>
                         </div>
-                        <div className="px-4 py-3 bg-gray-50 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-100">
-                            <button
-                                type="submit"
-                                disabled={processing}
-                                className={`inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm ${processing ? 'opacity-70 cursor-not-allowed' : ''}`}
-                            >
-                                {processing ? 'Rejecting...' : 'Confirm Rejection'}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleClose}
-                                disabled={processing}
-                                className="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </form>
+                    </div>
+
+                    <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                        <button
+                            type="button"
+                            onClick={handleClose}
+                            disabled={processing}
+                            className="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleReject}
+                            disabled={processing}
+                            className="inline-flex items-center justify-center rounded-lg bg-red-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
+                        >
+                            {processing ? 'Memproses...' : 'Tolak Akun'}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,37 +1,35 @@
 import React from 'react';
 
-export default function StatusBadge({ status, type = 'dot' }) {
-    let styleClasses = '';
-    let hasDot = false;
-    let dotColor = '';
+const STATUS_STYLES = {
+    pending: {
+        label: 'Pending',
+        classes: 'border-amber-200 bg-amber-50 text-amber-700',
+        dot: 'bg-amber-500',
+    },
+    aktif: {
+        label: 'Aktif',
+        classes: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+        dot: 'bg-emerald-500',
+    },
+    ditolak: {
+        label: 'Ditolak',
+        classes: 'border-red-200 bg-red-50 text-red-700',
+        dot: 'bg-red-500',
+    },
+};
 
-    // Menyesuaikan warna berdasarkan teks status
-    switch (status?.toLowerCase()) {
-        case 'aktif':
-        case 'berhasil':
-            styleClasses = 'bg-green-50 text-green-700 border-green-100';
-            hasDot = type === 'dot' && status?.toLowerCase() === 'aktif';
-            dotColor = 'bg-green-500';
-            break;
-        case 'nonaktif':
-        case 'gagal':
-            styleClasses = 'bg-red-50 text-red-700 border-red-100';
-            hasDot = type === 'dot' && status?.toLowerCase() === 'nonaktif';
-            dotColor = 'bg-red-500';
-            break;
-        case 'pending':
-            styleClasses = 'bg-yellow-50 text-yellow-700 border-yellow-100';
-            break;
-        default:
-            styleClasses = 'bg-gray-50 text-gray-700 border-gray-100';
-    }
+export default function StatusBadge({ status }) {
+    const normalizedStatus = String(status || '').toLowerCase();
+    const config = STATUS_STYLES[normalizedStatus] || {
+        label: status || 'Tidak diketahui',
+        classes: 'border-gray-200 bg-gray-50 text-gray-600',
+        dot: 'bg-gray-400',
+    };
 
     return (
-        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${styleClasses}`}>
-            {hasDot && (
-                <span className={`w-1.5 h-1.5 rounded-full ${dotColor}`}></span>
-            )}
-            {status}
+        <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${config.classes}`}>
+            <span className={`h-1.5 w-1.5 rounded-full ${config.dot}`} />
+            {config.label}
         </span>
     );
 }

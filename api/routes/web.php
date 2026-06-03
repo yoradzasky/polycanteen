@@ -84,6 +84,20 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->name('admin.')->grou
     // URL: PATCH /admin/buyers/{id}/expiration
     // Name: admin.buyers.updateExpiration
 
+    Route::prefix('approvals')->name('approvals.')->group(function () {
+        Route::get('/', [BuyerApprovalController::class, 'index'])
+            ->name('index');
+
+        Route::get('/{application}', [BuyerApprovalController::class, 'show'])
+            ->name('show');
+
+        Route::post('/{application}/approve', [BuyerApprovalController::class, 'approve'])
+            ->name('approve');
+
+        Route::post('/{application}/reject', [BuyerApprovalController::class, 'reject'])
+            ->name('reject');
+    });
+
     Route::prefix('buyer-applications')->name('buyer-applications.')->group(function () {
         Route::post('/{application}/approve', [BuyerApprovalController::class, 'approve'])
             ->name('approve');

@@ -15,13 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('mahasiswa_id')->constrained('mahasiswa')->onDelete('cascade');
             $table->foreignId('menu_id')->constrained('menu')->onDelete('cascade');
-            $table->foreignId('kantin_id')->constrained('kantin')->onDelete('cascade'); // FK ke kantin
-            
             $table->integer('jumlah');
             $table->json('varian_selected')->nullable();
             $table->json('topping_selected')->nullable();
             $table->timestamps();
-            $table->unique(['mahasiswa_id', 'menu_id', 'varian_selected', 'topping_selected'], 'unique_cart_item');
         });
     }
 
