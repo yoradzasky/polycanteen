@@ -11,7 +11,7 @@ class OrderService {
   late final Dio _dio;
 
   OrderService() {
-    final baseUrl = dotenv.env['BASE_URL'] ?? 'http://192.168.1.22:8000/api';
+    final baseUrl = dotenv.env['BASE_URL'] ?? 'http://10.245.26.135:8000/api';
     final cleanBase = baseUrl.replaceAll(RegExp(r'/mobile$'), '');
 
     _dio = Dio(

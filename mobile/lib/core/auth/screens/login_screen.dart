@@ -40,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       // - Pakai IP WiFi Laptop (contoh: 192.168.1.5) JIKA kamu pakai HP Fisik
-      final Uri url = Uri.parse('http://127.0.0.1:8000/api/login');
+      final Uri url = Uri.parse('http://192.168.1.22:8000/api/login');
 
       // Tambahkan .timeout agar loading otomatis berhenti jika server mati/tidak nyambung
       final response = await http

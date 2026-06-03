@@ -121,7 +121,7 @@ class MenuService {
   late final String _storageBase;
 
   MenuService() {
-    final baseUrl = dotenv.env['BASE_URL'] ?? 'http://localhost:8000/api';
+    final baseUrl = dotenv.env['BASE_URL'] ?? 'http://192.168.1.22:8000/api';
     // Strip trailing /mobile if present so we can append /seller/menus
     final cleanBase = baseUrl.replaceAll(RegExp(r'/mobile$'), '');
 

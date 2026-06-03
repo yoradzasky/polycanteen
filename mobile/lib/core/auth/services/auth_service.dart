@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AuthService {
   static final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: dotenv.env['BASE_URL'] ?? 'http://10.0.2.2:8000/api',
+      baseUrl: dotenv.env['BASE_URL'] ?? 'http://192.168.1.22:8000/api',
       headers: {'Accept': 'application/json'},
     ),
   );
