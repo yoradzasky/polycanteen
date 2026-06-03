@@ -239,9 +239,9 @@ export default function Index({ canteens, filters }) {
 
             <div className="px-8 py-7">
                 {/* ── Table Card ── */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
                     {/* Card Header */}
-                    <div className="px-6 py-5 border-b border-gray-100">
+                    <div className="px-6 py-5 border-b border-gray-200">
                         <h2 className="text-base font-bold text-gray-900">Daftar Semua Kantin</h2>
                         <p className="text-xs text-gray-400 mt-0.5">
                             Menampilkan {canteens.data?.length || 0} dari {meta.total || 0} kantin
@@ -252,49 +252,53 @@ export default function Index({ canteens, filters }) {
                     <div className="overflow-x-auto">
                         <table className="w-full min-w-[900px]">
                             <thead>
-                                <tr className="border-b border-gray-100">
-                                    <th className="text-center px-6 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Nama Kantin</th>
-                                    <th className="text-center px-6 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Pemilik</th>
-                                    <th className="text-center px-6 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Lokasi</th>
-                                    <th className="text-center px-6 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Jumlah Menu</th>
-                                    <th className="text-center px-6 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Transaksi</th>
-                                    <th className="text-center px-6 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
-                                    <th className="text-center px-6 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Tanggal Daftar</th>
-                                    <th className="text-center px-6 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Aksi</th>
+                                <tr className="border-b border-gray-300">
+                                    <th className="text-left px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama Kantin</th>
+                                    <th className="text-left px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Pemilik</th>
+                                    <th className="text-left px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Lokasi</th>
+                                    <th className="text-center px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Jumlah Menu</th>
+                                    <th className="text-right px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Transaksi</th>
+                                    <th className="text-center px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th className="text-left px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Tanggal Daftar</th>
+                                    <th className="text-center px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-50">
+                            <tbody className="divide-y divide-gray-200">
                                 {canteens.data && canteens.data.length > 0 ? (
                                     canteens.data.map((kantin) => (
                                         <tr key={kantin.id} className="hover:bg-[#f9fafd] transition-colors">
                                             {/* Nama Kantin */}
-                                            <td className="px-6 py-4 text-center">
-                                                <div className="flex items-center justify-center gap-3">
-                                                    <Avatar nama={kantin.nama_kantin} size="w-9 h-9" textSize="text-xs" />
+                                            <td className="px-6 py-4 text-left">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex-shrink-0">
+                                                        <Avatar nama={kantin.nama_kantin} size="w-9 h-9" textSize="text-xs" />
+                                                    </div>
                                                     <div>
-                                                        <p className="text-sm font-semibold text-gray-900">{kantin.nama_kantin}</p>
+                                                        <p className="text-sm font-semibold text-gray-900 line-clamp-2">{kantin.nama_kantin}</p>
                                                     </div>
                                                 </div>
                                             </td>
                                             {/* Pemilik */}
-                                            <td className="px-6 py-4 text-center">
-                                                <div className="flex items-center justify-center gap-2.5">
-                                                    <Avatar
-                                                        src={kantin.pemilik?.user?.avatar}
-                                                        nama={kantin.pemilik?.nama_pemilik}
-                                                        size="w-7 h-7"
-                                                        textSize="text-[10px]"
-                                                    />
-                                                    <span className="text-sm text-gray-700">{kantin.pemilik?.nama_pemilik || '-'}</span>
+                                            <td className="px-6 py-4 text-left">
+                                                <div className="flex items-center gap-2.5">
+                                                    <div className="flex-shrink-0">
+                                                        <Avatar
+                                                            src={kantin.pemilik?.user?.avatar}
+                                                            nama={kantin.pemilik?.nama_pemilik}
+                                                            size="w-7 h-7"
+                                                            textSize="text-[10px]"
+                                                        />
+                                                    </div>
+                                                    <span className="text-sm text-gray-700 line-clamp-2">{kantin.pemilik?.nama_pemilik || '-'}</span>
                                                 </div>
                                             </td>
                                             {/* Lokasi */}
-                                            <td className="px-6 py-4 text-center">
-                                                <div className="flex items-center justify-center gap-1.5">
-                                                    <svg className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                            <td className="px-6 py-4 text-left max-w-[200px]">
+                                                <div className="flex items-start gap-1.5">
+                                                    <svg className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                                                     </svg>
-                                                    <span className="text-sm text-gray-600">{kantin.lokasi_lengkap || '-'}</span>
+                                                    <span className="text-sm text-gray-600 line-clamp-2">{kantin.lokasi_lengkap || '-'}</span>
                                                 </div>
                                             </td>
                                             {/* Jumlah Menu */}
@@ -305,7 +309,7 @@ export default function Index({ canteens, filters }) {
                                                 </span>
                                             </td>
                                             {/* Total Transaksi */}
-                                            <td className="px-6 py-4 text-center">
+                                            <td className="px-6 py-4 text-right">
                                                 <p className="text-sm font-semibold text-gray-900">
                                                     {formatRupiah(kantin.pesanan_sum_total_harga || 0)}
                                                 </p>
@@ -315,8 +319,8 @@ export default function Index({ canteens, filters }) {
                                                 <StatusBadge status={kantin.status_toko} />
                                             </td>
                                             {/* Tanggal Daftar */}
-                                            <td className="px-6 py-4 text-center">
-                                                <span className="text-sm text-gray-600">{formatTanggal(kantin.created_at)}</span>
+                                            <td className="px-6 py-4 text-left">
+                                                <span className="text-sm text-gray-600 whitespace-nowrap">{formatTanggal(kantin.created_at)}</span>
                                             </td>
                                             {/* Aksi */}
                                             <td className="px-6 py-4 text-center">
@@ -341,7 +345,7 @@ export default function Index({ canteens, filters }) {
                     </div>
 
                     {/* ── Footer: Info + Pagination ── */}
-                    <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
+                    <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
                         {/* Left: Info */}
                         <p className="text-sm text-gray-500">
                             Menampilkan{' '}
