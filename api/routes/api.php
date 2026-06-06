@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\Seller\OrderController;
 use App\Http\Controllers\Api\Seller\MenuController;
 use App\Http\Controllers\Api\Seller\KantinController;
+use App\Http\Controllers\Api\Seller\ScannerController;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,6 +38,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('menus/{menu}/toggle-status', [MenuController::class, 'toggleStatus']);
         
         Route::patch('/kantin/status', [KantinController::class, 'updateStatus']);
+
+        // Modul Scanner QR
+        Route::post('/scanner/verify', [ScannerController::class, 'verify']);
+        Route::post('/scanner/confirm', [ScannerController::class, 'confirm']);
     });
 
 });

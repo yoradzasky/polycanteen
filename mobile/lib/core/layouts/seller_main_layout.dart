@@ -4,6 +4,7 @@ import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 import '../widgets/seller_navbar.dart';
 import '../../seller/features/orders/screens/order_list_screen.dart';
 import '../../seller/features/menu/screens/menu_list_screen.dart';
+import '../../seller/features/scanner/screens/qr_scanner_screen.dart';
 
 class SellerMainLayout extends StatefulWidget {
   const SellerMainLayout({super.key});
@@ -63,7 +64,12 @@ class _SellerMainLayoutState extends State<SellerMainLayout> {
         currentIndex: _selectedIndex,
         userRole: _userRole,
         onTap: _onItemTapped,
-        onQrTap: () => debugPrint("Buka Scan QR"),
+        onQrTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const QrScannerScreen()),
+          );
+        },
         primaryColor: _userRole == 'pegawai'
             ? const Color(0xFF5E7AC4)
             : const Color(0xFF3949AB),
