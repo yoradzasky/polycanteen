@@ -211,7 +211,7 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
       appBar: AppBar(
         backgroundColor: _kPrimaryBlue,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
@@ -431,6 +431,7 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
 
   Widget _buildDropdown() {
     return DropdownButtonFormField<String>(
+      isExpanded: true,
       initialValue: _selectedKategori,
       decoration: InputDecoration(
         hintText: 'Pilih Kategori',

@@ -225,7 +225,7 @@ class _EditMenuScreenState extends State<EditMenuScreen> {
       backgroundColor: const Color(0xFFFAFAFA),
       appBar: AppBar(
         backgroundColor: _kPrimaryBlue,
-        leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
+        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20), onPressed: () => Navigator.pop(context)),
         centerTitle: true,
         title: const Text('Edit Menu', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
         elevation: 0,
@@ -309,7 +309,7 @@ class _EditMenuScreenState extends State<EditMenuScreen> {
   }
 
   Widget _buildDropdown() {
-    return DropdownButtonFormField<String>(initialValue: _selectedKategori, decoration: InputDecoration(hintText: 'Pilih Kategori (Makanan/Minuman)', hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14), filled: true, fillColor: Colors.white, contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey[300]!)), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey[300]!)), focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: _kPrimaryBlue, width: 1.5))), items: _kategoriList.map((k) => DropdownMenuItem(value: k, child: Text(k))).toList(), onChanged: (val) => setState(() => _selectedKategori = val));
+    return DropdownButtonFormField<String>(isExpanded: true, initialValue: _selectedKategori, decoration: InputDecoration(hintText: 'Pilih Kategori (Makanan/Minuman)', hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14), filled: true, fillColor: Colors.white, contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey[300]!)), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey[300]!)), focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: _kPrimaryBlue, width: 1.5))), items: _kategoriList.map((k) => DropdownMenuItem(value: k, child: Text(k))).toList(), onChanged: (val) => setState(() => _selectedKategori = val));
   }
 
   Widget _buildCheckboxes() {
