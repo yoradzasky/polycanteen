@@ -24,7 +24,8 @@ const Color _kBackgroundLight = Color(0xFFF0F2FF);
 ///   4. Confirmed → snackbar sukses → reset ke scanning
 ///   5. Error     → snackbar error
 class QrScannerScreen extends StatefulWidget {
-  const QrScannerScreen({super.key});
+  final bool returnMode;
+  const QrScannerScreen({super.key, this.returnMode = false});
 
   @override
   State<QrScannerScreen> createState() => _QrScannerScreenState();
@@ -301,6 +302,12 @@ class _QrScannerScreenState extends State<QrScannerScreen>
 
     _isProcessing = true;
     _cameraController.stop();
+
+    if (widget.returnMode) {
+      Navigator.pop(context, rawValue);
+      return;
+    }
+
     _verifyQr(rawValue);
   }
 
