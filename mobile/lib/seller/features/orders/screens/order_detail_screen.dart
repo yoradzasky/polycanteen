@@ -6,15 +6,16 @@ import 'payment_proof_screen.dart';
 class OrderDetailScreen extends StatelessWidget {
   // Sekarang menerima data asli dari API
   final Map<String, dynamic> order;
+  final Color primaryColor;
 
-  const OrderDetailScreen({super.key, required this.order});
+  const OrderDetailScreen({super.key, required this.order, required this.primaryColor});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6FB),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF3949AB),
+        backgroundColor: primaryColor,
         elevation: 0,
         title: const Text(
           'Detail Pesanan',
@@ -58,7 +59,7 @@ class OrderDetailScreen extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => PaymentProofScreen(order: order),
+                builder: (context) => PaymentProofScreen(order: order, primaryColor: primaryColor),
               ),
             );
           },
@@ -111,18 +112,18 @@ class OrderDetailScreen extends StatelessWidget {
                   color: const Color(0xFFE8EAF6),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
                     Icon(
                       Icons.notifications_active,
-                      color: Color(0xFF3949AB),
+                      color: primaryColor,
                       size: 14,
                     ),
-                    SizedBox(width: 6),
+                    const SizedBox(width: 6),
                     Text(
                       'Pesanan Masuk',
                       style: TextStyle(
-                        color: Color(0xFF3949AB),
+                        color: primaryColor,
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
                       ),
@@ -234,9 +235,9 @@ class OrderDetailScreen extends StatelessWidget {
               color: const Color(0xFFF4F6FB),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.qr_code_2,
-              color: Color(0xFF3949AB),
+              color: primaryColor,
               size: 24,
             ),
           ),
@@ -321,9 +322,9 @@ class OrderDetailScreen extends StatelessWidget {
                       color: const Color(0xFFE8EAF6),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.restaurant,
-                      color: Color(0xFF3949AB),
+                      color: primaryColor,
                       size: 20,
                     ),
                   ),
@@ -491,8 +492,8 @@ class OrderDetailScreen extends StatelessWidget {
               ),
               Text(
                 'Rp ${NumberFormat('#,###', 'id_ID').format(totalHarga)}',
-                style: const TextStyle(
-                  color: Color(0xFF3949AB),
+                style: TextStyle(
+                  color: primaryColor,
                   fontWeight: FontWeight.w900,
                   fontSize: 20,
                 ),

@@ -34,6 +34,14 @@ class OrderController extends Controller
             $query = Pesanan::where('kantin_id', $kantinId)
                             ->with(['mahasiswa', 'details.menu', 'payment', 'kantin']);
 
+            // FILTER: Tampilkan pesanan pengantaran hanya kepada kurir yang mengirimkannya, kecuali sudah selesai.
+            $query->where(function($q) {
+                $user = Auth::user();
+                $q->whereNull('courier_user_id')
+                  ->orWhere('courier_user_id', $user->id)
+                  ->orWhere('status_pesanan', 'selesai');
+            });
+
             // FILTER: Berdasarkan status (baru, dimasak, selesai, dll)
             if ($request->has('status')) {
                 $query->where('status_pesanan', $request->status);
@@ -78,6 +86,12 @@ class OrderController extends Controller
             // AMAN: Cari pesanan TAPI wajib cocok dengan kantin_id
             $order = Pesanan::with(['mahasiswa', 'details.menu', 'payment', 'kantin'])
                             ->where('kantin_id', $kantinId)
+                            ->where(function($q) {
+                                $user = Auth::user();
+                                $q->whereNull('courier_user_id')
+                                  ->orWhere('courier_user_id', $user->id)
+                                  ->orWhere('status_pesanan', 'selesai');
+                            })
                             ->find($id);
 
             if (!$order) {
@@ -106,7 +120,14 @@ class OrderController extends Controller
             $kantinId = $this->getKantinId();
 
             // AMAN: Pastikan pesanan adalah milik kantin ini
-            $order = Pesanan::where('kantin_id', $kantinId)->find($id);
+            $order = Pesanan::where('kantin_id', $kantinId)
+                            ->where(function($q) {
+                                $user = Auth::user();
+                                $q->whereNull('courier_user_id')
+                                  ->orWhere('courier_user_id', $user->id)
+                                  ->orWhere('status_pesanan', 'selesai');
+                            })
+                            ->find($id);
 
             if (!$order) {
                 return response()->json(['success' => false, 'message' => 'Pesanan tidak ditemukan atau bukan milik kantin Anda.'], 404);
