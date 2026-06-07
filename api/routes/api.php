@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Seller\OrderController;
 use App\Http\Controllers\Api\Seller\MenuController;
 use App\Http\Controllers\Api\Seller\KantinController;
 use App\Http\Controllers\Api\Seller\ScannerController;
+use App\Http\Controllers\Api\Seller\DeliveryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,21 +28,27 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // --- Grup Khusus Penjual (Prefix: /pemilik) ---
     Route::prefix('pemilik')->group(function () {
-        
+
         // Modul Pesanan (Orders)
         Route::get('/orders', [OrderController::class, 'index']);
         Route::get('/orders/{id}', [OrderController::class, 'show']);
         Route::patch('/orders/{id}/status', [OrderController::class, 'updateStatus']);
-        
+
         // Modul Manajemen Menu
         Route::apiResource('menus', MenuController::class);
         Route::patch('menus/{menu}/toggle-status', [MenuController::class, 'toggleStatus']);
-        
+
         Route::patch('/kantin/status', [KantinController::class, 'updateStatus']);
 
         // Modul Scanner QR
         Route::post('/scanner/verify', [ScannerController::class, 'verify']);
         Route::post('/scanner/confirm', [ScannerController::class, 'confirm']);
+
+        // Modul Pengantaran
+        Route::post('/deliveries/{pesanan}/start', [DeliveryController::class, 'start']);
+        Route::post('/deliveries/{pesanan}/confirm', [DeliveryController::class, 'confirm']);
     });
 
+    // Modul Pengantaran (Tracking Netral)
+    Route::get('/deliveries/{pesanan}', [DeliveryController::class, 'show']);
 });
