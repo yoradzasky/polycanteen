@@ -21,6 +21,11 @@ return new class extends Migration
             $table->string('nomor_antrian')->nullable();
             $table->text('catatan_pesanan')->nullable();
             $table->text('alasan_penolakan')->nullable();
+            $table->foreignId('courier_user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->string('alamat_pengantaran')->nullable();
+            $table->decimal('dest_lat', 10, 7)->nullable();
+            $table->decimal('dest_lng', 10, 7)->nullable();
+            $table->string('qr_token')->nullable()->unique();
             $table->timestamps();
         });
     }
