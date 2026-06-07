@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -65,14 +66,28 @@ class _EditMenuScreenState extends State<EditMenuScreen> {
     if (m.varian != null && m.varian!.isNotEmpty) {
       for (final v in m.varian!) {
         final item = _VariasiItem();
-        item.namaController.text = v['nama'] ?? '';
-        item.tipe = v['tipe'] ?? 'opsional';
-        final pilihan = v['pilihan'] as List<dynamic>? ?? [];
+        item.namaController.text = (v['nama'] ?? '').toString();
+        item.tipe = (v['tipe'] ?? 'opsional').toString();
+
+        // pilihan bisa berupa List langsung atau JSON string yang perlu di-decode
+        dynamic rawPilihan = v['pilihan'];
+        List<dynamic> pilihan = [];
+        if (rawPilihan is List) {
+          pilihan = rawPilihan;
+        } else if (rawPilihan is String) {
+          try {
+            final decoded = jsonDecode(rawPilihan);
+            if (decoded is List) pilihan = decoded;
+          } catch (_) {}
+        }
+
         for (final p in pilihan) {
-          item.pilihanList.add(_VariasiPilihan(
-            nama: p['nama'] ?? '',
-            harga: (p['harga'] is int) ? p['harga'] : int.tryParse(p['harga'].toString()) ?? 0,
-          ));
+          if (p is Map) {
+            item.pilihanList.add(_VariasiPilihan(
+              nama: (p['nama'] ?? '').toString(),
+              harga: (p['harga'] is int) ? p['harga'] : int.tryParse(p['harga'].toString()) ?? 0,
+            ));
+          }
         }
         _variasiList.add(item);
       }
