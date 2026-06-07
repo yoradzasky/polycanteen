@@ -46,4 +46,11 @@ class User extends Authenticatable
     {
         return $this->hasOne(Pegawai::class);
     }
+
+    public function getCourierNameAttribute(): string
+    {
+        return $this->pegawai?->nama_karyawan
+            ?? $this->pemilik?->nama_pemilik
+            ?? $this->username;
+    }
 }
