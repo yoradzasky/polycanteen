@@ -12,12 +12,17 @@ import '../../features/scanner/screens/qr_scanner_screen.dart';
 
 class FirebaseTrackingService {
   static Future<void> updateLocation(String pesananId, double lat, double lng) async {
-    final ref = FirebaseDatabase.instance.ref('deliveries/$pesananId/location');
-    await ref.set({
-      'lat': lat,
-      'lng': lng,
-      'updated_at': DateTime.now().millisecondsSinceEpoch,
-    });
+    try {
+      final ref = FirebaseDatabase.instance.ref('deliveries/$pesananId/location');
+      await ref.set({
+        'lat': lat,
+        'lng': lng,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+      });
+      debugPrint('Location updated to Firebase for pesanan $pesananId');
+    } catch (e) {
+      debugPrint('Failed to update location to Firebase: $e');
+    }
   }
 }
 
@@ -119,7 +124,7 @@ class _DeliveryTrackingScreenState extends State<DeliveryTrackingScreen> {
   Future<void> _fetchDeliveryInfo() async {
     try {
       final response = await _dio.get(
-        '/deliveries/${widget.pesananId}',
+        '/pemilik/deliveries/${widget.pesananId}',
         options: await _authOptions(),
       );
       if (response.statusCode == 200 && response.data != null) {
@@ -505,11 +510,11 @@ class _DeliveryTrackingScreenState extends State<DeliveryTrackingScreen> {
 
   Widget _buildDraggableBottomSheet() {
     return DraggableScrollableSheet(
-      initialChildSize: 0.4,
-      minChildSize: 0.15,
+      initialChildSize: 0.40,
+      minChildSize: 0.18,
       maxChildSize: 0.85,
       snap: true,
-      snapSizes: const [0.15, 0.4, 0.85],
+      snapSizes: const [0.18, 0.40, 0.85],
       builder: (context, scrollController) {
         return Container(
           decoration: const BoxDecoration(

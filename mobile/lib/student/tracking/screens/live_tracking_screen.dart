@@ -143,7 +143,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
   Future<void> _initData() async {
     try {
       final response = await _dio.get(
-        '/deliveries/${widget.pesananId}',
+        '/mahasiswa/deliveries/${widget.pesananId}',
         options: await _authOptions(),
       );
       if (response.statusCode == 200 && response.data != null) {
@@ -167,15 +167,29 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
 
   void _startWatchingLocation() {
     _locationSub = FirebaseTrackingService.watchLocation(widget.pesananId)
-        .listen((location) {
-          if (location != null && mounted) {
-            setState(() {
-              _courierLocation = location;
-            });
-            _updateDistanceAndEta(location);
-            _animateCameraTo(LatLng(location.lat, location.lng));
-          }
-        });
+        .listen(
+          (location) {
+            if (location != null && mounted) {
+              setState(() {
+                _courierLocation = location;
+              });
+              _updateDistanceAndEta(location);
+              _animateCameraTo(LatLng(location.lat, location.lng));
+            }
+          },
+          onError: (error) {
+            debugPrint('Firebase Stream Error: $error');
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Firebase Error: $error'),
+                  backgroundColor: Colors.red,
+                  duration: const Duration(seconds: 5),
+                ),
+              );
+            }
+          },
+        );
   }
 
   void _updateDistanceAndEta(CourierLocation location) {
@@ -531,8 +545,10 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
 
     return DraggableScrollableSheet(
       initialChildSize: 0.45,
-      minChildSize: 0.45,
+      minChildSize: 0.18,
       maxChildSize: 0.75,
+      snap: true,
+      snapSizes: const [0.18, 0.45, 0.75],
       builder: (context, scrollController) {
         return Container(
           padding: const EdgeInsets.all(20),

@@ -291,113 +291,122 @@ class _OrderListScreenState extends State<OrderListScreen> {
       body: RefreshIndicator(
         onRefresh: _fetchOrders, // Tarik ke bawah untuk refresh
         color: _primaryColor,
-        child: Column(
-          children: [
-            // HEADER BIRU MELENGKUNG
-            Container(
-              padding: const EdgeInsets.only(left: 20, right: 20, bottom: 24),
-              decoration: BoxDecoration(
-                color: _primaryColor,
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(24),
-                  bottomRight: Radius.circular(24),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Ringkasan Hari Ini',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+        child: NestedScrollView(
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
+            return [
+              // HEADER BIRU MELENGKUNG
+              SliverToBoxAdapter(
+                child: Container(
+                  padding: const EdgeInsets.only(left: 20, right: 20, bottom: 24),
+                  decoration: BoxDecoration(
+                    color: _primaryColor,
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(24),
+                      bottomRight: Radius.circular(24),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildSummaryCard(
-                        Icons.account_balance_wallet,
-                        'Pendapatan',
-                        'Rp 1,5JT',
-                        const Color(0xFFF2994A),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Ringkasan Hari Ini',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                      const SizedBox(width: 12),
-                      // Hitung total pesanan selesai
-                      _buildSummaryCard(
-                        Icons.receipt_long,
-                        'Total Selesai',
-                        '${_orders.where((o) => o['status_pesanan'] == 'selesai').length}',
-                        const Color(0xFFA29BFE),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          _buildSummaryCard(
+                            Icons.account_balance_wallet,
+                            'Pendapatan',
+                            'Rp 1,5JT',
+                            const Color(0xFFF2994A),
+                          ),
+                          const SizedBox(width: 12),
+                          // Hitung total pesanan selesai
+                          _buildSummaryCard(
+                            Icons.receipt_long,
+                            'Total Selesai',
+                            '${_orders.where((o) => o['status_pesanan'] == 'selesai').length}',
+                            const Color(0xFFA29BFE),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
-            ),
 
-            // TABS MANAJEMEN PESANAN
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Manajemen Pesanan',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1A1A1A),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
+              // TABS MANAJEMEN PESANAN (STICKY HEADER)
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _StickyTabBarDelegate(
+                  height: 135.0,
+                  child: Container(
+                    color: const Color(0xFFF4F6FB), // Sesuai warna background Scaffold
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildTab(
-                          0,
-                          'Baru Masuk',
-                          badgeCount: _orders
-                              .where(
-                                (o) =>
-                                    o['status_pesanan'] == 'dibayar' ||
-                                    o['status_pesanan'] == 'pending',
-                              )
-                              .length,
+                        const Text(
+                          'Manajemen Pesanan',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1A1A1A),
+                          ),
                         ),
-                        const SizedBox(width: 8),
-                        _buildTab(
-                          1,
-                          'Diproses',
-                          badgeCount: _orders
-                              .where(
-                                (o) =>
-                                    o['status_pesanan'] == 'dimasak' ||
-                                    o['status_pesanan'] == 'dalam_perjalanan',
-                              )
-                              .length,
-                        ),
-                        const SizedBox(width: 8),
-                        _buildTab(
-                          2,
-                          'Selesai',
-                          badgeCount: _orders
-                              .where((o) => o['status_pesanan'] == 'selesai')
-                              .length,
+                        const SizedBox(height: 16),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              _buildTab(
+                                0,
+                                'Baru Masuk',
+                                badgeCount: _orders
+                                    .where(
+                                      (o) =>
+                                          o['status_pesanan'] == 'dibayar' ||
+                                          o['status_pesanan'] == 'pending',
+                                    )
+                                    .length,
+                              ),
+                              const SizedBox(width: 8),
+                              _buildTab(
+                                1,
+                                'Diproses',
+                                badgeCount: _orders
+                                    .where(
+                                      (o) =>
+                                          o['status_pesanan'] == 'dimasak' ||
+                                          o['status_pesanan'] == 'dalam_perjalanan',
+                                    )
+                                    .length,
+                              ),
+                              const SizedBox(width: 8),
+                              _buildTab(
+                                2,
+                                'Selesai',
+                                badgeCount: _orders
+                                    .where((o) => o['status_pesanan'] == 'selesai')
+                                    .length,
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
                   ),
-                ],
+                ),
               ),
-            ),
-
-            // LIST PESANAN ATAU LOADING
-            Expanded(
-              child: _isLoading
+            ];
+          },
+          body: _isLoading
                   ? Center(
                       child: CircularProgressIndicator(color: _primaryColor),
                     )
@@ -428,7 +437,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                       ),
                     )
                   : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      padding: const EdgeInsets.only(left: 20, right: 20, top: 0, bottom: 20),
                       itemCount: currentOrders.length,
                       itemBuilder: (context, index) {
                         final orderMap =
@@ -499,8 +508,6 @@ class _OrderListScreenState extends State<OrderListScreen> {
                         );
                       },
                     ),
-            ),
-          ],
         ),
       ),
     );
@@ -596,6 +603,32 @@ class _OrderListScreenState extends State<OrderListScreen> {
         ),
       ),
     );
+  }
+}
+
+// ==========================================
+// DELEGATE UNTUK STICKY HEADER (TABS)
+// ==========================================
+class _StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+  final double height;
+
+  _StickyTabBarDelegate({required this.child, this.height = 120.0});
+
+  @override
+  double get minExtent => height;
+  @override
+  double get maxExtent => height;
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return SizedBox.expand(child: child);
+  }
+
+  @override
+  bool shouldRebuild(_StickyTabBarDelegate oldDelegate) {
+    return child != oldDelegate.child || height != oldDelegate.height;
   }
 }
 

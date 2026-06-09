@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 
 import '../../layouts/seller_main_layout.dart';
+import '../../layouts/student_main_layout.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -94,12 +95,20 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
 
-        // Redirect ke halaman utama seller
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => const SellerMainLayout(),
-          ),
-        );
+        // Redirect ke halaman utama sesuai role
+        if (userRole == 'mahasiswa') {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => const StudentMainLayout(),
+            ),
+          );
+        } else {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => const SellerMainLayout(),
+            ),
+          );
+        }
       } else {
         // --- PENANGANAN JIKA ERROR (AKUN SALAH ATAU EMAIL NGACOK) ---
         if (!mounted) return;
