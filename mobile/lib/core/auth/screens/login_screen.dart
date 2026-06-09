@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 
-import '../../layouts/seller_main_layout.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -67,21 +66,6 @@ class _LoginScreenState extends State<LoginScreen> {
         final String token = responseData['data']['token'];
         final String userRole = responseData['data']['user']['role'] ?? 'pegawai';
 
-        // Cek apakah role adalah admin - jika iya, tolak login
-        if (userRole == 'admin') {
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Admin tidak dapat login melalui aplikasi mobile'),
-              backgroundColor: Colors.red,
-            ),
-          );
-          setState(() {
-            _isLoading = false;
-          });
-          return;
-        }
-
         final prefs = EncryptedSharedPreferences();
         await prefs.setString('auth_token', token);
         await prefs.setString('user_role', userRole);
@@ -94,10 +78,13 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
 
-        // Redirect ke halaman utama seller
+        // Screen redirection removed as per cleanup instructions.
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (_) => const SellerMainLayout(),
+            builder: (_) => Scaffold(
+              appBar: AppBar(title: const Text('Dashboard')),
+              body: Center(child: Text('Selamat Datang, $userRole')),
+            ),
           ),
         );
       } else {

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 // 1. Import file login screen kamu (bisa pakai relative path seperti ini)
 import 'core/auth/screens/login_screen.dart';
-import 'core/theme/app_theme.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 Future<void> main() async {
@@ -18,7 +17,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'PolyCanteen',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        useMaterial3: true,
+      ),
       // 2. Ganti home bawaan menjadi class LoginScreen kamu
       home: const LoginScreen(),
     );
