@@ -35,8 +35,9 @@ class OrderController extends Controller
                             ->with(['mahasiswa', 'details.menu', 'payment', 'kantin']);
 
             // FILTER: Tampilkan pesanan pengantaran hanya kepada kurir yang mengirimkannya, kecuali sudah selesai.
-            $query->where(function($q) {
-                $user = Auth::user();
+            // FILTER: Tampilkan pesanan (termasuk pemilik) kecuali jika pesanan pengantaran sudah diambil pegawai lain (dan belum selesai)
+            $user = Auth::user();
+            $query->where(function($q) use ($user) {
                 $q->whereNull('courier_user_id')
                   ->orWhere('courier_user_id', $user->id)
                   ->orWhere('status_pesanan', 'selesai');
@@ -52,8 +53,11 @@ class OrderController extends Controller
             if ($request->has('tanggal')) {
                 $query->whereDate('created_at', $request->tanggal);
             } else {
-                // Default: Tampilkan pesanan hari ini saja
-                $query->whereDate('created_at', now()->toDateString());
+                // Default: Tampilkan pesanan hari ini ATAU pesanan yang belum selesai/dibatalkan
+                $query->where(function($q) {
+                    $q->whereDate('created_at', now()->toDateString())
+                      ->orWhereNotIn('status_pesanan', ['selesai', 'ditolak', 'dibatalkan']);
+                });
             }
 
             // Eksekusi query (Urutkan dari yang paling baru)
@@ -84,15 +88,17 @@ class OrderController extends Controller
             $kantinId = $this->getKantinId();
 
             // AMAN: Cari pesanan TAPI wajib cocok dengan kantin_id
-            $order = Pesanan::with(['mahasiswa', 'details.menu', 'payment', 'kantin'])
-                            ->where('kantin_id', $kantinId)
-                            ->where(function($q) {
-                                $user = Auth::user();
-                                $q->whereNull('courier_user_id')
-                                  ->orWhere('courier_user_id', $user->id)
-                                  ->orWhere('status_pesanan', 'selesai');
-                            })
-                            ->find($id);
+            $query = Pesanan::with(['mahasiswa', 'details.menu', 'payment', 'kantin'])
+                            ->where('kantin_id', $kantinId);
+
+            $user = Auth::user();
+            $query->where(function($q) use ($user) {
+                $q->whereNull('courier_user_id')
+                  ->orWhere('courier_user_id', $user->id)
+                  ->orWhere('status_pesanan', 'selesai');
+            });
+
+            $order = $query->find($id);
 
             if (!$order) {
                 return response()->json(['success' => false, 'message' => 'Pesanan tidak ditemukan atau bukan milik kantin Anda.'], 404);
@@ -120,14 +126,16 @@ class OrderController extends Controller
             $kantinId = $this->getKantinId();
 
             // AMAN: Pastikan pesanan adalah milik kantin ini
-            $order = Pesanan::where('kantin_id', $kantinId)
-                            ->where(function($q) {
-                                $user = Auth::user();
-                                $q->whereNull('courier_user_id')
-                                  ->orWhere('courier_user_id', $user->id)
-                                  ->orWhere('status_pesanan', 'selesai');
-                            })
-                            ->find($id);
+            $query = Pesanan::where('kantin_id', $kantinId);
+
+            $user = Auth::user();
+            $query->where(function($q) use ($user) {
+                $q->whereNull('courier_user_id')
+                  ->orWhere('courier_user_id', $user->id)
+                  ->orWhere('status_pesanan', 'selesai');
+            });
+
+            $order = $query->find($id);
 
             if (!$order) {
                 return response()->json(['success' => false, 'message' => 'Pesanan tidak ditemukan atau bukan milik kantin Anda.'], 404);
