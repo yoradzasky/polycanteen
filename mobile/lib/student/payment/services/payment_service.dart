@@ -9,7 +9,7 @@ class PaymentService {
   // 2. Inisialisasi EncryptedSharedPreferences
   final EncryptedSharedPreferences _prefs = EncryptedSharedPreferences();
 
-  Future<Map<String, dynamic>> createPayment(int pesananId) async {
+  Future<Map<String, dynamic>> createPayment(int pesananId, {String? paymentType}) async {
     // 3. Ambil token dari storage yang terenkripsi
     final token = await _prefs.getString('auth_token');
 
@@ -21,12 +21,25 @@ class PaymentService {
         // Jika token kosong, tetap kirim string kosong agar tidak error null
         'Authorization': 'Bearer ${token.isNotEmpty ? token : ''}', 
       },
+      body: jsonEncode({
+        'payment_type': ?paymentType,
+      }),
     );
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      throw Exception('Gagal membuat token pembayaran');
+      // Menambahkan log detail error untuk debugging
+      print('DEBUG: Status Code: ${response.statusCode}');
+      print('DEBUG: Response Body: ${response.body}');
+      
+      String message = 'Gagal membuat token pembayaran';
+      try {
+        final errorData = jsonDecode(response.body);
+        message = errorData['message'] ?? message;
+      } catch (_) {}
+      
+      throw Exception(message);
     }
   }
 }

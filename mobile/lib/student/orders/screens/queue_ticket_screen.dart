@@ -23,7 +23,10 @@ class QueueTicketScreen extends StatelessWidget {
             Text('ID Pesanan: $pesananId'),
             const SizedBox(height: 32),
             ElevatedButton(
-              onPressed: () => Navigator.popUntil(context, (route) => route.isFirst),
+              onPressed: () {
+                // Menghapus semua tumpukan halaman dan kembali ke Beranda utama
+                Navigator.of(context).pushNamedAndRemoveUntil('/student-main', (route) => false);
+              },
               child: const Text('Kembali ke Beranda'),
             ),
           ],

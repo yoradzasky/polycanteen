@@ -2,18 +2,27 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\Seller\OrderController;
 use App\Http\Controllers\Api\Seller\MenuController;
 use App\Http\Controllers\Api\Seller\KantinController;
 
+// --- TAMBAHKAN IMPORT INI UNTUK MAHASISWA ---
+use App\Http\Controllers\Api\Student\PaymentController;
+use App\Http\Controllers\Api\Student\MidtransWebhookController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
 */
+
+// =================================================================
+// ROUTE WEBHOOK MIDTRANS (TANPA MIDDLEWARE AUTH)
+// =================================================================
+Route::post('/webhooks/midtrans', [MidtransWebhookController::class, 'handle']);
+
 
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -40,7 +49,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // --- Grup Khusus Penjual (Prefix: /pemilik) ---
     Route::prefix('pemilik')->group(function () {
-        
         // Modul Pesanan (Orders)
         Route::get('/orders', [OrderController::class, 'index']);
         Route::get('/orders/{id}', [OrderController::class, 'show']);
@@ -52,5 +60,10 @@ Route::middleware('auth:sanctum')->group(function () {
         
         Route::patch('/kantin/status', [KantinController::class, 'updateStatus']);
     });
+
+    // =================================================================
+    // --- TAMBAHAN ROUTE UNTUK PEMBAYARAN MAHASISWA ---
+    // =================================================================
+    Route::post('/student/payment/{pesanan_id}', [PaymentController::class, 'createPayment']);
 
 });

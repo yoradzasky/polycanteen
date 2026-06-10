@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:developer' as developer;
-import '../../../../core/widgets/seller_navbar.dart';
 import '../../../../core/auth/services/auth_service.dart';
 import '../../../../core/auth/screens/login_screen.dart';
-import '../../menu/screens/menu_list_screen.dart';
 import 'edit_profile_user_screen.dart';
 import 'change_password_screen.dart';
 import 'edit_profile_kantin_screen.dart';

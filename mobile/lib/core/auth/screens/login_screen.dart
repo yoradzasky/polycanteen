@@ -5,6 +5,7 @@ import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 
 import '../../layouts/seller_main_layout.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../../../student/payment/screens/payment_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -93,6 +94,16 @@ class _LoginScreenState extends State<LoginScreen> {
             backgroundColor: Colors.green,
           ),
         );
+
+        // Logic khusus testing: redirect mahasiswa1 ke PaymentScreen
+        if (email == 'mahasiswa1@kantin.com') {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => const PaymentScreen(pesananId: 11, totalHarga: 73000), // ID dummy 11
+            ),
+          );
+          return;
+        }
 
         // Redirect ke halaman utama seller
         Navigator.of(context).pushReplacement(
