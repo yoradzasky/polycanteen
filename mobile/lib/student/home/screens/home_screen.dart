@@ -214,11 +214,10 @@ class _HomeScreenState extends State<HomeScreen> {
         child: RefreshIndicator(
           color: const Color(0xFFF2994A),
           onRefresh: fetchHomeData,
-          // PERUBAHAN: Menggunakan CustomScrollView
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
-              // --- HEADER & ACTIVE ORDER (Bisa discroll) ---
+              // --- HEADER & ACTIVE ORDER ---
               SliverToBoxAdapter(
                 child: Column(
                   children: [
@@ -237,26 +236,32 @@ class _HomeScreenState extends State<HomeScreen> {
                             onBackgroundImageError: (_, __) {},
                           ),
                           const SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                "Halo,",
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 13,
+                          // ✨ DITAMBAHKAN: Expanded agar teks nama tidak mendorong icon notifikasi keluar layar
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  "Halo,",
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 13,
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                namaMahasiswa,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 16,
+                                Text(
+                                  namaMahasiswa,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 16,
+                                  ),
+                                  // ✨ DITAMBAHKAN: Agar nama panjang jadi ...
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                          const Spacer(),
+                          const SizedBox(width: 12),
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
@@ -283,20 +288,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              // --- SEARCH BAR (Sticky di atas saat discroll) ---
+              // --- SEARCH BAR ---
               SliverAppBar(
                 pinned: true,
                 floating: true,
-                automaticallyImplyLeading:
-                    false, // Menghilangkan back button default
-                backgroundColor: const Color(
-                  0xFFFFF6ED,
-                ), // Samakan dengan background
+                automaticallyImplyLeading: false,
+                backgroundColor: const Color(0xFFFFF6ED),
                 elevation: 0,
-                scrolledUnderElevation:
-                    2, // Bayangan tipis saat melayang di atas konten lain
+                scrolledUnderElevation: 2,
                 shadowColor: Colors.black.withOpacity(0.2),
-                toolbarHeight: 60, // Tinggi area search bar
+                toolbarHeight: 60,
                 flexibleSpace: FlexibleSpaceBar(
                   background: Padding(
                     padding: const EdgeInsets.symmetric(
@@ -321,7 +322,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           Icons.search,
                           color: Colors.grey.shade400,
                         ),
-                        // Menambahkan tombol x untuk menghapus teks dengan cepat (opsional)
                         suffixIcon: isSearching
                             ? IconButton(
                                 icon: const Icon(
@@ -334,9 +334,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     searchKeyword = "";
                                     _applySearchAndFilter();
                                   });
-                                  FocusScope.of(
-                                    context,
-                                  ).unfocus(); // Menutup keyboard
+                                  FocusScope.of(context).unfocus();
                                 },
                               )
                             : null,
@@ -355,10 +353,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              // --- KONTEN LAINNYA (Dapat menghilang jika mencari) ---
+              // --- KONTEN LAINNYA ---
               SliverList(
                 delegate: SliverChildListDelegate([
-                  // Hanya tampilkan jika TIDAK sedang mencari
                   if (!isSearching) ...[
                     // --- PESAN ULANG CEPAT ---
                     if (quickReorder.isNotEmpty) ...[
@@ -443,7 +440,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   _buildAllMenuList(),
-
                   const SizedBox(height: 30),
                 ]),
               ),
@@ -472,7 +468,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     String label3 = (tipe == 'take_away') ? "Sedang Diantar" : "Siap Diambil";
 
-    // Tentukan teks peringatan hijau berdasarkan tipe pesanan & status
     String alertText = "";
     if (tipe == 'take_away') {
       if (status == 'dalam_perjalanan') {
@@ -568,6 +563,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               fontSize: 15,
                               color: Color(0xFF2A2A2A),
                             ),
+                            // ✨ DITAMBAHKAN: Cegah string gabungan menu jadi berantakan kalau panjang
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 4),
                           Text(
@@ -593,7 +591,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // Menampilkan alert hanya jika alertText tidak kosong
                 if (alertText.isNotEmpty)
                   Container(
                     margin: const EdgeInsets.only(bottom: 15),
@@ -844,13 +841,11 @@ class _HomeScreenState extends State<HomeScreen> {
           double harga = double.parse(menu['harga'].toString());
           int waktu = menu['estimasi_waktu'] ?? 0;
 
-          // ✨ TAMBAHKAN GestureDetector DI SINI
           return GestureDetector(
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  // Pastikan file 'menu_detail.dart' sudah di-import di atas!
                   builder: (context) => MenuDetailScreen(menuData: menu),
                 ),
               );
@@ -920,7 +915,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-          ); // Tutup GestureDetector
+          );
         },
       ),
     );
@@ -983,13 +978,11 @@ class _HomeScreenState extends State<HomeScreen> {
         String namaKantin = menu['kantin']?['nama_kantin'] ?? 'Kantin';
         double harga = double.tryParse(menu['harga'].toString()) ?? 0;
 
-        // ✨ TAMBAHKAN GestureDetector DI SINI
         return GestureDetector(
           onTap: () {
             Navigator.push(
               context,
               MaterialPageRoute(
-                // Pastikan 'menu_detail.dart' di-import
                 builder: (context) => MenuDetailScreen(menuData: menu),
               ),
             );
@@ -1030,6 +1023,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           fontSize: 16,
                           color: Color(0xFF2C3138),
                         ),
+                        // ✨ DITAMBAHKAN: Hindari teks overflow
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -1038,6 +1034,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: Colors.grey.shade500,
                           fontSize: 13,
                         ),
+                        // ✨ DITAMBAHKAN: Hindari teks overflow
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 8),
                       Row(
@@ -1077,7 +1076,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-        ); // Tutup GestureDetector
+        );
       },
     );
   }

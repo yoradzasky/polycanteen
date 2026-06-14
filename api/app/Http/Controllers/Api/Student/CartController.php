@@ -34,8 +34,24 @@ class CartController extends Controller
 
             // Hitung total dan subtotal untuk setiap item
             $cartItems->each(function ($item) {
-                // Pastikan varian berbentuk array atau collection sebelum di-sum
-                $varianPrice = collect($item->varian_selected)->sum('harga') ?? 0;
+                $varianPrice = 0;
+                
+                if (is_array($item->varian_selected)) {
+                    foreach ($item->varian_selected as $key => $value) {
+                        // Jika Wajib (Associative Array dengan key 'harga')
+                        if (is_array($value) && isset($value['harga'])) {
+                            $varianPrice += $value['harga'];
+                        } 
+                        // Jika Opsional (Array dari Associative Arrays)
+                        elseif (is_array($value)) {
+                            foreach ($value as $v) {
+                                if (is_array($v) && isset($v['harga'])) {
+                                    $varianPrice += $v['harga'];
+                                }
+                            }
+                        }
+                    }
+                }
                 
                 $itemPrice = $item->menu->harga + $varianPrice;
                 $item->item_subtotal = $itemPrice * $item->jumlah;
@@ -82,8 +98,8 @@ class CartController extends Controller
 
             // CEK MANUAL APAKAH ADA ITEM YANG VARIAN-NYA PERSIS SAMA
             foreach ($existingItems as $item) {
-                // Membandingkan array secara langsung di PHP
-                $isVarianSame = $item->varian_selected == ($validated['varian_selected'] ?? null);
+                // Gunakan helper khusus agar aman meski urutan key/value JSON berantakan
+                $isVarianSame = $this->isVarianEqual($item->varian_selected, $validated['varian_selected'] ?? null);
 
                 if ($isVarianSame) {
                     $cartItem = $item;
@@ -165,23 +181,33 @@ class CartController extends Controller
 
     /**
      * DELETE /api/student/cart/{menuId}
-     * Hapus berdasarkan menu_id (Sesuai aksi tombol Minus di Flutter)
+     * Hapus berdasarkan menu_id
      */
     public function destroy(Request $request, $menuId)
     {
         try {
             $mahasiswaId = Auth::guard('sanctum')->user()->id ?? Auth::id();
 
-            // Cari item keranjang berdasarkan menu_id milik mahasiswa tersebut
-            $cartItem = Keranjang::where('mahasiswa_id', $mahasiswaId)
-                                 ->where('menu_id', $menuId)
-                                 ->first();
+            // Ambil SEMUA data keranjang untuk menu_id ini
+            $cartItems = Keranjang::where('mahasiswa_id', $mahasiswaId)
+                                  ->where('menu_id', $menuId)
+                                  ->get();
 
-            if (!$cartItem) {
+            if ($cartItems->isEmpty()) {
                 return response()->json(['success' => false, 'message' => 'Cart item not found'], 404);
             }
 
-            // Logika cerdas: Jika jumlah > 1, kurangi 1. Jika 1, hapus baris data.
+            // CEK LOGIKA: Jika ada lebih dari 1 baris (artinya ada > 1 varian untuk menu ini)
+            if ($cartItems->count() > 1) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Menu ini memiliki beberapa varian di keranjang. Silakan kurangi di Halaman Keranjang.'
+                ], 400); // Kembalikan error 400 Bad Request
+            }
+
+            // Jika hanya ada 1 baris, aman untuk dikurangi
+            $cartItem = $cartItems->first();
+
             if ($cartItem->jumlah > 1) {
                 $cartItem->decrement('jumlah');
                 $message = 'Item quantity decreased';
@@ -216,6 +242,49 @@ class CartController extends Controller
             ], 200);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Error clearing cart: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Membandingkan dua array varian secara akurat tanpa peduli urutan elemennya
+     */
+    private function isVarianEqual($varian1, $varian2)
+    {
+        if (is_null($varian1) && is_null($varian2)) return true;
+        if (is_null($varian1) || is_null($varian2)) return false;
+
+        // Pastikan keduanya berbentuk array murni
+        $v1 = json_decode(json_encode($varian1), true);
+        $v2 = json_decode(json_encode($varian2), true);
+
+        // Sortir sampai ke akar (nested arrays)
+        $this->recursiveSort($v1);
+        $this->recursiveSort($v2);
+
+        return json_encode($v1) === json_encode($v2);
+    }
+
+    /**
+     * Fungsi rekursif untuk menyortir array
+     */
+    private function recursiveSort(&$array)
+    {
+        if (!is_array($array)) return;
+
+        // Cek apakah array ini asosiatif (punya key string) atau sequential (index angka)
+        $isAssoc = array_keys($array) !== range(0, count($array) - 1);
+
+        if ($isAssoc) {
+            ksort($array); // Urutkan berdasarkan Key (Misal: "Ekstra", "Porsi")
+        } else {
+            sort($array);  // Urutkan berdasarkan Value (Misal List topping: "Keju", "Sosis")
+        }
+
+        // Jalankan fungsi ini ke array di dalamnya
+        foreach ($array as &$value) {
+            if (is_array($value)) {
+                $this->recursiveSort($value);
+            }
         }
     }
 }

@@ -167,19 +167,18 @@ class _CanteenMenuScreenState extends State<CanteenMenuScreen> {
   }
 
   // ✨ SUDAH DIBERSIHKAN DARI PARAMETER TOPPING
-  Future<void> _prosesTambahKeranjang(
-    Map menu,
-    int qty,
-    Map? varian,
-  ) async {
+  Future<void> _prosesTambahKeranjang(Map menu, int qty, Map? varian) async {
     try {
+      // 1. Tembak API Laravel untuk tambah keranjang
       await _menuService.addToCart(
         menuId: menu['id'],
         jumlah: qty,
         varianSelected: varian,
       );
 
-      _tambahKeStateKeranjang(menu, qty, varian);
+      // 2. GANTI logika manual tadi dengan menarik ulang data keranjang
+      // yang sudah dikalkulasi dengan benar oleh backend Laravel
+      await fetchCartData();
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -216,23 +215,6 @@ class _CanteenMenuScreenState extends State<CanteenMenuScreen> {
     } else {
       _prosesTambahKeranjang(menu, 1, null);
     }
-  }
-
-  // ✨ SUDAH DIBERSIHKAN DARI PARAMETER TOPPING
-  void _tambahKeStateKeranjang(Map menu, int qty, Map? varian) {
-    double hargaDasar =
-        double.tryParse(menu['harga']?.toString() ?? '0') ?? 0.0;
-
-    setState(() {
-      cartItems.add({
-        'menu_id': menu['id'],
-        'nama_item': menu['nama_item'],
-        'harga_dasar': hargaDasar,
-        'jumlah': qty,
-        'varian_selected': varian,
-        // topping_selected dihapus
-      });
-    });
   }
 
   int _getQtyInCart(int menuId) {
@@ -691,24 +673,45 @@ class _CanteenMenuScreenState extends State<CanteenMenuScreen> {
                                                 if (qty > 0) ...[
                                                   GestureDetector(
                                                     onTap: () async {
+                                                      // 1. Cek ada berapa baris/macam varian untuk menu ini di keranjang
+                                                      int
+                                                      macamVarian = cartItems
+                                                          .where(
+                                                            (item) =>
+                                                                item['menu_id'] ==
+                                                                menu['id'],
+                                                          )
+                                                          .length;
+
+                                                      // 2. Blokir jika variannya lebih dari 1 macam
+                                                      if (macamVarian > 1) {
+                                                        ScaffoldMessenger.of(
+                                                          context,
+                                                        ).showSnackBar(
+                                                          const SnackBar(
+                                                            content: Text(
+                                                              'Menu ini memiliki varian berbeda. Silakan atur jumlahnya di halaman Keranjang.',
+                                                            ),
+                                                            backgroundColor:
+                                                                Colors.orange,
+                                                            duration: Duration(
+                                                              seconds: 2,
+                                                            ),
+                                                          ),
+                                                        );
+                                                        return; // Hentikan proses, jangan tembak API
+                                                      }
+
+                                                      // 3. Lanjutkan proses jika hanya 1 macam varian
                                                       try {
                                                         await _menuService
                                                             .decreaseCartQty(
                                                               menu['id'],
                                                             );
-                                                        setState(() {
-                                                          int idx = cartItems
-                                                              .lastIndexWhere(
-                                                                (item) =>
-                                                                    item['menu_id'] ==
-                                                                    menu['id'],
-                                                              );
-                                                          if (idx != -1) {
-                                                            cartItems.removeAt(
-                                                              idx,
-                                                            );
-                                                          }
-                                                        });
+
+                                                        // Panggil fetchCartData() agar state selalu sinkron
+                                                        // dengan perhitungan valid dari database (decrement vs delete baris)
+                                                        fetchCartData();
                                                       } catch (e) {
                                                         if (mounted) {
                                                           ScaffoldMessenger.of(
@@ -723,6 +726,8 @@ class _CanteenMenuScreenState extends State<CanteenMenuScreen> {
                                                                       '',
                                                                     ),
                                                               ),
+                                                              backgroundColor:
+                                                                  Colors.red,
                                                             ),
                                                           );
                                                         }

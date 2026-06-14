@@ -154,7 +154,24 @@ class DatabaseSeeder extends Seeder
                     'deskripsi' => $faker->sentence,
                     'estimasi_waktu' => $faker->numberBetween(2, 15), // Estimasi acak 2-15 menit
                     'pilihan_layanan' => ['dine_in', 'takeaway'],
-                    'varian' => [['nama' => 'Original', 'harga' => 0], ['nama' => 'Spesial', 'harga' => 3000]],
+                    'varian' => [
+                        [
+                            'nama' => 'Pilihan Porsi', 
+                            'tipe' => 'wajib',
+                            'pilihan' => [
+                                ['nama' => 'Original', 'harga' => 0],
+                                ['nama' => 'Jumbo', 'harga' => 3000]
+                            ]
+                        ],
+                        [
+                            'nama' => 'Topping Tambahan', 
+                            'tipe' => 'opsional',
+                            'pilihan' => [
+                                ['nama' => 'Telur Dadar', 'harga' => 4000],
+                                ['nama' => 'Sosis', 'harga' => 3000]
+                            ]
+                        ]
+                    ],
                 ]);
                 $menusByKantin[$kantin->id][] = $menu;
             }
@@ -187,7 +204,9 @@ class DatabaseSeeder extends Seeder
                         'harga_saat_beli' => $hargaBeli,
                         'jumlah_pesanan' => $qty,
                         'subtotal' => $subtotalItem,
-                        'varian_snapshot' => ['nama' => 'Original', 'harga' => 0],
+                        'varian_snapshot' => [
+                            'Pilihan Porsi' => ['nama' => 'Original', 'harga' => 0]
+                        ],
                     ];
                 }
 
