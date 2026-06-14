@@ -1,7 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\CanteenController;
-use App\Http\Controllers\Admin\BuyerController; // Jangan lupa tambahkan ini
+use App\Http\Controllers\Admin\BuyerApprovalController;
+use App\Http\Controllers\Admin\BuyerController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -82,6 +83,21 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->name('admin.')->grou
         ->name('buyers.updateExpiration');
     // URL: PATCH /admin/buyers/{id}/expiration
     // Name: admin.buyers.updateExpiration
+
+    // ==========================================
+    // PERSETUJUAN AKUN PEMBELI
+    // ==========================================
+    Route::get('/approvals', [BuyerApprovalController::class, 'index'])
+        ->name('approvals.index');
+
+    Route::get('/approvals/{application}', [BuyerApprovalController::class, 'show'])
+        ->name('approvals.show');
+
+    Route::post('/approvals/{application}/approve', [BuyerApprovalController::class, 'approve'])
+        ->name('approvals.approve');
+
+    Route::post('/approvals/{application}/reject', [BuyerApprovalController::class, 'reject'])
+        ->name('approvals.reject');
 
 });
 

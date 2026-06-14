@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             MahasiswaSeeder::class,
             PemilikSeeder::class,
             PegawaiSeeder::class,
+            BuyerApplicationSeeder::class,
 
             // 4. Menu (butuh Kantin)
             MenuSeeder::class,
