@@ -28,8 +28,9 @@ class _OrderListScreenState extends State<OrderListScreen> {
   bool _isLoading = true;
   String _userRole = 'pegawai';
 
-  Color get _primaryColor =>
-      _userRole == 'pegawai' ? const Color(0xFF5E7AC4) : const Color(0xFF3949AB);
+  Color get _primaryColor => _userRole == 'pegawai'
+      ? const Color(0xFF5E7AC4)
+      : const Color(0xFF3949AB);
 
   @override
   void initState() {
@@ -88,9 +89,8 @@ class _OrderListScreenState extends State<OrderListScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => Center(
-        child: CircularProgressIndicator(color: _primaryColor),
-      ),
+      builder: (context) =>
+          Center(child: CircularProgressIndicator(color: _primaryColor)),
     );
 
     try {
@@ -128,6 +128,12 @@ class _OrderListScreenState extends State<OrderListScreen> {
       return status == 'selesai'; // Selesai
     }).toList();
 
+    double totalPendapatan = _orders
+        .where((o) => o['status_pesanan'] == 'selesai')
+        .fold(0.0, (sum, o) => sum + (double.tryParse(o['total_harga']?.toString() ?? '0') ?? 0.0));
+
+    int totalSelesai = _orders.where((o) => o['status_pesanan'] == 'selesai').length;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6FB),
       appBar: AppBar(
@@ -140,11 +146,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              Icons.restaurant,
-              color: _primaryColor,
-              size: 20,
-            ),
+            child: Icon(Icons.restaurant, color: _primaryColor, size: 20),
           ),
         ),
         title: Text(
@@ -158,76 +160,80 @@ class _OrderListScreenState extends State<OrderListScreen> {
         ),
         actions: [
           if (_userRole == 'pemilik')
-          Padding(
-            padding: const EdgeInsets.only(right: 20.0, top: 8.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  height: 28,
-                  child: Transform.scale(
-                    scale: 0.8,
-                    child: Switch(
-                      value: _isBuka,
-                      onChanged: (val) async {
-                        // 1. Simpan status lama buat berjaga-jaga
-                        bool oldStatus = _isBuka;
+            Padding(
+              padding: const EdgeInsets.only(right: 20.0, top: 8.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    height: 28,
+                    child: Transform.scale(
+                      scale: 0.8,
+                      child: Switch(
+                        value: _isBuka,
+                        onChanged: (val) async {
+                          // 1. Simpan status lama buat berjaga-jaga
+                          bool oldStatus = _isBuka;
 
-                        // 2. Ubah UI langsung (Optimistic Update)
-                        setState(() {
-                          _isBuka = val;
-                        });
-
-                        // 3. Tembak API-nya
-                        try {
-                          String statusString = val ? 'buka' : 'tutup';
-                          await _orderService.updateStatusKantin(statusString);
-
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Kantin sekarang $statusString'),
-                                backgroundColor: Colors.green,
-                                duration: const Duration(seconds: 2),
-                              ),
-                            );
-                          }
-                        } catch (e) {
-                          // 4. Jika gagal, kembalikan posisi toggle ke semula
+                          // 2. Ubah UI langsung (Optimistic Update)
                           setState(() {
-                            _isBuka = oldStatus;
+                            _isBuka = val;
                           });
 
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Gagal mengubah status: $e'),
-                                backgroundColor: Colors.red,
-                              ),
+                          // 3. Tembak API-nya
+                          try {
+                            String statusString = val ? 'buka' : 'tutup';
+                            await _orderService.updateStatusKantin(
+                              statusString,
                             );
+
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Kantin sekarang $statusString',
+                                  ),
+                                  backgroundColor: Colors.green,
+                                  duration: const Duration(seconds: 2),
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            // 4. Jika gagal, kembalikan posisi toggle ke semula
+                            setState(() {
+                              _isBuka = oldStatus;
+                            });
+
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Gagal mengubah status: $e'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
                           }
-                        }
-                      },
-                      activeThumbColor: Colors.white,
-                      activeTrackColor: Colors.greenAccent.shade400,
-                      inactiveThumbColor: Colors.white,
-                      inactiveTrackColor: Colors.redAccent,
+                        },
+                        activeThumbColor: Colors.white,
+                        activeTrackColor: Colors.greenAccent.shade400,
+                        inactiveThumbColor: Colors.white,
+                        inactiveTrackColor: Colors.redAccent,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  _isBuka ? "BUKA" : "TUTUP",
-                  style: TextStyle(
-                    color: _isBuka ? Colors.white : Colors.redAccent.shade100,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
+                  const SizedBox(height: 2),
+                  Text(
+                    _isBuka ? "BUKA" : "TUTUP",
+                    style: TextStyle(
+                      color: _isBuka ? Colors.white : Colors.redAccent.shade100,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
         ],
       ),
       body: RefreshIndicator(
@@ -263,7 +269,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                       _buildSummaryCard(
                         Icons.account_balance_wallet,
                         'Pendapatan',
-                        'Rp 1,5JT',
+                        'Rp ${NumberFormat('#,###', 'id_ID').format(totalPendapatan)}',
                         const Color(0xFFF2994A),
                       ),
                       const SizedBox(width: 12),
@@ -271,7 +277,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                       _buildSummaryCard(
                         Icons.receipt_long,
                         'Total Selesai',
-                        '${_orders.where((o) => o['status_pesanan'] == 'selesai').length}',
+                        '$totalSelesai',
                         const Color(0xFFA29BFE),
                       ),
                     ],
@@ -341,37 +347,44 @@ class _OrderListScreenState extends State<OrderListScreen> {
             Expanded(
               child: _isLoading
                   ? Center(
-                      child: CircularProgressIndicator(
-                        color: _primaryColor,
-                      ),
+                      child: CircularProgressIndicator(color: _primaryColor),
                     )
                   : currentOrders.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.receipt_long,
-                            size: 80,
-                            color: Colors.grey.shade300,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            _selectedTabIndex == 0
-                                ? 'Tidak ada pesanan masuk'
-                                : _selectedTabIndex == 1
-                                ? 'Tidak ada pesanan diproses'
-                                : 'Tidak ada pesanan selesai',
-                            style: TextStyle(
-                              color: Colors.grey.shade500,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
+                  ? ListView(
+                      physics: const AlwaysScrollableScrollPhysics(), // <-- INI KUNCI BIAR BISA DI-REFRESH
+                      children: [
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.5, // Kasih tinggi biar bisa ditarik
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.receipt_long,
+                                  size: 80,
+                                  color: Colors.grey.shade300,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  _selectedTabIndex == 0
+                                      ? 'Tidak ada pesanan masuk'
+                                      : _selectedTabIndex == 1
+                                      ? 'Tidak ada pesanan diproses'
+                                      : 'Tidak ada pesanan selesai',
+                                  style: TextStyle(
+                                    color: Colors.grey.shade500,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     )
                   : ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       itemCount: currentOrders.length,
                       itemBuilder: (context, index) {
@@ -497,13 +510,11 @@ class _OrderListScreenState extends State<OrderListScreen> {
                 fontSize: 13,
               ),
             ),
-            if (badgeCount > 0) ...[
+            if (badgeCount > 0 && !isSelected) ...[
               const SizedBox(width: 6),
               CircleAvatar(
                 radius: 10,
-                backgroundColor: isSelected
-                    ? Colors.white
-                    : _primaryColor.withValues(alpha: 0.1),
+                backgroundColor: _primaryColor.withValues(alpha: 0.1),
                 child: Text(
                   badgeCount.toString(),
                   style: TextStyle(
@@ -1447,6 +1458,7 @@ class _RejectOrderDialogState extends State<RejectOrderDialog> {
                         String reason = _selectedOption == 'Lainnya'
                             ? _customReasonController.text
                             : _selectedOption;
+                        Navigator.pop(context);
                         widget.onReject(reason);
                       },
                       style: ElevatedButton.styleFrom(

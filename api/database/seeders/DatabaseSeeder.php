@@ -32,8 +32,54 @@ class DatabaseSeeder extends Seeder
             'status_akun' => 'aktif',
         ]);
 
-        // 2. Kantin (10 records)
-        $kantins = [];
+        // === TEST USER PEMILIK (Bu Mariyam) ===
+        $testKantin = Kantin::create([
+            'nama_kantin' => 'Kantin Bu Mariyam',
+            'lokasi_lengkap' => 'Kampus Politeknik',
+            'longitude' => 107.6015,
+            'latitude' => -6.8957,
+            'status_toko' => 'buka',
+            'logo_path' => null 
+        ]);
+
+        $testUser = User::create([
+            'username' => 'Bu Mariyam',
+            'email' => 'pemilik1@example.com',
+            'password' => Hash::make('password123'),
+            'role' => 'pemilik',
+            'status_akun' => 'aktif',
+            'foto_profile' => null,
+        ]);
+
+        Pemilik::create([
+            'user_id' => $testUser->id,
+            'kantin_id' => $testKantin->id,
+            'nama_pemilik' => 'Bu Mariyam',
+            'no_telp' => '081290142199',
+            'foto_profil_path' => null
+        ]);
+
+        // === TEST USER PEGAWAI (Pak Budi) ===
+        $testUserPegawai = User::create([
+            'username' => 'Pak Budi Pegawai',
+            'email' => 'pegawai1@example.com',
+            'password' => Hash::make('password123'),
+            'role' => 'pegawai',
+            'status_akun' => 'aktif',
+            'foto_profile' => null,
+        ]);
+
+        Pegawai::create([
+            'user_id' => $testUserPegawai->id,
+            'kantin_id' => $testKantin->id,
+            'nama_karyawan' => 'Pak Budi',
+            'no_telp' => '081234567890',
+            'foto_profil_path' => null
+        ]);
+
+        // === REGULAR DATA (10 KANTINS) ===
+        // 2. Kantin (Total 11 termasuk Bu Mariyam)
+        $kantins = [$testKantin]; // Masukkan Bu Mariyam ke array agar ikut di-seed menu-nya
         for ($i = 1; $i <= 10; $i++) {
             $kantins[] = Kantin::create([
                 'nama_kantin' => 'Kantin ' . $faker->company,
@@ -41,12 +87,14 @@ class DatabaseSeeder extends Seeder
                 'longitude' => $faker->longitude,
                 'latitude' => $faker->latitude,
                 'status_toko' => 'buka',
-                'logo_path' => null
+                'logo_path' => 'https://picsum.photos/seed/' . rand(1, 1000) . '/400/400'
             ]);
         }
 
-        // 3 & 4. Pemilik & User Pemilik (10 records)
-        foreach ($kantins as $kantin) {
+        // 3 & 4. Pemilik & User Pemilik (10 records tambahan)
+        // Lewati index 0 karena itu kantin Bu Mariyam yang sudah ada pemiliknya
+        for ($i = 1; $i <= 10; $i++) {
+            $kantin = $kantins[$i];
             $user = User::create([
                 'username' => 'pemilik_' . $kantin->id,
                 'email' => 'pemilik' . $kantin->id . '@kantin.com',
@@ -63,27 +111,14 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        // 5 & 6. Pegawai & User Pegawai (10 records)
-        foreach ($kantins as $kantin) {
-            $user = User::create([
-                'username' => 'pegawai_' . $kantin->id,
-                'email' => 'pegawai' . $kantin->id . '@kantin.com',
-                'password' => Hash::make('password123'),
-                'role' => 'pegawai',
-                'status_akun' => 'aktif',
-            ]);
-            Pegawai::create([
-                'user_id' => $user->id,
-                'kantin_id' => $kantin->id,
-                'nama_karyawan' => $faker->name,
-                'no_telp' => $faker->phoneNumber,
-                'foto_profil_path' => null
-            ]);
-        }
-
-        // 7 & 8. Mahasiswa & User Mahasiswa (10 records)
+        // 7 & 8. Mahasiswa & User Mahasiswa (15 Mahasiswa)
         $mahasiswas = [];
-        for ($i = 1; $i <= 10; $i++) {
+        $daftarJurusan = [
+            'Teknik Elektro', 'Teknik Mesin', 'Akuntansi', 
+            'Teknik Sipil', 'Administrasi Bisnis', 'Teknik Informatika'
+        ];
+
+        for ($i = 1; $i <= 15; $i++) {
             $user = User::create([
                 'username' => 'mahasiswa_' . $i,
                 'email' => 'mahasiswa' . $i . '@kantin.com',
@@ -91,93 +126,127 @@ class DatabaseSeeder extends Seeder
                 'role' => 'mahasiswa',
                 'status_akun' => 'aktif',
             ]);
+            
             $mahasiswas[] = Mahasiswa::create([
                 'user_id' => $user->id,
                 'nama_mahasiswa' => $faker->name,
                 'nim' => 'NIM' . $faker->unique()->randomNumber(8, true),
+                'jurusan' => $daftarJurusan[array_rand($daftarJurusan)], 
                 'no_telp' => $faker->phoneNumber,
                 'masa_aktif' => now()->addYears(4)->toDateString(),
                 'foto_profil_path' => null
             ]);
         }
 
-        // 9. Menu (10 records, 1 per kantin)
-        $menus = [];
+        // 9. Menu (Masing-masing kantin 10 Menu -> Total 110 Menu)
+        // Kita simpan ke dalam array 2 dimensi agar mudah diambil per kantin saat membuat order
+        $menusByKantin = [];
         foreach ($kantins as $kantin) {
-            $menus[] = Menu::create([
-                'kantin_id' => $kantin->id,
-                'nama_item' => 'Menu ' . $faker->word,
-                'kategori' => $faker->randomElement(['Makanan', 'Minuman', 'Cemilan']),
-                'harga' => $faker->numberBetween(5000, 25000),
-                'foto_menu' => null,
-                'status_stok' => true,
-                'deskripsi' => $faker->sentence,
-                'estimasi_waktu' => $faker->numberBetween(5, 30),
-                'pilihan_layanan' => ['dine_in', 'takeaway'],
-                'varian' => [['nama' => 'Biasa', 'harga_tambahan' => 0], ['nama' => 'Jumbo', 'harga_tambahan' => 5000]],
-                'topping' => [['nama' => 'Keju', 'harga' => 3000, 'required' => false]]
-            ]);
+            $menusByKantin[$kantin->id] = [];
+            for ($j = 1; $j <= 10; $j++) {
+                $menu = Menu::create([
+                    'kantin_id' => $kantin->id,
+                    'nama_item' => $faker->randomElement(['Nasi', 'Es', 'Ayam', 'Mie', 'Kopi', 'Jus']) . ' ' . $faker->word,
+                    'kategori' => $faker->randomElement(['Makanan', 'Minuman', 'Cemilan']),
+                    'harga' => $faker->numberBetween(5, 25) * 1000, // Kelipatan ribuan (5000 - 25000)
+                    'foto_menu' => 'https://picsum.photos/seed/' . rand(1, 1000) . '/400/400',
+                    'status_stok' => true,
+                    'deskripsi' => $faker->sentence,
+                    'estimasi_waktu' => $faker->numberBetween(2, 15), // Estimasi acak 2-15 menit
+                    'pilihan_layanan' => ['dine_in', 'takeaway'],
+                    'varian' => [['nama' => 'Original', 'harga' => 0], ['nama' => 'Spesial', 'harga' => 3000]],
+                ]);
+                $menusByKantin[$kantin->id][] = $menu;
+            }
         }
 
-        // 10. Keranjang (10 records)
-        for ($i = 0; $i < 10; $i++) {
-            Keranjang::create([
-                'mahasiswa_id' => $mahasiswas[$i]->id,
-                'menu_id' => $menus[$i]->id,
-                'jumlah' => $faker->numberBetween(1, 3),
-                'varian_selected' => ['nama' => 'Biasa', 'harga_tambahan' => 0],
-                'topping_selected' => [['nama' => 'Keju', 'harga' => 3000]],
-            ]);
-        }
+        // 10. Pesanan, PesananDetail, Payment, & Ulasan
+        // PERBAIKAN: Setiap mahasiswa akan melakukan 10 kali transaksi (Total 150 Pesanan)
+        $nomorUrutAntrian = 1;
 
-        // 11. Pesanan (10 records)
-        // 12. PesananDetail (10 records)
-        // 13. Payment (10 records)
-        // 14. Ulasan (10 records)
-        for ($i = 0; $i < 10; $i++) {
-            $harga = $menus[$i]->harga;
-            $jumlah = $faker->numberBetween(1, 3);
-            $total_harga = $harga * $jumlah + 3000; // include topping 3000
+        foreach ($mahasiswas as $mhs) {
+            for ($k = 0; $k < 10; $k++) { 
+                $kantinPilihan = $faker->randomElement($kantins);
+                $menuKantinTersedia = $menusByKantin[$kantinPilihan->id];
+                $jumlahMacamMenu = $faker->numberBetween(2, 4);
+                $menuDipesan = $faker->randomElements($menuKantinTersedia, $jumlahMacamMenu);
 
-            $pesanan = Pesanan::create([
-                'mahasiswa_id' => $mahasiswas[$i]->id,
-                'kantin_id' => $menus[$i]->kantin_id,
-                'tipe_pesanan' => $faker->randomElement(['dine_in', 'take_away']),
-                // Status dibuat acak agar semua Tab di Flutter terisi
-                'status_pesanan' => $faker->randomElement(['dibayar', 'dimasak', 'dalam_perjalanan', 'selesai', 'ditolak']),
-                'total_harga' => $total_harga,
-                'nomor_antrian' => 'A-0' . str_pad($i + 1, 2, '0', STR_PAD_LEFT),
-                'catatan_pesanan' => $faker->sentence
-            ]);
+                $totalHargaPesanan = 0;
+                $detailsToInsert = [];
 
-            PesananDetail::create([
-                'pesanan_id' => $pesanan->id,
-                'menu_id' => $menus[$i]->id,
-                'harga_saat_beli' => $harga,
-                'jumlah_pesanan' => $jumlah,
-                'subtotal' => $total_harga,
-                'varian_snapshot' => ['nama' => 'Biasa', 'harga_tambahan' => 0],
-                'topping_snapshot' => [['nama' => 'Keju', 'harga' => 3000]]
-            ]);
+                foreach ($menuDipesan as $menu) {
+                    $qty = $faker->numberBetween(1, 3);
+                    $hargaBeli = $menu->harga;
+                    $hargaTopping = 2000;
+                    $subtotalItem = ($hargaBeli + $hargaTopping) * $qty;
+                    
+                    $totalHargaPesanan += $subtotalItem;
 
-            Payment::create([
-                'pesanan_id' => $pesanan->id,
-                'metode_bayar' => 'qris',
-                'status_bayar' => 'sukses',
-                'log_transaksi' => '{"transaction_status":"settlement"}',
-                'nominal' => $total_harga,
-                'waktu_bayar' => now(),
-                'midtrans_order_id' => $pesanan->nomor_antrian,
-                'midtrans_snap_token' => 'token_' . $faker->word
-            ]);
+                    $detailsToInsert[] = [
+                        'menu_id' => $menu->id,
+                        'harga_saat_beli' => $hargaBeli,
+                        'jumlah_pesanan' => $qty,
+                        'subtotal' => $subtotalItem,
+                        'varian_snapshot' => ['nama' => 'Original', 'harga' => 0],
+                    ];
+                }
 
-            Ulasan::create([
-                'pesanan_id' => $pesanan->id,
-                'mahasiswa_id' => $mahasiswas[$i]->id,
-                'kantin_id' => $menus[$i]->kantin_id,
-                'rating' => $faker->numberBetween(3, 5),
-                'komentar' => $faker->sentence
-            ]);
+                // PERBAIKAN: Selesai mendominasi 70% dari total pesanan, sisanya acak untuk variasi
+                $statusPesananAcak = $faker->randomElement([
+                    'selesai', 'selesai', 'selesai', 'selesai', 'selesai', 'selesai', 'selesai', 
+                    'dibayar', 'dimasak', 'dalam_perjalanan', 'ditolak'
+                ]);
+
+                $pesanan = Pesanan::create([
+                    'mahasiswa_id' => $mhs->id,
+                    'kantin_id' => $kantinPilihan->id,
+                    'tipe_pesanan' => $faker->randomElement(['dine_in', 'take_away']),
+                    'status_pesanan' => $statusPesananAcak,
+                    'total_harga' => $totalHargaPesanan,
+                    'nomor_antrian' => 'A-' . str_pad($nomorUrutAntrian++, 3, '0', STR_PAD_LEFT),
+                    'catatan_pesanan' => $faker->sentence
+                ]);
+
+                // Logika Payment: Jika ditolak, anggap saja gagal/refund. Selain itu sukses.
+                $statusBayar = ($statusPesananAcak === 'ditolak') ? 'gagal' : 'sukses';
+
+                Payment::create([
+                    'pesanan_id' => $pesanan->id,
+                    'metode_bayar' => 'qris',
+                    'status_bayar' => $statusBayar,
+                    'log_transaksi' => '{"transaction_status":"' . ($statusBayar == 'sukses' ? 'settlement' : 'cancel') . '"}',
+                    'nominal' => $totalHargaPesanan,
+                    'waktu_bayar' => now(),
+                    'midtrans_order_id' => $pesanan->nomor_antrian,
+                    'midtrans_snap_token' => 'token_' . $faker->uuid
+                ]);
+
+                // Buat Detail Pesanan & Ulasan per Menu
+                foreach ($detailsToInsert as $detail) {
+                    PesananDetail::create([
+                        'pesanan_id' => $pesanan->id,
+                        'menu_id' => $detail['menu_id'],
+                        'harga_saat_beli' => $detail['harga_saat_beli'],
+                        'jumlah_pesanan' => $detail['jumlah_pesanan'],
+                        'subtotal' => $detail['subtotal'],
+                        'varian_snapshot' => $detail['varian_snapshot'],
+                    ]);
+
+                    // Ulasan HANYA dibuat jika status pesanannya 'selesai'
+                    if ($statusPesananAcak === 'selesai') {
+                        Ulasan::create([
+                            'pesanan_id' => $pesanan->id,
+                            'mahasiswa_id' => $mhs->id,
+                            'kantin_id' => $kantinPilihan->id,
+                            'menu_id' => $detail['menu_id'],
+                            'rating' => $faker->numberBetween(3, 5), 
+                            'komentar' => $faker->randomElement([
+                                'Enak banget!', 'Lumayan lah', 'Porsinya pas', 'Bumbunya kerasa', 'Rekomended!'
+                            ])
+                        ]);
+                    }
+                }
+            }
         }
     }
 }

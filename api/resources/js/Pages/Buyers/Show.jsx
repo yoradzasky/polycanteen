@@ -48,9 +48,9 @@ export default function Show({ buyer }) {
     );
 
     return (
-        <AdminLayout 
-            leftContent={renderBackButton} 
-            title="Detail Mahasiswa" 
+        <AdminLayout
+            leftContent={renderBackButton}
+            title="Detail Mahasiswa"
             description={renderBreadcrumb}
         >
             <Head title={`Detail Mahasiswa - ${data.name || "Loading..."}`} />
@@ -60,10 +60,15 @@ export default function Show({ buyer }) {
                     <>
                         {/* Card 1: Profil User */}
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6 flex flex-col md:flex-row items-start md:items-center gap-6">
-                            <div className="relative">
+                            <div className="relative shrink-0">
+                                {/* --- PERBAIKAN: Foto Profil Show.jsx --- */}
                                 {data.avatar ? (
                                     <img
-                                        src={data.avatar}
+                                        src={
+                                            data.avatar.startsWith("http")
+                                                ? data.avatar
+                                                : `/storage/${data.avatar}`
+                                        }
                                         alt={data.name}
                                         className="w-20 h-20 rounded-xl object-cover"
                                     />
@@ -79,6 +84,8 @@ export default function Show({ buyer }) {
                                             : "U"}
                                     </div>
                                 )}
+                                {/* --------------------------------------- */}
+
                                 <span
                                     className={`absolute -bottom-1 -right-1 w-4 h-4 border-2 border-white rounded-full ${data.status === "Aktif" ? "bg-green-500" : "bg-red-500"}`}
                                 ></span>
@@ -96,6 +103,7 @@ export default function Show({ buyer }) {
                                 </div>
 
                                 <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-600">
+                                    {/* Email */}
                                     <div className="flex items-center gap-2">
                                         <svg
                                             className="w-4 h-4 text-gray-400"
@@ -112,6 +120,27 @@ export default function Show({ buyer }) {
                                         </svg>
                                         {data.email}
                                     </div>
+
+                                    {/* --- TAMBAHAN BARU: NIM Mahasiswa --- */}
+                                    <div className="flex items-center gap-2">
+                                        <svg
+                                            className="w-4 h-4 text-gray-400"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V8a2 2 0 00-2-2h-4m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h3"
+                                            />
+                                        </svg>
+                                        {data.nim || "NIM Tidak Tersedia"}
+                                    </div>
+                                    {/* ------------------------------------ */}
+
+                                    {/* No HP */}
                                     <div className="flex items-center gap-2">
                                         <svg
                                             className="w-4 h-4 text-[#3949AB]"
@@ -128,6 +157,8 @@ export default function Show({ buyer }) {
                                         </svg>
                                         {data.phone}
                                     </div>
+
+                                    {/* Tanggal Bergabung */}
                                     <div className="flex items-center gap-2">
                                         <svg
                                             className="w-4 h-4 text-[#3949AB]"
@@ -279,9 +310,9 @@ export default function Show({ buyer }) {
                                             data.subscription.days_left > 0
                                                 ? `Masa aktif akan berakhir dalam ${data.subscription.days_left} hari. Segera perpanjang.`
                                                 : data.subscription
-                                                      .days_left === 0
-                                                ? "Masa aktif sudah kedaluwarsa. Silakan perpanjang."
-                                                : "Masa aktif masih panjang."}
+                                                        .days_left === 0
+                                                  ? "Masa aktif sudah kedaluwarsa. Silakan perpanjang."
+                                                  : "Masa aktif masih panjang."}
                                         </div>
                                     </div>
                                 </div>

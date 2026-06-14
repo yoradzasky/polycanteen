@@ -19,7 +19,6 @@ return new class extends Migration
             $table->integer('jumlah_pesanan');
             $table->decimal('subtotal', 10, 2);
             $table->json('varian_snapshot')->nullable();
-            $table->json('topping_snapshot')->nullable();
             $table->timestamps();
         });
     }

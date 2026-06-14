@@ -305,9 +305,7 @@ class OrderDetailScreen extends StatelessWidget {
                   .toInt();
 
           // Cek apakah ada ekstra varian (json array)
-          bool hasVarian =
-              item['varian_snapshot'] != null ||
-              item['topping_snapshot'] != null;
+          bool hasVarian = item['varian_snapshot'] != null;
 
           return Column(
             children: [

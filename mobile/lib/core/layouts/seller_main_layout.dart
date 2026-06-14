@@ -4,6 +4,7 @@ import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 import '../widgets/seller_navbar.dart';
 import '../../seller/features/orders/screens/order_list_screen.dart';
 import '../../seller/features/menu/screens/menu_list_screen.dart';
+import '../../seller/features/profile/screens/profile.dart';
 
 class SellerMainLayout extends StatefulWidget {
   const SellerMainLayout({super.key});
@@ -21,7 +22,7 @@ class _SellerMainLayoutState extends State<SellerMainLayout> {
     const OrderListScreen(),
     const MenuListScreen(),
     const Center(child: Text("Halaman Belum Tersedia")), // Placeholder for Laporan/Riwayat
-    const Center(child: Text("Halaman Profil Belum Tersedia")), // Placeholder for Profil
+    const ProfileTokoScreen(), // Profil Screen
   ];
 
   @override
