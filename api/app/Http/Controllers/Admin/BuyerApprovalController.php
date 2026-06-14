@@ -3,97 +3,114 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\BuyerApplication;
 use App\Services\Admin\ApprovalService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
+use Inertia\Response;
+use RuntimeException;
 
 class BuyerApprovalController extends Controller
 {
-    protected $approvalService;
-
-    // Injeksi ApprovalService ke controller (Service Pattern)
-    public function __construct(ApprovalService $approvalService)
+    public function __construct(private readonly ApprovalService $approvalService)
     {
-        $this->approvalService = $approvalService;
     }
 
-    /**
-     * Menampilkan daftar aplikasi pendaftaran mahasiswa yang menunggu (pending).
-     */
-    public function index()
+    public function index(Request $request): Response
     {
-        // Mengambil data pendaftar yang belum disetujui.
-        // Asumsi tabel bernama `buyer_applications`.
-        $applications = DB::table('buyer_applications')
-            ->where('status', 'pending')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        $query = BuyerApplication::query()->where('status', 'pending');
+
+        // Filter pencarian (Nama, NIM, Email)
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('nim', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        $applications = $query->orderByDesc('created_at')
+            ->paginate(10)
+            ->withQueryString()
+            ->through(fn (BuyerApplication $application) => $this->formatApplication($application));
 
         return Inertia::render('Approvals/Index', [
-            'applications' => $applications
+            'applications' => $applications,
+            'filters' => $request->only(['search']),
         ]);
     }
 
-    /**
-     * Menampilkan halaman detail untuk satu pendaftaran tertentu.
-     */
-    public function show($id)
+    public function show(int $application): Response
     {
-        $application = DB::table('buyer_applications')->find($id);
-
-        if (!$application) {
-            abort(404, 'Application not found');
-        }
+        $applicationData = BuyerApplication::query()->findOrFail($application);
 
         return Inertia::render('Approvals/Show', [
-            'application' => $application
+            'application' => $this->formatApplication($applicationData),
         ]);
     }
 
-    /**
-     * Aksi untuk menyetujui pendaftaran.
-     * Mendelegasikan proses logika utama (transfer data & Firestore) ke service.
-     */
-    public function approve(Request $request, $id)
+    public function approve(Request $request, int $application): RedirectResponse
     {
-        $application = DB::table('buyer_applications')->find($id);
-
-        if (!$application || $application->status !== 'pending') {
-            return redirect()->back()->with('error', 'Invalid or already processed application.');
-        }
-
         try {
-            // Panggil business logic
-            $this->approvalService->approve($application);
-            return redirect()->back()->with('success', 'Application approved successfully.');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to approve application: ' . $e->getMessage());
+            $result = $this->approvalService->approve($application, $request->user()?->id);
+        } catch (RuntimeException $exception) {
+            return redirect()
+                ->back()
+                ->with('error', $exception->getMessage());
         }
+
+        return redirect()
+            ->route('admin.approvals.index')
+            ->with('success', "Akun {$result['user']->username} berhasil disetujui. Password default: {$result['default_password']}");
     }
 
-    /**
-     * Aksi untuk menolak pendaftaran.
-     * Mendelegasikan proses update status dan alasan ke service.
-     */
-    public function reject(Request $request, $id)
+    public function reject(Request $request, int $application): RedirectResponse
     {
-        $request->validate([
-            'reason' => 'required|string|max:255',
+        $validated = $request->validate([
+            'reason' => ['required', 'string', 'max:500'],
         ]);
 
-        $application = DB::table('buyer_applications')->find($id);
-
-        if (!$application || $application->status !== 'pending') {
-            return redirect()->back()->with('error', 'Invalid or already processed application.');
-        }
-
         try {
-            // Panggil business logic
-            $this->approvalService->reject($application, $request->reason);
-            return redirect()->back()->with('success', 'Application rejected.');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to reject application: ' . $e->getMessage());
+            $this->approvalService->reject($application, $validated['reason'], $request->user()?->id);
+        } catch (RuntimeException $exception) {
+            return redirect()
+                ->back()
+                ->with('error', $exception->getMessage());
         }
+
+        return redirect()
+            ->route('admin.approvals.index')
+            ->with('success', 'Pendaftaran mahasiswa berhasil ditolak.');
+    }
+
+    private function formatApplication(BuyerApplication $application): array
+    {
+        return [
+            'id' => $application->id,
+            'name' => $application->name,
+            'nim' => $application->nim,
+            'email' => $application->email,
+            'phone' => $application->phone,
+            'account_expires_at' => $application->account_expires_at,
+            'ktm_photo_url' => $this->publicUrl($application->foto_ktm_path),
+            'status' => $application->status,
+            'rejection_reason' => $application->rejection_reason,
+            'created_at' => $application->created_at,
+            'updated_at' => $application->updated_at,
+        ];
+    }
+
+    private function publicUrl(?string $path): ?string
+    {
+        if (! $path) {
+            return null;
+        }
+
+        return str_starts_with($path, 'http')
+            ? $path
+            : Storage::disk('public')->url($path);
     }
 }
