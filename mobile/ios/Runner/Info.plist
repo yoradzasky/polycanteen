@@ -69,10 +69,12 @@
     
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>PolyCanteen membutuhkan lokasi Anda untuk memantau pergerakan pengiriman pesanan ke pembeli.</string>
+
+    <!-- 2. Izin Lokasi saat aplikasi ditutup/layar mati->
     <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
     <string>PolyCanteen membutuhkan lokasi latar belakang agar pembeli dapat melacak posisi pesanan secara real-time meskipun Anda mengantongi HP.</string>
     <key>NSLocationAlwaysUsageDescription</key>
-    <string>PolyCanteen membutuhkan lokasi latar belakang untuk update pelacakan kurir.</string>
+    <string>PolyCanteen membutuhkan lokasi latar belakang untuk update pelacakan pengantar.</string>
 
     <key>NSCameraUsageDescription</key>
     <string>PolyCanteen membutuhkan akses kamera untuk mengambil foto profil baru.</string>

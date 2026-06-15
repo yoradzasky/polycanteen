@@ -4,8 +4,9 @@ import 'package:intl/intl.dart';
 class PaymentProofScreen extends StatelessWidget {
   // 1. Terima data asli dari API
   final Map<String, dynamic> order;
+  final Color primaryColor;
 
-  const PaymentProofScreen({super.key, required this.order});
+  const PaymentProofScreen({super.key, required this.order, required this.primaryColor});
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +43,7 @@ class PaymentProofScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6FB),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF3949AB),
+        backgroundColor: primaryColor,
         elevation: 0,
         title: const Text(
           'Bukti Pembayaran',
@@ -95,7 +96,7 @@ class PaymentProofScreen extends StatelessWidget {
                       children: [
                         Icon(
                           status == 'LUNAS' ? Icons.check_circle : Icons.pending, 
-                          color: status == 'LUNAS' ? const Color(0xFF3949AB) : const Color(0xFFF2994A), 
+                          color: status == 'LUNAS' ? primaryColor : const Color(0xFFF2994A), 
                           size: 30
                         ),
                         const SizedBox(width: 12),
@@ -119,7 +120,7 @@ class PaymentProofScreen extends StatelessWidget {
                     _buildInfoRow(
                       'Status Pembayaran', 
                       status, 
-                      valueColor: status == 'LUNAS' ? const Color(0xFF3949AB) : const Color(0xFFF2994A)
+                      valueColor: status == 'LUNAS' ? primaryColor : const Color(0xFFF2994A)
                     ),
                     _buildInfoRow('Waktu Pembayaran', waktuBayar),
 

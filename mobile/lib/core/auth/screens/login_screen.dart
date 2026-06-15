@@ -96,23 +96,17 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
 
+        // Redirect ke halaman utama sesuai role
         if (userRole == 'mahasiswa') {
-          // Jika mahasiswa, arahkan ke StudentMainLayout dan bawa data role-nya
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
+              // Hapus kata 'const' dan masukkan parameter userRole
               builder: (_) => StudentMainLayout(userRole: userRole),
             ),
           );
-        } else if (userRole == 'pemilik' || userRole == 'pegawai') {
-          // Jika pemilik/pegawai (penjual), arahkan ke SellerMainLayout
-          // Asumsi: SellerMainLayout tidak butuh parameter role, atau kalau butuh, tambahkan seperti di Student
+        } else {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => const SellerMainLayout()),
-          );
-        } else {
-          // Penanganan jaga-jaga jika role tidak dikenali
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Role pengguna tidak valid.')),
           );
         }
       } else {

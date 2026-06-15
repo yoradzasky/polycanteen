@@ -2,108 +2,114 @@
 
 namespace App\Services\Admin;
 
+use App\Models\BuyerApplication;
+use App\Models\Mahasiswa;
 use App\Models\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
-use Kreait\Firebase\Contract\Firestore;
+use Illuminate\Support\Str;
+use RuntimeException;
 
 class ApprovalService
 {
-    protected $firestore;
-
-    public function __construct(Firestore $firestore)
-    {
-        $this->firestore = $firestore;
-    }
+    /**
+     * Password awal yang dibuat saat akun mahasiswa disetujui.
+     * Pada flow produksi, nilai ini sebaiknya dikirim lewat email atau dipaksa ganti saat login pertama.
+     */
+    public const DEFAULT_PASSWORD = 'Mahasiswa123!';
 
     /**
-     * Setujui pendaftaran mahasiswa.
-     * Logika ini dibungkus dalam database transaction untuk memastikan
-     * perpindahan data dari buyer_applications ke users aman.
+     * Menyetujui pengajuan mahasiswa secara atomik.
      *
-     * @param object $application Data pendaftaran (dari tabel buyer_applications)
-     * @return User
-     * @throws \Exception
+     * Satu transaksi memastikan status pengajuan, data user, dan profil mahasiswa selalu konsisten.
      */
-    public function approve($application)
+    public function approve(int $applicationId, ?int $reviewedBy = null): array
     {
-        return DB::transaction(function () use ($application) {
-            // 1. Pindahkan dan buat data di tabel users
+        return DB::transaction(function () use ($applicationId, $reviewedBy) {
+            // Kunci baris pengajuan agar dua admin tidak bisa memproses data yang sama bersamaan.
+            $application = BuyerApplication::query()
+                ->whereKey($applicationId)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $application) {
+                throw (new ModelNotFoundException())->setModel(BuyerApplication::class, [$applicationId]);
+            }
+
+            if ($application->status !== 'pending') {
+                throw new RuntimeException('Pengajuan ini sudah pernah diproses.');
+            }
+
+            $emailExists = User::where('email', $application->email)->exists();
+            $nimExists = Mahasiswa::where('nim', $application->nim)->exists();
+
+            if ($emailExists || $nimExists) {
+                throw new RuntimeException('Email atau NIM sudah terdaftar sebagai akun mahasiswa.');
+            }
+
+            $defaultPassword = self::DEFAULT_PASSWORD;
+
+            // Buat akun login utama di tabel users MySQL.
             $user = User::create([
-                'name' => $application->name,
+                'username' => $application->name,
                 'email' => $application->email,
-                // Mengatur password default untuk akun yang disetujui
-                'password' => Hash::make('password123'),
-                'role' => 'mahasiswa', // Atur role sebagai mahasiswa
-                // Field lain sesuai dengan struktur tabel user, misalnya nim
-                // 'nim' => $application->nim, 
+                'password' => Hash::make($defaultPassword),
+                'role' => 'mahasiswa',
+                'status_akun' => 'aktif',
+                'foto_profile' => $application->foto_ktm_path,
             ]);
 
-            // 2. Perbarui status di tabel pendaftaran menjadi disetujui
-            DB::table('buyer_applications')
-                ->where('id', $application->id)
-                ->update(['status' => 'approved']);
+            // Simpan detail domain mahasiswa pada tabel profil mahasiswa.
+            Mahasiswa::create([
+                'user_id' => $user->id,
+                'nama_mahasiswa' => $application->name,
+                'nim' => $application->nim,
+                'no_telp' => $application->phone,
+                'masa_aktif' => $application->account_expires_at,
+                'foto_profil_path' => $application->foto_ktm_path,
+            ]);
 
-            // 3. Sinkronisasikan data user baru ke dalam Firebase Firestore
-            $this->syncToFirestore($user);
+            // Tandai pengajuan sebagai selesai agar riwayat approval tetap tercatat.
+            $application->forceFill([
+                'status' => 'approved',
+                'user_id' => $user->id,
+                'reviewed_by' => $reviewedBy,
+                'approved_at' => now(),
+            ])->save();
 
-            return $user;
+            return [
+                'user' => $user,
+                'default_password' => $defaultPassword,
+            ];
         });
     }
 
     /**
-     * Tolak pendaftaran mahasiswa.
-     *
-     * @param object $application
-     * @param string $reason Alasan penolakan dari admin
-     * @return void
+     * Menolak pengajuan mahasiswa dan menyimpan alasan penolakan.
      */
-    public function reject($application, string $reason = '')
+    public function reject(int $applicationId, string $reason, ?int $reviewedBy = null): void
     {
-        // Update status pendaftaran menjadi rejected dan simpan alasan penolakan
-        DB::table('buyer_applications')
-            ->where('id', $application->id)
-            ->update([
+        DB::transaction(function () use ($applicationId, $reason, $reviewedBy) {
+            $application = BuyerApplication::query()
+                ->whereKey($applicationId)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $application) {
+                throw (new ModelNotFoundException())->setModel(BuyerApplication::class, [$applicationId]);
+            }
+
+            if ($application->status !== 'pending') {
+                throw new RuntimeException('Pengajuan ini sudah pernah diproses.');
+            }
+
+            $application->forceFill([
                 'status' => 'rejected',
-                'rejection_reason' => $reason,
-                'updated_at' => now(),
-            ]);
-    }
-
-    /**
-     * Sinkronisasi data user baru ke koleksi Firestore.
-     * Menggunakan library kreait/laravel-firebase.
-     *
-     * @param User $user
-     * @return void
-     */
-    protected function syncToFirestore(User $user)
-    {
-        try {
-            $database = $this->firestore->database();
-            
-            // Referensi ke koleksi 'users' di Firestore
-            $collection = $database->collection('users');
-
-            // Gunakan ID dari database MySQL sebagai ID Dokumen Firestore agar konsisten
-            $document = $collection->document((string) $user->id);
-            
-            // Set payload dokumen Firestore
-            $document->set([
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'role' => $user->role,
-                'created_at' => $user->created_at->toIso8601String(),
-                'status' => 'active',
-            ]);
-            
-            Log::info("User {$user->id} successfully synced to Firestore.");
-        } catch (\Exception $e) {
-            // Log error jika terjadi kegagalan sinkronisasi, 
-            // tanpa membatalkan transkasi MySQL (bergantung pada kebutuhan bisnis)
-            Log::error("Failed to sync user {$user->id} to Firestore: " . $e->getMessage());
-        }
+                'rejection_reason' => Str::limit($reason, 500, ''),
+                'reviewed_by' => $reviewedBy,
+                'rejected_at' => now(),
+            ])->save();
+        });
     }
 }
