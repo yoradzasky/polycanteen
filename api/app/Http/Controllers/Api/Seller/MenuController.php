@@ -100,10 +100,6 @@ class MenuController extends Controller
         if (isset($validated['varian'])) {
             $validated['varian'] = json_decode($validated['varian'], true);
         }
-        
-        if (isset($validated['topping'])) {
-            $validated['topping'] = json_decode($validated['topping'], true);
-        }
 
         if ($request->hasFile('foto_menu')) {
             $path = $request->file('foto_menu')->store('menus', 'public');
@@ -139,10 +135,6 @@ class MenuController extends Controller
 
         if (isset($validated['varian'])) {
             $validated['varian'] = json_decode($validated['varian'], true);
-        }
-        
-        if (isset($validated['topping'])) {
-            $validated['topping'] = json_decode($validated['topping'], true);
         }
 
         if ($request->hasFile('foto_menu')) {

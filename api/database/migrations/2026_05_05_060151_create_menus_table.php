@@ -23,7 +23,6 @@ return new class extends Migration
             $table->integer('estimasi_waktu')->nullable();
             $table->json('pilihan_layanan')->nullable();
             $table->json('varian')->nullable();
-            $table->json('topping')->nullable();
             $table->timestamps();
         });
     }

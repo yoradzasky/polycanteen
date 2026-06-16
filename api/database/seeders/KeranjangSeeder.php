@@ -12,9 +12,10 @@ class KeranjangSeeder extends Seeder
     public function run(): void
     {
         $mahasiswaList = Mahasiswa::orderBy('id')->get();
+        if ($mahasiswaList->count() < 5) return;
 
         // ── Budi: punya item di keranjang Kantin Barokah ─────────────────
-        $budi        = $mahasiswaList[0];
+        $budi = $mahasiswaList[0];
         $menuBarokah = Menu::whereHas('kantin', fn($q) => $q->where('nama_kantin', 'Kantin Barokah'))
             ->orderBy('id')
             ->get();
@@ -24,46 +25,49 @@ class KeranjangSeeder extends Seeder
                 'mahasiswa_id'    => $budi->id,
                 'menu_id'         => $menuBarokah[0]->id, // Nasi Goreng Spesial
                 'jumlah'          => 1,
-                'varian_selected' => ['Level Pedas' => 'pedas'],
-                'topping_selected'=> [['nama' => 'Telur Mata Sapi', 'harga' => 3000]],
+                // PERBAIKAN FORMAT: Gunakan array asosiatif (nama & harga)
+                'varian_selected' => ['Level Pedas' => ['nama' => 'pedas', 'harga' => 0]],
             ]);
 
             Keranjang::create([
                 'mahasiswa_id'    => $budi->id,
                 'menu_id'         => $menuBarokah[2]->id, // Es Teh Manis
                 'jumlah'          => 2,
-                'varian_selected' => ['Suhu' => 'es'],
-                'topping_selected'=> null,
+                'varian_selected' => ['Suhu' => ['nama' => 'es', 'harga' => 0]],
             ]);
         }
 
         // ── Siti: punya item di keranjang Warung Bu Sri ───────────────────
-        $siti     = $mahasiswaList[1];
-        $menuSri  = Menu::whereHas('kantin', fn($q) => $q->where('nama_kantin', 'Warung Bu Sri'))
+        $siti = $mahasiswaList[1];
+        $menuSri = Menu::whereHas('kantin', fn($q) => $q->where('nama_kantin', 'Warung Bu Sri'))
             ->orderBy('id')
             ->get();
 
-        if ($menuSri->count() >= 2) {
+        if ($menuSri->count() >= 4) {
             Keranjang::create([
                 'mahasiswa_id'    => $siti->id,
                 'menu_id'         => $menuSri[1]->id, // Bakso Kuah
                 'jumlah'          => 1,
-                'varian_selected' => ['Jenis Mi' => 'mi kuning', 'Level Pedas' => 'pedas'],
-                'topping_selected'=> [['nama' => 'Bakso Urat Ekstra', 'harga' => 5000]],
+                'varian_selected' => [
+                    'Jenis Mi'    => ['nama' => 'mi kuning', 'harga' => 0], 
+                    'Level Pedas' => ['nama' => 'pedas', 'harga' => 0]
+                ],
             ]);
 
             Keranjang::create([
                 'mahasiswa_id'    => $siti->id,
                 'menu_id'         => $menuSri[3]->id, // Kopi Susu Segar
                 'jumlah'          => 1,
-                'varian_selected' => ['Suhu' => 'es', 'Ukuran' => 'large'],
-                'topping_selected'=> [['nama' => 'Whipped Cream', 'harga' => 3000]],
+                'varian_selected' => [
+                    'Suhu'   => ['nama' => 'es', 'harga' => 0], 
+                    'Ukuran' => ['nama' => 'large', 'harga' => 3000]
+                ],
             ]);
         }
 
         // ── Andi: keranjang di Kantin Pak Agus ───────────────────────────
-        $andi      = $mahasiswaList[2];
-        $menuAgus  = Menu::whereHas('kantin', fn($q) => $q->where('nama_kantin', 'Kantin Pak Agus'))
+        $andi = $mahasiswaList[2];
+        $menuAgus = Menu::whereHas('kantin', fn($q) => $q->where('nama_kantin', 'Kantin Pak Agus'))
             ->orderBy('id')
             ->get();
 
@@ -72,28 +76,21 @@ class KeranjangSeeder extends Seeder
                 'mahasiswa_id'    => $andi->id,
                 'menu_id'         => $menuAgus[0]->id, // Ayam Geprek
                 'jumlah'          => 2,
-                'varian_selected' => ['Level Pedas' => 'level 4', 'Bagian Ayam' => 'sayap'],
-                'topping_selected'=> [
-                    ['nama' => 'Telor Ceplok',  'harga' => 3000],
-                    ['nama' => 'Ekstra Sambal',  'harga' => 1000],
+                'varian_selected' => [
+                    'Level Pedas' => ['nama' => 'level 4', 'harga' => 0], 
+                    'Bagian Ayam' => ['nama' => 'sayap', 'harga' => 0]
                 ],
             ]);
         }
 
-        // ── Dewi: keranjang kosong (tidak ada item) — tidak di-seed ──────
         // ── Rizky: 1 item di keranjang Warung Bu Sri ─────────────────────
         $rizky = $mahasiswaList[4];
-
         if ($menuSri->count() >= 1) {
             Keranjang::create([
                 'mahasiswa_id'    => $rizky->id,
                 'menu_id'         => $menuSri[0]->id, // Pecel Komplit
                 'jumlah'          => 1,
-                'varian_selected' => ['Nasi' => 'nasi putih'],
-                'topping_selected'=> [
-                    ['nama' => 'Tempe Goreng', 'harga' => 2000],
-                    ['nama' => 'Rempeyek',     'harga' => 2000],
-                ],
+                'varian_selected' => ['Nasi' => ['nama' => 'nasi putih', 'harga' => 0]],
             ]);
         }
     }

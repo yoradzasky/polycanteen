@@ -48,23 +48,23 @@ export default function Index({ buyers, filters }) {
 
     // Komponen Search Bar (Ukuran & Gaya 100% sama dengan TopNavbar)
     const renderSearchBar = (
-        <form 
-            role="search" 
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#f4f6fb] rounded-xl border border-gray-100" 
+        <form
+            role="search"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#f4f6fb] rounded-xl border border-gray-100"
             onSubmit={(e) => e.preventDefault()}
         >
-            <svg 
-                className="w-3.5 h-3.5 text-gray-400 shrink-0" 
-                viewBox="0 0 14 14" 
-                fill="none" 
+            <svg
+                className="w-3.5 h-3.5 text-gray-400 shrink-0"
+                viewBox="0 0 14 14"
+                fill="none"
                 xmlns="http://www.w3.org/2000/svg"
             >
-                <path 
-                    d="M12.25 12.25L9.7125 9.7125M11.0833 6.41667C11.0833 8.994 8.994 11.0833 6.41667 11.0833C3.83934 11.0833 1.75 8.994 1.75 6.41667C1.75 3.83934 3.83934 1.75 6.41667 1.75C8.994 1.75 11.0833 3.83934 11.0833 6.41667Z" 
-                    stroke="currentColor" 
-                    strokeWidth="1.4" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
+                <path
+                    d="M12.25 12.25L9.7125 9.7125M11.0833 6.41667C11.0833 8.994 8.994 11.0833 6.41667 11.0833C3.83934 11.0833 1.75 8.994 1.75 6.41667C1.75 3.83934 3.83934 1.75 6.41667 1.75C8.994 1.75 11.0833 3.83934 11.0833 6.41667Z"
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                 />
             </svg>
             <input
@@ -93,8 +93,9 @@ export default function Index({ buyers, filters }) {
                                 Daftar Akun Mahasiswa
                             </h2>
                             <p className="text-sm text-gray-500 mt-1">
-                                Total {buyers?.total || 0} mahasiswa — menampilkan{" "}
-                                {buyers?.from || 0}-{buyers?.to || 0}
+                                Total {buyers?.total || 0} mahasiswa —
+                                menampilkan {buyers?.from || 0}-
+                                {buyers?.to || 0}
                             </p>
                         </div>
 
@@ -198,22 +199,41 @@ export default function Index({ buyers, filters }) {
                                         >
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-full bg-[#3949AB] text-white flex items-center justify-center font-bold">
-                                                        {user.name
-                                                            ? user.name
-                                                                  .split(" ")
-                                                                  .map(
-                                                                      (n) =>
-                                                                          n[0],
-                                                                  )
-                                                                  .join("")
-                                                                  .substring(
-                                                                      0,
-                                                                      2,
-                                                                  )
-                                                                  .toUpperCase()
-                                                            : "U"}
-                                                    </div>
+                                                    {/* --- PERBAIKAN: Lingkaran Profil --- */}
+                                                    {user.foto_profil_path ? (
+                                                        <img
+                                                            src={
+                                                                user.foto_profil_path.startsWith(
+                                                                    "http",
+                                                                )
+                                                                    ? user.foto_profil_path
+                                                                    : `/storage/${user.foto_profil_path}`
+                                                            }
+                                                            alt={user.name}
+                                                            className="w-10 h-10 rounded-full object-cover border border-gray-200 shrink-0"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-10 h-10 rounded-full shrink-0 bg-[#3949AB] text-white flex items-center justify-center font-bold border border-gray-200">
+                                                            {user.name
+                                                                ? user.name
+                                                                      .split(
+                                                                          " ",
+                                                                      )
+                                                                      .map(
+                                                                          (n) =>
+                                                                              n[0],
+                                                                      )
+                                                                      .join("")
+                                                                      .substring(
+                                                                          0,
+                                                                          2,
+                                                                      )
+                                                                      .toUpperCase()
+                                                                : "U"}
+                                                        </div>
+                                                    )}
+                                                    {/* ---------------------------------- */}
+
                                                     <div>
                                                         <div className="font-semibold text-gray-900">
                                                             {user.name}
@@ -333,8 +353,8 @@ export default function Index({ buyers, filters }) {
                                                     />
                                                 </svg>
                                                 <p className="text-gray-500">
-                                                    Tidak ada data mahasiswa yang
-                                                    ditemukan.
+                                                    Tidak ada data mahasiswa
+                                                    yang ditemukan.
                                                 </p>
                                             </div>
                                         </td>

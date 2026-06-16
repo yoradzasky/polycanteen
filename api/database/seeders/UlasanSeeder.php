@@ -41,12 +41,19 @@ class UlasanSeeder extends Seeder
                 'komentar' => 'Pelayanan memuaskan, akan pesan lagi.',
             ];
 
+            // CARI MENU ID UNTUK SEEDER:
+            // Ambil secara acak satu menu yang kebetulan dijual oleh kantin tersebut
+            $menu_id = \App\Models\Menu::where('kantin_id', $pesanan->kantin_id)
+                                       ->inRandomOrder()
+                                       ->value('id');
+
             Ulasan::create([
-                'pesanan_id'  => $pesanan->id,
-                'mahasiswa_id'=> $pesanan->mahasiswa_id,
-                'kantin_id'   => $pesanan->kantin_id,
-                'rating'      => $data['rating'],
-                'komentar'    => $data['komentar'],
+                'pesanan_id'   => $pesanan->id,
+                'mahasiswa_id' => $pesanan->mahasiswa_id,
+                'kantin_id'    => $pesanan->kantin_id,
+                'menu_id'      => $menu_id, // <-- Ganti $request->menu_id dengan variabel ini
+                'rating'       => $data['rating'],
+                'komentar'     => $data['komentar'],
             ]);
         }
     }

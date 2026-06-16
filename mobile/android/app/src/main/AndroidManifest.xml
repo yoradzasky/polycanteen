@@ -8,6 +8,8 @@
     <!-- 2. Izin Lokasi di Latar Belakang (Android 10+) -->
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     
+    <uses-permission android:name="android.permission.CAMERA" />
+
     <!-- 3. Izin Background Service agar aplikasi tidak dimatikan paksa -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -15,9 +17,9 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     
     <application
-        android:label="mobile"
+        android:label="PolyCanteen"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/launcher_icon">
         <activity
             android:name=".MainActivity"
             android:exported="true"

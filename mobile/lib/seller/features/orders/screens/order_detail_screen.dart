@@ -8,7 +8,11 @@ class OrderDetailScreen extends StatelessWidget {
   final Map<String, dynamic> order;
   final Color primaryColor;
 
-  const OrderDetailScreen({super.key, required this.order, required this.primaryColor});
+  const OrderDetailScreen({
+    super.key,
+    required this.order,
+    required this.primaryColor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +63,10 @@ class OrderDetailScreen extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => PaymentProofScreen(order: order, primaryColor: primaryColor),
+                builder: (context) => PaymentProofScreen(
+                  order: order,
+                  primaryColor: primaryColor,
+                ),
               ),
             );
           },
@@ -212,9 +219,8 @@ class OrderDetailScreen extends StatelessWidget {
     String rawStatus = payment['status_bayar']?.toString().toLowerCase() ?? '';
     String statusBayar = 'LUNAS'; // Fallback default
 
-    // Kondisi: Jika di database "sukses", tampilkan "LUNAS".
-    // Jika ada status lain (misal "pending", "gagal"), jadikan huruf kapital.
-    if (rawStatus == 'sukses') {
+    // Kondisi: Jika di database "sukses" atau "berhasil", tampilkan "LUNAS".
+    if (rawStatus == 'sukses' || rawStatus == 'berhasil') {
       statusBayar = 'LUNAS';
     } else if (rawStatus.isNotEmpty) {
       statusBayar = rawStatus.toUpperCase();
@@ -235,11 +241,7 @@ class OrderDetailScreen extends StatelessWidget {
               color: const Color(0xFFF4F6FB),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              Icons.qr_code_2,
-              color: primaryColor,
-              size: 24,
-            ),
+            child: Icon(Icons.qr_code_2, color: primaryColor, size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -306,9 +308,7 @@ class OrderDetailScreen extends StatelessWidget {
                   .toInt();
 
           // Cek apakah ada ekstra varian (json array)
-          bool hasVarian =
-              item['varian_snapshot'] != null ||
-              item['topping_snapshot'] != null;
+          bool hasVarian = item['varian_snapshot'] != null;
 
           return Column(
             children: [

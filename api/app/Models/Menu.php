@@ -9,16 +9,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Menu extends Model
 {
     protected $table = 'menu';
+    
     protected $fillable = [
         'kantin_id', 'nama_item', 'kategori', 'harga', 'foto_menu', 'status_stok',
-        'deskripsi', 'estimasi_waktu', 'pilihan_layanan', 'varian', 'topping',
+        'deskripsi', 'estimasi_waktu', 'pilihan_layanan', 'varian',
     ];
 
     protected $casts = [
         'status_stok' => 'boolean',
         'pilihan_layanan' => 'array',
         'varian' => 'array',
-        'topping' => 'array',
     ];
 
     protected $appends = ['status_stok_label'];
@@ -44,5 +44,11 @@ class Menu extends Model
     public function keranjang(): HasMany
     {
         return $this->hasMany(Keranjang::class);
+    }
+
+    // TAMBAHAN RELASI BARU
+    public function ulasan(): HasMany
+    {
+        return $this->hasMany(Ulasan::class);
     }
 }

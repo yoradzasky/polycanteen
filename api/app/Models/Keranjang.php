@@ -9,11 +9,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Keranjang extends Model
 {
     protected $table = 'keranjang';
-    protected $fillable = ['mahasiswa_id', 'menu_id', 'jumlah', 'varian_selected', 'topping_selected'];
+    
+    protected $fillable = [
+        'mahasiswa_id', 
+        'menu_id', 
+        'jumlah', 
+        'varian_selected'
+    ];
 
     protected $casts = [
         'varian_selected' => 'array',
-        'topping_selected' => 'array',
     ];
 
     public function mahasiswa(): BelongsTo
@@ -21,8 +26,8 @@ class Keranjang extends Model
         return $this->belongsTo(Mahasiswa::class);
     }
 
-    public function menu(): HasMany
+    public function menu(): BelongsTo
     {
-        return $this->hasMany(Menu::class);
+        return $this->belongsTo(Menu::class);
     }
 }

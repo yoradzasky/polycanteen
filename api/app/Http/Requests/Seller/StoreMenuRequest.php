@@ -27,9 +27,8 @@ class StoreMenuRequest extends FormRequest
             'pilihan_layanan.*' => 'string|in:makan_di_tempat,dibungkus,pengantaran',
             'deskripsi' => 'nullable|string',
             'estimasi_waktu' => 'nullable|integer|min:1',
-            'foto_menu' => 'nullable|image|max:2048',
+            'foto_menu' => 'nullable|image|max:10240',
             'varian' => 'nullable|json',
-            'topping' => 'nullable|json',
         ];
     }
 }

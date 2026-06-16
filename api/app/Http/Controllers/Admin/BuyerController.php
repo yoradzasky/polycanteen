@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateExpirationRequest;
 use App\Services\BuyerService;
 use App\Models\User;
+use App\Models\Mahasiswa;
 use Carbon\Carbon;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
@@ -92,7 +93,13 @@ class BuyerController extends Controller
         }
 
         /** @var \Illuminate\Pagination\LengthAwarePaginator $buyers */
-        $buyers = $query->orderBy('created_at', 'desc')->paginate(10);
+        // Mengurutkan berdasarkan abjad (A-Z) dari kolom nama_mahasiswa di tabel mahasiswa
+        $buyers = $query->orderBy(
+            Mahasiswa::select('nama_mahasiswa')
+                ->whereColumn('mahasiswa.user_id', 'users.id')
+                ->limit(1),
+            'asc' // 'asc' untuk A-Z, ubah ke 'desc' jika ingin Z-A
+        )->paginate(10);
         $buyers->withQueryString(); 
 
         $buyers->through(function ($user) {
@@ -111,7 +118,11 @@ class BuyerController extends Controller
                 'status' => $isActive ? 'Aktif' : 'Nonaktif',
                 'date' => $user->created_at->translatedFormat('d M Y'),
                 'time' => $user->created_at->format('H:i') . ' WIB',
-                'avatar' => null, 
+                
+                // --- PERBAIKAN: Ambil foto profil dari relasi mahasiswa ---
+                'foto_profil_path' => $mhs->foto_profil_path ?? null,
+                // -----------------------------------------------------------
+                
                 'active_until' => $mhs->masa_aktif ?? null 
             ];
         });
@@ -148,12 +159,21 @@ class BuyerController extends Controller
         $buyerData = [
             'id' => $user->id,
             'name' => $mhs?->nama_mahasiswa ?? $user->username,
+            
+            // --- TAMBAHAN BARU: Kirimkan NIM ---
+            'nim' => $mhs?->nim ?? '-',
+            // -----------------------------------
+            
             'status' => $isActive ? 'Aktif' : 'Nonaktif',
             'email' => $user->email,
             'phone' => $mhs?->no_telp ?? '-',
             'user_id' => '#PBY-' . str_pad($user->id, 5, '0', STR_PAD_LEFT),
             'join_date' => $user->created_at->translatedFormat('d M Y'),
-            'avatar' => null,
+            
+            // --- PERBAIKAN: Ambil foto profil dan simpan ke key 'avatar' ---
+            // Di dalam array $buyerData pada function show()
+            'avatar' => $mhs?->foto_profil_path ?? null,
+            // ----------------------------------------------------------------
             
             'subscription' => [
                 'start_date' => $start->translatedFormat('j F Y'),

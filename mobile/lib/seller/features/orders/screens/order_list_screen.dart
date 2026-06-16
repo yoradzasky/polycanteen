@@ -178,13 +178,26 @@ class _OrderListScreenState extends State<OrderListScreen> {
         return status == 'dibayar' || status == 'pending'; // Baru masuk
       }
       if (_selectedTabIndex == 1) {
-        return status == 'dimasak' || 
-               status == 'dalam_perjalanan' ||
-               status == 'siap_diambil' ||
-               status == 'menunggu_dikirim'; // Diproses
+        return status == 'dimasak' ||
+            status == 'dalam_perjalanan' ||
+            status == 'siap_diambil' ||
+            status == 'menunggu_dikirim'; // Diproses
       }
       return status == 'selesai'; // Selesai
     }).toList();
+
+    double totalPendapatan = _orders
+        .where((o) => o['status_pesanan'] == 'selesai')
+        .fold(
+          0.0,
+          (sum, o) =>
+              sum +
+              (double.tryParse(o['total_harga']?.toString() ?? '0') ?? 0.0),
+        );
+
+    int totalSelesai = _orders
+        .where((o) => o['status_pesanan'] == 'selesai')
+        .length;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6FB),
@@ -297,7 +310,11 @@ class _OrderListScreenState extends State<OrderListScreen> {
               // HEADER BIRU MELENGKUNG
               SliverToBoxAdapter(
                 child: Container(
-                  padding: const EdgeInsets.only(left: 20, right: 20, bottom: 24),
+                  padding: const EdgeInsets.only(
+                    left: 20,
+                    right: 20,
+                    bottom: 24,
+                  ),
                   decoration: BoxDecoration(
                     color: _primaryColor,
                     borderRadius: const BorderRadius.only(
@@ -323,15 +340,14 @@ class _OrderListScreenState extends State<OrderListScreen> {
                           _buildSummaryCard(
                             Icons.account_balance_wallet,
                             'Pendapatan',
-                            'Rp 1,5JT',
+                            'Rp ${NumberFormat('#,###', 'id_ID').format(totalPendapatan)}', // <-- Pakai variabel
                             const Color(0xFFF2994A),
                           ),
                           const SizedBox(width: 12),
-                          // Hitung total pesanan selesai
                           _buildSummaryCard(
                             Icons.receipt_long,
                             'Total Selesai',
-                            '${_orders.where((o) => o['status_pesanan'] == 'selesai').length}',
+                            '$totalSelesai', // <-- Pakai variabel
                             const Color(0xFFA29BFE),
                           ),
                         ],
@@ -347,7 +363,9 @@ class _OrderListScreenState extends State<OrderListScreen> {
                 delegate: _StickyTabBarDelegate(
                   height: 135.0,
                   child: Container(
-                    color: const Color(0xFFF4F6FB), // Sesuai warna background Scaffold
+                    color: const Color(
+                      0xFFF4F6FB,
+                    ), // Sesuai warna background Scaffold
                     padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -384,7 +402,8 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                     .where(
                                       (o) =>
                                           o['status_pesanan'] == 'dimasak' ||
-                                          o['status_pesanan'] == 'dalam_perjalanan',
+                                          o['status_pesanan'] ==
+                                              'dalam_perjalanan',
                                     )
                                     .length,
                               ),
@@ -393,7 +412,9 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                 2,
                                 'Selesai',
                                 badgeCount: _orders
-                                    .where((o) => o['status_pesanan'] == 'selesai')
+                                    .where(
+                                      (o) => o['status_pesanan'] == 'selesai',
+                                    )
                                     .length,
                               ),
                             ],
@@ -407,107 +428,122 @@ class _OrderListScreenState extends State<OrderListScreen> {
             ];
           },
           body: _isLoading
-                  ? Center(
-                      child: CircularProgressIndicator(color: _primaryColor),
-                    )
-                  : currentOrders.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.receipt_long,
-                            size: 80,
-                            color: Colors.grey.shade300,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            _selectedTabIndex == 0
-                                ? 'Tidak ada pesanan masuk'
-                                : _selectedTabIndex == 1
-                                ? 'Tidak ada pesanan diproses'
-                                : 'Tidak ada pesanan selesai',
-                            style: TextStyle(
-                              color: Colors.grey.shade500,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
+              ? Center(child: CircularProgressIndicator(color: _primaryColor))
+              : currentOrders.isEmpty
+              ? ListView(
+                  physics:
+                      const AlwaysScrollableScrollPhysics(), // <-- INI KUNCI BIAR BISA DI-REFRESH
+                  children: [
+                    SizedBox(
+                      height:
+                          MediaQuery.of(context).size.height *
+                          0.5, // Kasih tinggi biar bisa ditarik
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.receipt_long,
+                              size: 80,
+                              color: Colors.grey.shade300,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              _selectedTabIndex == 0
+                                  ? 'Tidak ada pesanan masuk'
+                                  : _selectedTabIndex == 1
+                                  ? 'Tidak ada pesanan diproses'
+                                  : 'Tidak ada pesanan selesai',
+                              style: TextStyle(
+                                color: Colors.grey.shade500,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.only(
+                    left: 20,
+                    right: 20,
+                    top: 0,
+                    bottom: 20,
+                  ),
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  itemCount: currentOrders.length,
+                  itemBuilder: (context, index) {
+                    final orderMap =
+                        currentOrders[index] as Map<String, dynamic>;
+                    final status = orderMap['status_pesanan'];
+                    final orderId = orderMap['id'];
+
+                    if (status == 'selesai') {
+                      return CompletedOrderCard(
+                        key: ValueKey(orderId),
+                        order: orderMap,
+                        primaryColor: _primaryColor,
+                      );
+                    }
+
+                    if (status == 'dalam_perjalanan') {
+                      return DeliveryTrackingCard(
+                        key: ValueKey(orderId),
+                        order: orderMap,
+                        primaryColor: _primaryColor,
+                        onScanQr: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const QrScannerScreen(),
+                            ),
+                          ).then((_) => _fetchOrders());
+                        },
+                      );
+                    }
+
+                    return OrderCard(
+                      key: ValueKey(orderId),
+                      order: orderMap,
+                      primaryColor: _primaryColor,
+                      tabIndex: _selectedTabIndex,
+                      onTerima: () => _updateStatus(orderId, 'dimasak'),
+                      onTolak: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => RejectOrderDialog(
+                            onReject: (alasan) => _updateStatus(
+                              orderId,
+                              'ditolak',
+                              alasan: alasan,
                             ),
                           ),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.only(left: 20, right: 20, top: 0, bottom: 20),
-                      itemCount: currentOrders.length,
-                      itemBuilder: (context, index) {
-                        final orderMap =
-                            currentOrders[index] as Map<String, dynamic>;
-                        final status = orderMap['status_pesanan'];
-                        final orderId = orderMap['id'];
-
-                        if (status == 'selesai') {
-                          return CompletedOrderCard(
-                            key: ValueKey(orderId),
-                            order: orderMap,
-                            primaryColor: _primaryColor,
-                          );
-                        }
-
-                        if (status == 'dalam_perjalanan') {
-                          return DeliveryTrackingCard(
-                            key: ValueKey(orderId),
-                            order: orderMap,
-                            primaryColor: _primaryColor,
-                            onScanQr: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const QrScannerScreen(),
-                                ),
-                              ).then((_) => _fetchOrders());
-                            },
-                          );
-                        }
-
-                        return OrderCard(
-                          key: ValueKey(orderId),
-                          order: orderMap,
-                          primaryColor: _primaryColor,
-                          tabIndex: _selectedTabIndex,
-                          onTerima: () => _updateStatus(orderId, 'dimasak'),
-                          onTolak: () {
-                            showDialog(
-                              context: context,
-                              builder: (context) => RejectOrderDialog(
-                                onReject: (alasan) => _updateStatus(
-                                  orderId,
-                                  'ditolak',
-                                  alasan: alasan,
-                                ),
-                              ),
-                            );
-                          },
-                          onSelesaiMasak: () {
-                            final tipe = orderMap['tipe_pesanan'] ?? '';
-                            if (tipe.toLowerCase().contains('pengantaran') ||
-                                tipe.toLowerCase().contains('delivery')) {
-                              _updateStatus(orderId, 'menunggu_dikirim');
-                            } else {
-                              _updateStatus(orderId, 'siap_diambil');
-                            }
-                          },
-                          onKirimPesanan: () => _startDelivery(orderId),
-                          onScanQr: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const QrScannerScreen(),
-                              ),
-                            ).then((_) => _fetchOrders());
-                          },
                         );
                       },
-                    ),
+                      onSelesaiMasak: () {
+                        final tipe = orderMap['tipe_pesanan'] ?? '';
+                        if (tipe.toLowerCase().contains('pengantaran') ||
+                            tipe.toLowerCase().contains('delivery')) {
+                          _updateStatus(orderId, 'menunggu_dikirim');
+                        } else {
+                          _updateStatus(orderId, 'siap_diambil');
+                        }
+                      },
+                      onKirimPesanan: () => _startDelivery(orderId),
+                      onScanQr: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const QrScannerScreen(),
+                          ),
+                        ).then((_) => _fetchOrders());
+                      },
+                    );
+                  },
+                ),
         ),
       ),
     );
@@ -582,13 +618,11 @@ class _OrderListScreenState extends State<OrderListScreen> {
                 fontSize: 13,
               ),
             ),
-            if (badgeCount > 0) ...[
+            if (badgeCount > 0 && !isSelected) ...[
               const SizedBox(width: 6),
               CircleAvatar(
                 radius: 10,
-                backgroundColor: isSelected
-                    ? Colors.white
-                    : _primaryColor.withValues(alpha: 0.1),
+                backgroundColor: _primaryColor.withValues(alpha: 0.1),
                 child: Text(
                   badgeCount.toString(),
                   style: TextStyle(
@@ -622,7 +656,10 @@ class _StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     return SizedBox.expand(child: child);
   }
 
@@ -638,9 +675,9 @@ class _StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
 class CompletedOrderCard extends StatelessWidget {
   final Map<String, dynamic> order;
   final Color primaryColor;
-  
+
   const CompletedOrderCard({
-    super.key, 
+    super.key,
     required this.order,
     required this.primaryColor,
   });
@@ -933,14 +970,16 @@ class OrderCard extends StatelessWidget {
     String namaPemesan = order['mahasiswa']?['nama_mahasiswa'] ?? 'Tanpa Nama';
     String catatan = order['catatan_pesanan'] ?? '';
     String tipePesanan = order['tipe_pesanan'] ?? '-';
-    
+
     // Tentukan warna tag berdasarkan tipe pesanan
     Color tipeColor = Colors.grey;
     Color tipeBgColor = Colors.grey.shade100;
-    if (tipePesanan.toLowerCase().contains('dine in') || tipePesanan.toLowerCase().contains('makan di tempat')) {
+    if (tipePesanan.toLowerCase().contains('dine in') ||
+        tipePesanan.toLowerCase().contains('makan di tempat')) {
       tipeColor = const Color(0xFF27AE60);
       tipeBgColor = const Color(0xFFB9F6CA).withValues(alpha: 0.5);
-    } else if (tipePesanan.toLowerCase().contains('take away') || tipePesanan.toLowerCase().contains('bungkus')) {
+    } else if (tipePesanan.toLowerCase().contains('take away') ||
+        tipePesanan.toLowerCase().contains('bungkus')) {
       tipeColor = const Color(0xFFF2994A);
       tipeBgColor = const Color(0xFFFFF3F0);
     }
@@ -955,7 +994,7 @@ class OrderCard extends StatelessWidget {
             color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 20,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -1040,13 +1079,13 @@ class OrderCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                    ]
+                    ],
                   ],
                 ),
               ],
             ),
           ),
-          
+
           Divider(height: 1, color: Colors.grey.shade100),
 
           Padding(
@@ -1057,10 +1096,17 @@ class OrderCard extends StatelessWidget {
                 // Tipe Pesanan
                 Row(
                   children: [
-                    const Icon(Icons.shopping_bag_outlined, color: Colors.grey, size: 18),
+                    const Icon(
+                      Icons.shopping_bag_outlined,
+                      color: Colors.grey,
+                      size: 18,
+                    ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: tipeBgColor,
                         borderRadius: BorderRadius.circular(8),
@@ -1131,7 +1177,10 @@ class OrderCard extends StatelessWidget {
                 if (catatan.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFF3F0),
                       borderRadius: BorderRadius.circular(16),
@@ -1139,7 +1188,11 @@ class OrderCard extends StatelessWidget {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.chat_bubble_outline, color: Color(0xFFF2994A), size: 20),
+                        const Icon(
+                          Icons.chat_bubble_outline,
+                          color: Color(0xFFF2994A),
+                          size: 20,
+                        ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
@@ -1178,7 +1231,11 @@ class OrderCard extends StatelessWidget {
                   children: [
                     const Text(
                       'Total Pembayaran',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF828282), fontSize: 13),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF828282),
+                        fontSize: 13,
+                      ),
                     ),
                     Text(
                       'Rp ${NumberFormat('#,###', 'id_ID').format((double.tryParse(order['total_harga'].toString()) ?? 0).toInt())}',
@@ -1193,9 +1250,9 @@ class OrderCard extends StatelessWidget {
               ],
             ),
           ),
-          
+
           Divider(height: 1, color: Colors.grey.shade100),
-          
+
           Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -1203,174 +1260,198 @@ class OrderCard extends StatelessWidget {
                 if (tabIndex == 0) ...[
                   Row(
                     children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: onTolak,
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFFF2994A)),
-                      foregroundColor: const Color(0xFFF2994A),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: onTolak,
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Color(0xFFF2994A)),
+                            foregroundColor: const Color(0xFFF2994A),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Tolak',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: onTerima,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFF2994A),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Terima',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => OrderDetailScreen(
+                              order: order,
+                              primaryColor: primaryColor,
+                            ),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Lihat Detail Pesanan',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
-                    child: const Text(
-                      'Tolak',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                  ),
+                ] else if (tabIndex == 1 &&
+                    order['status_pesanan'] == 'dimasak') ...[
+                  // 1. Tambahkan Tombol Lihat Detail Pesanan (Warna Biru)
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => OrderDetailScreen(
+                              order: order,
+                              primaryColor: primaryColor,
+                            ),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Lihat Detail Pesanan',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: onTerima,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFF2994A),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  const SizedBox(height: 12), // Jarak antar tombol
+                  // 2. Tombol Selesai Masak (Warna Orange)
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: onSelesaiMasak,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFF2994A),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Selesai Masak',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
-                    child: const Text(
-                      'Terima',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                  ),
+                ] else if (tabIndex == 1 &&
+                    order['status_pesanan'] == 'menunggu_dikirim') ...[
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: onKirimPesanan,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFF2994A),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Kirim Pesanan',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => OrderDetailScreen(order: order, primaryColor: primaryColor),
+                ] else if (tabIndex == 1 &&
+                    order['status_pesanan'] == 'siap_diambil') ...[
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: onScanQr,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFF2994A),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.qr_code_scanner, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'Scan QR',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
                   ),
-                ),
-                child: const Text(
-                  'Lihat Detail Pesanan',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-                ),
-              ),
-            ),
-          ] else if (tabIndex == 1 && order['status_pesanan'] == 'dimasak') ...[
-            // 1. Tambahkan Tombol Lihat Detail Pesanan (Warna Biru)
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => OrderDetailScreen(order: order, primaryColor: primaryColor),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  'Lihat Detail Pesanan',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12), // Jarak antar tombol
-            // 2. Tombol Selesai Masak (Warna Orange)
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: onSelesaiMasak,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF2994A),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  'Selesai Masak',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-              ),
-            ),
-          ] else if (tabIndex == 1 && order['status_pesanan'] == 'menunggu_dikirim') ...[
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: onKirimPesanan,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF2994A),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  'Kirim Pesanan',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-              ),
-            ),
-          ] else if (tabIndex == 1 && order['status_pesanan'] == 'siap_diambil') ...[
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: onScanQr,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF2994A),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.qr_code_scanner, size: 20),
-                    SizedBox(width: 8),
-                    Text(
-                      'Scan QR',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+                ],
               ],
             ),
           ),
@@ -1500,6 +1581,7 @@ class _RejectOrderDialogState extends State<RejectOrderDialog> {
                         String reason = _selectedOption == 'Lainnya'
                             ? _customReasonController.text
                             : _selectedOption;
+                        Navigator.pop(context);
                         widget.onReject(reason);
                       },
                       style: ElevatedButton.styleFrom(
