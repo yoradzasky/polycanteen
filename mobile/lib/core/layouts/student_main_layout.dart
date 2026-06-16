@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../student/home/screens/home_screen.dart';
 import '../../student/profile/screens/profile_screen.dart';
 import '../../student/canteen/screens/canteen_list_screen.dart';
+import '../../student/order/screens/order_screen.dart';
 import '../widgets/student_navbar.dart';
 
 class StudentMainLayout extends StatefulWidget {
@@ -22,7 +23,7 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
   final List<Widget> _screens = [
     const HomeScreen(),
     const CanteenListScreen(),
-    const Center(child: Text("Halaman Pesanan Belum Tersedia")),
+    const OrderScreen(),
     const ProfileScreen(),
   ];
 

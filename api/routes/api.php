@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\Student\MahasiswaController;
 use App\Http\Controllers\Api\Student\KantinController as StudentKantinController;
 use App\Http\Controllers\Api\Student\MenuController as StudentMenuController;
 use App\Http\Controllers\Api\Student\CartController;
+use App\Http\Controllers\Api\Student\ReviewController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,11 +36,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Profile routes
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::post('/profile', [ProfileController::class, 'update']);
-    
+
     // Kantin profile routes
     Route::get('/kantin/profile', [ProfileController::class, 'getKantinProfile']);
     Route::post('/kantin/profile', [ProfileController::class, 'updateKantinProfile']);
-    
+
     // Password routes
     Route::put('/change-password', [ProfileController::class, 'changePassword']);
 
@@ -47,7 +48,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // --- Grup Khusus Mahasiswa / Student (Prefix: /student) ---
     Route::prefix('student')->group(function () {
-        
+
         // Rute untuk mengambil data beranda dinamis
         Route::get('/beranda', [MahasiswaController::class, 'getBerandaData']);
 
@@ -67,10 +68,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // TAMBAHKAN BARIS INI: Rute untuk update profil mahasiswa
         Route::post('/profil/update', [MahasiswaController::class, 'updateProfile']);
-        
+
         // Nanti kamu bisa menambahkan rute mahasiswa lainnya di bawah ini,
         // sesuai dengan tugas Modul 1 kamu (misal: list kantin, list menu per kantin, dsb).
-        
+
     });
 
     // --- Grup Khusus Penjual (Prefix: /pemilik) ---
@@ -104,5 +105,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/orders/{id}', [StudentOrderController::class, 'show']);
         // Modul Tracking
         Route::get('/deliveries/{pesanan}', [TrackingController::class, 'show']);
+        // Modul Ulasan (Reviews)
+        Route::post('/reviews', [ReviewController::class, 'store']);
     });
 });

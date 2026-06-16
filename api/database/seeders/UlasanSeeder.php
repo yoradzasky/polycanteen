@@ -10,9 +10,13 @@ class UlasanSeeder extends Seeder
 {
     public function run(): void
     {
-        // Ambil semua pesanan yang sudah selesai dan belum punya ulasan
+        // Ambil semua pesanan yang sudah selesai dan belum punya ulasan, kecuali yang ditandai belum dirating
         $pesananSelesai = Pesanan::where('status_pesanan', 'selesai')
             ->whereDoesntHave('ulasan')
+            ->where(function($query) {
+                $query->whereNull('catatan_pesanan')
+                      ->orWhere('catatan_pesanan', 'not like', '%belum dirating%');
+            })
             ->with(['mahasiswa', 'kantin'])
             ->get();
 
