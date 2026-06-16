@@ -83,15 +83,18 @@ class PaymentController extends Controller
                 }
 
                 $params['enabled_payments'] = $enabledPayments;
-                $snapToken = Snap::getSnapToken($params);
-                $paymentUrl = Snap::createTransaction($params)->redirect_url;
+                
+                $midtransResponse = Snap::createTransaction($params);
+                $snapToken = $midtransResponse->token;
+                $paymentUrl = $midtransResponse->redirect_url;
 
                 return response()->json([
                     'success' => true,
                     'data' => [
                         'payment_type' => 'snap',
                         'snap_token' => $snapToken,
-                        'payment_url' => $paymentUrl
+                        'payment_url' => $paymentUrl,
+                        'order_id' => $params['transaction_details']['order_id'],
                     ]
                 ]);
             }
@@ -101,5 +104,72 @@ class PaymentController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+    
+    public function checkStatus($id)
+    {
+        // Cari pesanan dengan relasi lengkap
+        $pesanan = Pesanan::with(['payment', 'kantin', 'details.menu'])->find($id);
+
+        if (!$pesanan) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Pesanan tidak ditemukan'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $pesanan->id,
+                'status_pesanan' => $pesanan->status_pesanan,
+                'total_harga' => $pesanan->total_harga,
+                'nomor_antrian' => $pesanan->nomor_antrian,
+                'tipe_pesanan' => $pesanan->tipe_pesanan,
+                'created_at' => $pesanan->created_at,
+                'kantin' => $pesanan->kantin,
+                'detail_pesanan' => $pesanan->details,
+                'transaction_status' => $pesanan->payment ? $pesanan->payment->status_bayar : 'pending',
+                'metode_pembayaran' => $pesanan->payment ? strtoupper($pesanan->payment->metode_bayar) : null,
+            ]
+        ]);
+    }
+
+    public function getLatestPendingOrder(Request $request)
+    {
+        $user = $request->user();
+        $mahasiswa = $user->mahasiswa;
+
+        if (!$mahasiswa) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User bukan mahasiswa'
+            ], 403);
+        }
+
+        // Cari pesanan pertama yang BELUM dibayar
+        $pesanan = Pesanan::where('mahasiswa_id', $mahasiswa->id)
+            ->whereDoesntHave('payment', function($query) {
+                $query->where('status_bayar', 'sukses');
+            })
+            ->whereNotIn('status_pesanan', ['selesai', 'ditolak'])
+            ->orderBy('id', 'asc')
+            ->first();
+
+        if (!$pesanan) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak ada pesanan pending'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $pesanan->id,
+                'total_harga' => $pesanan->total_harga,
+                'status_pesanan' => $pesanan->status_pesanan
+            ]
+        ]);
     }
 }

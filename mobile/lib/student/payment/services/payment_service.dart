@@ -22,7 +22,7 @@ class PaymentService {
         'Authorization': 'Bearer ${token.isNotEmpty ? token : ''}', 
       },
       body: jsonEncode({
-        'payment_type': ?paymentType,
+        'payment_type': paymentType,
       }),
     );
 
@@ -40,6 +40,34 @@ class PaymentService {
       } catch (_) {}
       
       throw Exception(message);
+    }
+  }
+
+  Future<Map<String, dynamic>> getPaymentStatus(int pesananId) async {
+    final token = await _prefs.getString('auth_token');
+    // Using student/payment/status/{id} as the target endpoint.
+    // Note: If this returns 404, it means the backend route is not yet implemented.
+    final response = await http.get(
+      Uri.parse('$_baseUrl/student/payment/status/$pesananId'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer ${token.isNotEmpty ? token : ''}',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      // Log for debugging
+      print('DEBUG: Status Code: ${response.statusCode}');
+      print('DEBUG: Response Body: ${response.body}');
+      
+      // Return the status code so the UI can decide what to do
+      return {
+        'success': false,
+        'status_code': response.statusCode,
+        'message': 'Gagal mengambil status pembayaran',
+      };
     }
   }
 }

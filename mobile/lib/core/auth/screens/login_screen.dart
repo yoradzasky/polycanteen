@@ -6,6 +6,7 @@ import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 import '../../layouts/seller_main_layout.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../../student/payment/screens/payment_screen.dart';
+import '../../../student/orders/services/order_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -97,11 +98,23 @@ class _LoginScreenState extends State<LoginScreen> {
 
         // Logic khusus testing: redirect mahasiswa1 ke PaymentScreen
         if (email == 'mahasiswa1@kantin.com') {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (_) => const PaymentScreen(pesananId: 11, totalHarga: 73000), // ID dummy 11
-            ),
-          );
+          // Cari pesanan yang belum dibayar secara dinamis
+          final orderData = await OrderService().getLatestPendingOrder();
+          
+          if (orderData != null) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (_) => PaymentScreen(
+                  pesananId: orderData['id'], 
+                  totalHarga: double.parse(orderData['total_harga'].toString())
+                ),
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Tidak ada pesanan pending untuk testing.')),
+            );
+          }
           return;
         }
 

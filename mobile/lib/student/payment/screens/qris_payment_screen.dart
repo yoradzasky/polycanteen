@@ -6,6 +6,7 @@ import 'package:gal/gal.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import '../../orders/screens/queue_ticket_screen.dart';
+import '../services/payment_service.dart';
 
 class QrisPaymentScreen extends StatefulWidget {
   final String qrUrl; // Berisi raw string QR dari Midtrans Core API
@@ -25,13 +26,17 @@ class QrisPaymentScreen extends StatefulWidget {
 
 class _QrisPaymentScreenState extends State<QrisPaymentScreen> {
   Timer? _timer;
+  Timer? _statusTimer;
   int _secondsRemaining = 900; // 15 menit
   final ScreenshotController screenshotController = ScreenshotController();
+  final PaymentService _paymentService = PaymentService();
+  bool _isCheckingStatus = false;
 
   @override
   void initState() {
     super.initState();
     _startTimer();
+    _startStatusPolling();
   }
 
   void _startTimer() {
@@ -44,9 +49,112 @@ class _QrisPaymentScreenState extends State<QrisPaymentScreen> {
     });
   }
 
+  void _startStatusPolling() {
+    // Poll every 5 seconds
+    _statusTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      _checkPaymentStatus(isAuto: true);
+    });
+  }
+
+  Future<void> _checkPaymentStatus({bool isAuto = false}) async {
+    if (_isCheckingStatus) return;
+    
+    try {
+      if (!isAuto) setState(() => _isCheckingStatus = true);
+      
+      final response = await _paymentService.getPaymentStatus(widget.pesananId);
+      debugPrint('DEBUG: Payment Status Response: $response');
+      
+      // Handle 404 from our updated service
+      if (response['status_code'] == 404) {
+        if (!isAuto && mounted) {
+          _showRouteMissingDialog();
+        }
+        return;
+      }
+
+      final data = response['data'] ?? response; // Handle both wrapped and unwrapped data
+      final String? transStatus = data['transaction_status'];
+      final String? orderStatus = data['status_pesanan'];
+
+      // Success conditions:
+      // 1. Midtrans status is settlement or capture
+      // 2. Local order status is 'dibayar' (means backend already updated it)
+      if (transStatus == 'settlement' || 
+          transStatus == 'capture' || 
+          orderStatus == 'dibayar' ||
+          orderStatus == 'proses') { 
+        
+        debugPrint('DEBUG: Payment Success detected! Status: $transStatus, Order: $orderStatus');
+        _statusTimer?.cancel();
+        _timer?.cancel();
+        
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => QueueTicketScreen(pesananId: widget.pesananId),
+            ),
+          );
+        }
+      } else if (!isAuto) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Pembayaran belum diterima. Silakan selesaikan pembayaran.")),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('DEBUG: Error checking payment status: $e');
+      if (!isAuto && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted && !isAuto) setState(() => _isCheckingStatus = false);
+    }
+  }
+
+  void _showRouteMissingDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('API Belum Siap'),
+        content: const Text(
+          'Endpoint api/student/payment/status/{id} tidak ditemukan (404) di backend.\n\n'
+          'Anda harus menambahkan route tersebut di Laravel agar pengecekan otomatis berfungsi.\n\n'
+          'Ingin lanjut ke halaman tiket untuk sementara (Simulasi Berhasil)?'
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Tunggu'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => QueueTicketScreen(pesananId: widget.pesananId),
+                ),
+              );
+            },
+            child: const Text('Bypass (Lanjut)'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _timer?.cancel();
+    _statusTimer?.cancel();
     super.dispose();
   }
 
@@ -224,20 +332,15 @@ class _QrisPaymentScreenState extends State<QrisPaymentScreen> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => QueueTicketScreen(pesananId: widget.pesananId),
-                    ),
-                  );
-                },
+                onPressed: _isCheckingStatus ? null : () => _checkPaymentStatus(isAuto: false),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF3B5BBD),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   elevation: 0,
                 ),
-                child: const Text('Cek Status / Bagikan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                child: _isCheckingStatus 
+                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  : const Text('Cek Status Pembayaran', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
             ),
           ],

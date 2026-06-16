@@ -64,6 +64,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // =================================================================
     // --- TAMBAHAN ROUTE UNTUK PEMBAYARAN MAHASISWA ---
     // =================================================================
+    Route::get('/student/orders/latest-pending', [PaymentController::class, 'getLatestPendingOrder']);
     Route::post('/student/payment/{pesanan_id}', [PaymentController::class, 'createPayment']);
+    Route::get('/student/payment/status/{pesanan_id}', [PaymentController::class, 'checkStatus']);
 
 });

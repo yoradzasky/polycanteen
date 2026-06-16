@@ -224,5 +224,7 @@ class DatabaseSeeder extends Seeder
                 'komentar' => $faker->sentence
             ]);
         }
+
+        $this->call(PesananSeeder::class);
     }
 }
