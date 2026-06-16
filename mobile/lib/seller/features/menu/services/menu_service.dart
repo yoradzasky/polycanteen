@@ -20,7 +20,6 @@ class Menu {
   final int? estimasiWaktu;
   final List<String>? pilihanLayanan;
   final List<Map<String, dynamic>>? varian;
-  final List<dynamic>? topping;
 
   Menu({
     required this.id,
@@ -33,7 +32,6 @@ class Menu {
     this.estimasiWaktu,
     this.pilihanLayanan,
     this.varian,
-    this.topping,
   });
 
   factory Menu.fromJson(Map<String, dynamic> json) {
@@ -53,7 +51,6 @@ class Menu {
 
     final varList = parseJsonList(json['varian']);
     final layList = parseJsonList(json['pilihan_layanan']);
-    final topList = parseJsonList(json['topping']);
 
     return Menu(
       id: json['id'] is int ? json['id'] : int.tryParse(json['id'].toString()) ?? 0,
@@ -79,7 +76,6 @@ class Menu {
               varList.map((e) => Map<String, dynamic>.from(e)),
             )
           : null,
-      topping: topList,
     );
   }
 }
@@ -97,7 +93,6 @@ class MenuFormData {
   final int? estimasiWaktu;
   final File? fotoMenu;
   final List<Map<String, dynamic>>? varian;
-  final List<dynamic>? topping;
 
   MenuFormData({
     required this.namaItem,
@@ -108,7 +103,6 @@ class MenuFormData {
     this.estimasiWaktu,
     this.fotoMenu,
     this.varian,
-    this.topping,
   });
 }
 
@@ -122,7 +116,7 @@ class MenuService {
   late final String _storageBase;
 
   MenuService() {
-    final baseUrl = dotenv.env['BASE_URL'] ?? 'http://localhost:8000/api';
+    final baseUrl = dotenv.env['BASE_URL'] ?? 'http://192.168.1.14:8000/api';
     // Strip trailing /mobile if present so we can append /seller/menus
     final cleanBase = baseUrl.replaceAll(RegExp(r'/mobile$'), '');
 
@@ -213,9 +207,6 @@ class MenuService {
       if (data.varian != null && data.varian!.isNotEmpty) {
         formMap['varian'] = jsonEncode(data.varian);
       }
-      if (data.topping != null && data.topping!.isNotEmpty) {
-        formMap['topping'] = jsonEncode(data.topping);
-      }
       if (data.fotoMenu != null) {
         formMap['foto_menu'] = await MultipartFile.fromFile(
           data.fotoMenu!.path,
@@ -274,9 +265,6 @@ class MenuService {
       }
       if (data.varian != null) {
         formMap['varian'] = jsonEncode(data.varian);
-      }
-      if (data.topping != null) {
-        formMap['topping'] = jsonEncode(data.topping);
       }
       if (data.fotoMenu != null) {
         formMap['foto_menu'] = await MultipartFile.fromFile(

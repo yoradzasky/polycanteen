@@ -17,12 +17,10 @@ class PesananDetail extends Model
         'jumlah_pesanan',
         'subtotal',
         'varian_snapshot',
-        'topping_snapshot',
     ];
 
     protected $casts = [
         'varian_snapshot' => 'array',
-        'topping_snapshot' => 'array',
     ];
 
     public function pesanan(): BelongsTo

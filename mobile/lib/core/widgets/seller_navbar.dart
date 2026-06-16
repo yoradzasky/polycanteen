@@ -19,111 +19,120 @@ class SellerNavbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const Color inactiveColor = Color(0xFF9FA5C0);
+    // Mendapatkan padding bawah dinamis untuk gesture bar
+    double bottomPadding = MediaQuery.of(context).padding.bottom;
 
-    return SafeArea(
-      child: SizedBox(
-        height: 70, // Fixed height for the bottom bar
-        child: Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.center,
-          children: [
-            // Base Navbar background
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                height: 70,
+    return SizedBox(
+      // Tinggi navbar 70 + ruang untuk gesture bar
+      height: 70 + bottomPadding,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
+        children: [
+          // Base Navbar background
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 70 + bottomPadding,
+              padding: EdgeInsets.only(bottom: bottomPadding),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _buildNavItem(
+                      icon: Icons.home,
+                      label: 'Beranda',
+                      index: 0,
+                      isActive: currentIndex == 0,
+                      activeColor: primaryColor,
+                      inactiveColor: inactiveColor,
+                    ),
+                  ),
+                  Expanded(
+                    child: _buildNavItem(
+                      icon: Icons.assignment,
+                      label: 'Kelola Menu',
+                      index: 1,
+                      isActive: currentIndex == 1,
+                      activeColor: primaryColor,
+                      inactiveColor: inactiveColor,
+                    ),
+                  ),
+                  const Expanded(
+                    child: SizedBox.shrink(),
+                  ), // Empty space untuk QR button
+                  Expanded(
+                    child: _buildNavItem(
+                      icon: userRole == 'pemilik'
+                          ? Icons.show_chart
+                          : Icons.schedule,
+                      label: userRole == 'pemilik' ? 'Laporan' : 'Riwayat',
+                      index: 2,
+                      isActive: currentIndex == 2,
+                      activeColor: primaryColor,
+                      inactiveColor: inactiveColor,
+                    ),
+                  ),
+                  Expanded(
+                    child: _buildNavItem(
+                      icon: Icons.person,
+                      label: 'Profil',
+                      index: 3,
+                      isActive: currentIndex == 3,
+                      activeColor: primaryColor,
+                      inactiveColor: inactiveColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Center Floating Button
+          Positioned(
+            top: -24,
+            child: GestureDetector(
+              onTap: onQrTap,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutBack,
+                width: 68,
+                height: 68,
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  shape: BoxShape.circle,
+                  color: primaryColor,
+                  border: Border.all(color: Colors.white, width: 4),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, -4),
+                      color: primaryColor.withValues(alpha: 0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
                     ),
                   ],
                 ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _buildNavItem(
-                        icon: Icons.home,
-                        label: 'Beranda',
-                        index: 0,
-                        isActive: currentIndex == 0,
-                        activeColor: primaryColor,
-                        inactiveColor: inactiveColor,
-                      ),
-                    ),
-                    Expanded(
-                      child: _buildNavItem(
-                        icon: Icons.assignment,
-                        label: 'Kelola Menu',
-                        index: 1,
-                        isActive: currentIndex == 1,
-                        activeColor: primaryColor,
-                        inactiveColor: inactiveColor,
-                      ),
-                    ),
-                    const Expanded(child: SizedBox.shrink()), // Empty space for QR button
-                    Expanded(
-                      child: _buildNavItem(
-                        icon: userRole == 'pemilik' ? Icons.show_chart : Icons.schedule,
-                        label: userRole == 'pemilik' ? 'Laporan' : 'Riwayat',
-                        index: 2,
-                        isActive: currentIndex == 2,
-                        activeColor: primaryColor,
-                        inactiveColor: inactiveColor,
-                      ),
-                    ),
-                    Expanded(
-                      child: _buildNavItem(
-                        icon: Icons.person,
-                        label: 'Profil',
-                        index: 3,
-                        isActive: currentIndex == 3,
-                        activeColor: primaryColor,
-                        inactiveColor: inactiveColor,
-                      ),
-                    ),
-                  ],
+                child: const Icon(
+                  Icons.qr_code_scanner,
+                  color: Colors.white,
+                  size: 32,
                 ),
               ),
             ),
-            // Center Floating Button
-            Positioned(
-              top: -24, // Negative value to make it float above
-              child: GestureDetector(
-                onTap: onQrTap,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeOutBack,
-                  width: 68,
-                  height: 68,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: primaryColor,
-                    border: Border.all(color: Colors.white, width: 4),
-                    boxShadow: [
-                      BoxShadow(
-                        color: primaryColor.withValues(alpha: 0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.qr_code_scanner,
-                    color: Colors.white,
-                    size: 32,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -2,11 +2,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
-
+import '../../layouts/student_main_layout.dart';
 import '../../layouts/seller_main_layout.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../../student/payment/screens/payment_screen.dart';
 import '../../../student/orders/services/order_service.dart';
+import '../../services/notification_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -43,10 +44,11 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      // 1. AMBIL IP DARI FILE .env 
+      // 1. AMBIL IP DARI FILE .env
       // Jika gagal terbaca, baru dia pakai localhost sebagai cadangan
-      final String baseUrl = dotenv.env['BASE_URL'] ?? 'http://127.0.0.1:8000/api';
-      
+      final String baseUrl =
+          dotenv.env['BASE_URL'] ?? 'http://192.168.1.14:8000/api';
+
       // 2. GABUNGKAN BASE_URL dengan endpoint '/login'
       final Uri url = Uri.parse('$baseUrl/login');
 
@@ -67,7 +69,8 @@ class _LoginScreenState extends State<LoginScreen> {
       // Cek apakah response sukses dari Laravel
       if (response.statusCode == 200 && responseData['success'] == true) {
         final String token = responseData['data']['token'];
-        final String userRole = responseData['data']['user']['role'] ?? 'pegawai';
+        final String userRole =
+            responseData['data']['user']['role'] ?? 'pegawai';
 
         // Cek apakah role adalah admin - jika iya, tolak login
         if (userRole == 'admin') {
@@ -87,6 +90,8 @@ class _LoginScreenState extends State<LoginScreen> {
         final prefs = EncryptedSharedPreferences();
         await prefs.setString('auth_token', token);
         await prefs.setString('user_role', userRole);
+
+        await NotificationService.sendTokenToServer();
 
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -118,12 +123,18 @@ class _LoginScreenState extends State<LoginScreen> {
           return;
         }
 
-        // Redirect ke halaman utama seller
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => const SellerMainLayout(),
-          ),
-        );
+        // Redirect ke halaman utama sesuai role
+        if (userRole == 'mahasiswa') {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => StudentMainLayout(userRole: userRole),
+            ),
+          );
+        } else {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const SellerMainLayout()),
+          );
+        }
       } else {
         // --- PENANGANAN JIKA ERROR (AKUN SALAH ATAU EMAIL NGACOK) ---
         if (!mounted) return;
@@ -321,7 +332,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   bool _isFormValid = false;
 
@@ -346,7 +358,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _updateFormValid() {
-    final isValid = _fullNameController.text.trim().isNotEmpty &&
+    final isValid =
+        _fullNameController.text.trim().isNotEmpty &&
         _emailController.text.trim().isNotEmpty &&
         _phoneController.text.trim().isNotEmpty &&
         _passwordController.text.isNotEmpty &&

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('mahasiswa_id')->constrained('mahasiswa')->onDelete('cascade');
             $table->foreignId('menu_id')->constrained('menu')->onDelete('cascade');
             $table->integer('jumlah');
+            $table->json('varian_selected')->nullable();
             $table->timestamps();
         });
     }

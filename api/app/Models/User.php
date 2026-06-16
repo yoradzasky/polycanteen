@@ -20,6 +20,7 @@ class User extends Authenticatable
         'status_akun',
         'role', // admin, mahasiswa, pemilik, pegawai
         'foto_profile',
+        'fcm_token',
     ];
 
     protected $hidden = [
@@ -45,5 +46,12 @@ class User extends Authenticatable
     public function pegawai(): HasOne
     {
         return $this->hasOne(Pegawai::class);
+    }
+
+    public function getCourierNameAttribute(): string
+    {
+        return $this->pegawai?->nama_karyawan
+            ?? $this->pemilik?->nama_pemilik
+            ?? $this->username;
     }
 }

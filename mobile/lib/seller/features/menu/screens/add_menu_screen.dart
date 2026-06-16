@@ -104,7 +104,11 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
 
     if (source == null) return;
 
-    final picked = await picker.pickImage(source: source, maxWidth: 1024, imageQuality: 85);
+    final picked = await picker.pickImage(
+      source: source,
+      maxWidth: 1024,
+      imageQuality: 85,
+    );
     if (picked != null && mounted) {
       setState(() => _selectedImage = File(picked.path));
     }
@@ -116,7 +120,10 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
 
     if (_selectedKategori == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pilih kategori menu'), backgroundColor: Colors.red),
+        const SnackBar(
+          content: Text('Pilih kategori menu'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
@@ -128,7 +135,10 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
 
     if (pilihanLayanan.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pilih minimal satu pilihan layanan'), backgroundColor: Colors.red),
+        const SnackBar(
+          content: Text('Pilih minimal satu pilihan layanan'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
@@ -138,13 +148,23 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
     try {
       // Build varian data
       List<Map<String, dynamic>>? varianData;
-      final validVarians = _variasiList.where((v) => v.namaController.text.isNotEmpty && v.pilihanList.isNotEmpty).toList();
+      final validVarians = _variasiList
+          .where(
+            (v) => v.namaController.text.isNotEmpty && v.pilihanList.isNotEmpty,
+          )
+          .toList();
       if (validVarians.isNotEmpty) {
-        varianData = validVarians.map((v) => {
-          'nama': v.namaController.text,
-          'tipe': v.tipe,
-          'pilihan': v.pilihanList.map((p) => {'nama': p.nama, 'harga': p.harga}).toList(),
-        }).toList();
+        varianData = validVarians
+            .map(
+              (v) => {
+                'nama': v.namaController.text,
+                'tipe': v.tipe,
+                'pilihan': v.pilihanList
+                    .map((p) => {'nama': p.nama, 'harga': p.harga})
+                    .toList(),
+              },
+            )
+            .toList();
       }
 
       final hargaText = _hargaController.text.replaceAll(RegExp(r'[^0-9]'), '');
@@ -154,8 +174,12 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
         harga: int.parse(hargaText),
         kategori: _selectedKategori!,
         pilihanLayanan: pilihanLayanan,
-        deskripsi: _deskripsiController.text.isNotEmpty ? _deskripsiController.text.trim() : null,
-        estimasiWaktu: _estimasiController.text.isNotEmpty ? int.tryParse(_estimasiController.text) : null,
+        deskripsi: _deskripsiController.text.isNotEmpty
+            ? _deskripsiController.text.trim()
+            : null,
+        estimasiWaktu: _estimasiController.text.isNotEmpty
+            ? int.tryParse(_estimasiController.text)
+            : null,
         fotoMenu: _selectedImage,
         varian: varianData,
       );
@@ -179,7 +203,10 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
           title: const Text('Gagal'),
           content: Text(e.toString().replaceFirst('Exception: ', '')),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('OK')),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('OK'),
+            ),
           ],
         ),
       );
@@ -191,11 +218,16 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
     final nama = _pilihanNamaController.text.trim();
     if (nama.isEmpty) return;
 
-    final hargaText = _pilihanHargaController.text.replaceAll(RegExp(r'[^0-9]'), '');
+    final hargaText = _pilihanHargaController.text.replaceAll(
+      RegExp(r'[^0-9]'),
+      '',
+    );
     final harga = int.tryParse(hargaText) ?? 0;
 
     setState(() {
-      _variasiList[index].pilihanList.add(_VariasiPilihan(nama: nama, harga: harga));
+      _variasiList[index].pilihanList.add(
+        _VariasiPilihan(nama: nama, harga: harga),
+      );
       _pilihanNamaController.clear();
       _pilihanHargaController.clear();
     });
@@ -211,13 +243,21 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
       appBar: AppBar(
         backgroundColor: _kPrimaryBlue,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Colors.white,
+            size: 20,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
         title: const Text(
           'Tambah Menu Baru',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
         ),
         elevation: 0,
       ),
@@ -238,7 +278,8 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
               _buildTextField(
                 controller: _namaController,
                 hint: 'Contoh: Nasi Gudeg Komplit',
-                validator: (v) => (v == null || v.isEmpty) ? 'Nama menu wajib diisi' : null,
+                validator: (v) =>
+                    (v == null || v.isEmpty) ? 'Nama menu wajib diisi' : null,
               ),
               const SizedBox(height: 20),
 
@@ -251,7 +292,10 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
                 prefix: 'Rp  ',
                 prefixColor: _kPrimaryBlue,
                 keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly, _ThousandFormatter()],
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  _ThousandFormatter(),
+                ],
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'Harga wajib diisi';
                   final num = int.tryParse(v.replaceAll(RegExp(r'[^0-9]'), ''));
@@ -343,7 +387,11 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
                     ],
                   ),
                   child: _selectedImage == null
-                      ? Icon(Icons.restaurant, size: 48, color: Colors.grey[400])
+                      ? Icon(
+                          Icons.restaurant,
+                          size: 48,
+                          color: Colors.grey[400],
+                        )
                       : null,
                 ),
                 Positioned(
@@ -356,7 +404,11 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
                       shape: BoxShape.circle,
                       color: _kAccentOrange,
                     ),
-                    child: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
+                    child: const Icon(
+                      Icons.camera_alt,
+                      color: Colors.white,
+                      size: 18,
+                    ),
                   ),
                 ),
               ],
@@ -375,7 +427,11 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
   Widget _buildSectionLabel(String label) {
     return Text(
       label,
-      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF424242)),
+      style: const TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        color: Color(0xFF424242),
+      ),
     );
   }
 
@@ -408,7 +464,10 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
         suffixIcon: suffixIcon,
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.grey[300]!),
@@ -431,13 +490,17 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
 
   Widget _buildDropdown() {
     return DropdownButtonFormField<String>(
+      isExpanded: true,
       initialValue: _selectedKategori,
       decoration: InputDecoration(
         hintText: 'Pilih Kategori',
         hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.grey[300]!),
@@ -512,19 +575,43 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('NAMA VARIASI', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey, letterSpacing: 0.5)),
+                    const Text(
+                      'NAMA VARIASI',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
                     if (_variasiList.length > 1)
                       GestureDetector(
-                        onTap: () => setState(() => _variasiList.removeAt(index)),
-                        child: const Icon(Icons.close, size: 20, color: Colors.red),
+                        onTap: () =>
+                            setState(() => _variasiList.removeAt(index)),
+                        child: const Icon(
+                          Icons.close,
+                          size: 20,
+                          color: Colors.red,
+                        ),
                       ),
                   ],
                 ),
                 const SizedBox(height: 6),
-                _buildTextField(controller: variasi.namaController, hint: 'Contoh: Topping Tambahan'),
+                _buildTextField(
+                  controller: variasi.namaController,
+                  hint: 'Contoh: Topping Tambahan',
+                ),
                 const SizedBox(height: 16),
 
-                const Text('TIPE VARIASI', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey, letterSpacing: 0.5)),
+                const Text(
+                  'TIPE VARIASI',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey,
+                    letterSpacing: 0.5,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
@@ -535,14 +622,25 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                const Text('PILIHAN VARIASI & HARGA', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey, letterSpacing: 0.5)),
+                const Text(
+                  'PILIHAN VARIASI & HARGA',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey,
+                    letterSpacing: 0.5,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 ...variasi.pilihanList.asMap().entries.map((pilihanEntry) {
                   final i = pilihanEntry.key;
                   final p = pilihanEntry.value;
                   return Container(
                     margin: const EdgeInsets.only(bottom: 8),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF5F5F5),
                       borderRadius: BorderRadius.circular(20),
@@ -553,13 +651,23 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
                         Text(p.nama, style: const TextStyle(fontSize: 13)),
                         const SizedBox(width: 4),
                         GestureDetector(
-                          onTap: () => setState(() => variasi.pilihanList.removeAt(i)),
-                          child: Icon(Icons.close, size: 16, color: Colors.grey[600]),
+                          onTap: () =>
+                              setState(() => variasi.pilihanList.removeAt(i)),
+                          child: Icon(
+                            Icons.close,
+                            size: 16,
+                            color: Colors.grey[600],
+                          ),
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          p.harga > 0 ? '+ Rp ${_currencyFormat.format(p.harga)}' : 'Rp 0',
-                          style: const TextStyle(fontSize: 13, color: Colors.grey),
+                          p.harga > 0
+                              ? '+ Rp ${_currencyFormat.format(p.harga)}'
+                              : 'Rp 0',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey,
+                          ),
                         ),
                       ],
                     ),
@@ -569,15 +677,27 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
                 GestureDetector(
                   onTap: () => _showAddPilihanDialog(index),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey[300]!, style: BorderStyle.solid),
+                      border: Border.all(
+                        color: Colors.grey[300]!,
+                        style: BorderStyle.solid,
+                      ),
                     ),
                     child: Row(
                       children: [
                         Expanded(
-                          child: Text('Tambah pilihan...', style: TextStyle(color: Colors.grey[400], fontSize: 13)),
+                          child: Text(
+                            'Tambah pilihan...',
+                            style: TextStyle(
+                              color: Colors.grey[400],
+                              fontSize: 13,
+                            ),
+                          ),
                         ),
                         const Icon(Icons.add, color: _kPrimaryBlue, size: 20),
                       ],
@@ -603,7 +723,13 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
               children: [
                 const Icon(Icons.add, color: _kPrimaryBlue, size: 20),
                 const SizedBox(width: 8),
-                const Text('Tambah Variasi Menu', style: TextStyle(color: _kPrimaryBlue, fontWeight: FontWeight.bold)),
+                const Text(
+                  'Tambah Variasi Menu',
+                  style: TextStyle(
+                    color: _kPrimaryBlue,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
           ),
@@ -620,25 +746,38 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Tambah Pilihan Variasi', style: TextStyle(fontSize: 16)),
+        title: const Text(
+          'Tambah Pilihan Variasi',
+          style: TextStyle(fontSize: 16),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: _pilihanNamaController,
-              decoration: const InputDecoration(labelText: 'Nama pilihan', hintText: 'Contoh: Keju Mozzarella'),
+              decoration: const InputDecoration(
+                labelText: 'Nama pilihan',
+                hintText: 'Contoh: Keju Mozzarella',
+              ),
             ),
             const SizedBox(height: 8),
             TextField(
               controller: _pilihanHargaController,
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              decoration: const InputDecoration(labelText: 'Harga tambahan', hintText: '0', prefixText: 'Rp '),
+              decoration: const InputDecoration(
+                labelText: 'Harga tambahan',
+                hintText: '0',
+                prefixText: 'Rp ',
+              ),
             ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Batal'),
+          ),
           ElevatedButton(
             onPressed: () {
               _addVariasiPilihan(index);
@@ -660,7 +799,9 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: isSelected ? _kPrimaryBlue.withValues(alpha: 0.08) : Colors.transparent,
+            color: isSelected
+                ? _kPrimaryBlue.withValues(alpha: 0.08)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
               color: isSelected ? _kPrimaryBlue : Colors.grey[300]!,
@@ -690,17 +831,22 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
         style: ElevatedButton.styleFrom(
           backgroundColor: _kAccentOrange,
           disabledBackgroundColor: _kAccentOrange.withValues(alpha: 0.5),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
           elevation: 0,
         ),
         child: _isSubmitting
             ? const SizedBox(
                 width: 22,
                 height: 22,
-                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2.5,
+                ),
               )
             : const Text(
-                'Simpan Perubahan',
+                'Tambah Menu',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -720,7 +866,7 @@ class _VariasiItem {
   TextEditingController namaController = TextEditingController();
   String tipe = 'opsional';
   List<_VariasiPilihan> pilihanList = [];
-  
+
   void dispose() {
     namaController.dispose();
   }
@@ -740,10 +886,17 @@ class _ThousandFormatter extends TextInputFormatter {
   final _format = NumberFormat('#,###', 'id_ID');
 
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     if (newValue.text.isEmpty) return newValue;
     final digits = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
-    if (digits.isEmpty) return const TextEditingValue(text: '', selection: TextSelection.collapsed(offset: 0));
+    if (digits.isEmpty)
+      return const TextEditingValue(
+        text: '',
+        selection: TextSelection.collapsed(offset: 0),
+      );
     final number = int.parse(digits);
     final formatted = _format.format(number);
     return TextEditingValue(

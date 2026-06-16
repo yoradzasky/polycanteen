@@ -1,58 +1,56 @@
 import React from 'react';
 import { Link, usePage } from '@inertiajs/react';
 
-const managementSections = [
-  {
-    heading: "MANAJEMEN KANTIN",
-    items: [
-      {
-        label: "Daftar Kantin",
-        // Ikon Toko/Kantin
-        icon: (
-          <svg className="w-[18px] h-[18px]" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M5.223 2.224a1.5 1.5 0 011.054-.424h11.446c.398 0 .78.158 1.054.424l3 3A1.5 1.5 0 0121 6.286V19.5A1.5 1.5 0 0119.5 21h-15A1.5 1.5 0 013 19.5V6.286a1.5 1.5 0 01.223-1.062l3-3zM4.5 7.5v12h15v-12H4.5zm2.25-3l-1.5 1.5h13.5l-1.5-1.5h-10.5zM12 10.5a.75.75 0 00-.75.75v3a.75.75 0 001.5 0v-3a.75.75 0 00-.75-.75z" />
-          </svg>
-        ),
-        href: route('admin.canteens.index'),
-        activePath: '/admin/canteens',
-      },
-    ],
-  },
-  {
-    heading: "MANAJEMEN MAHASISWA",
-    items: [
-      {
-        label: "Daftar Mahasiswa",
-        // Ikon Grup Pembeli (3 Orang)
-        icon: (
-          <svg className="w-[18px] h-[18px]" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
-          </svg>
-        ),
-        href: route('admin.buyers.index'),
-        activePath: '/admin/buyers',
-      },
-      {
-        label: "Persetujuan Akun Mahasiswa",
-        multiline: true,
-        badge: 12, // Badge notifikasi ditambahkan di sini
-        // Ikon Persetujuan (Orang & Checklist)
-        icon: (
-          <svg className="w-[18px] h-[18px]" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6z" />
-            <path fillRule="evenodd" d="M16.707 10.293a1 1 0 010 1.414l-3 3a1 1 0 01-1.414 0l-1.5-1.5a1 1 0 011.414-1.414L13 12.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" />
-          </svg>
-        ),
-        href: '#',
-        activePath: '/admin/approvals',
-      },
-    ],
-  },
-];
-
 export default function Sidebar() {
-  const { url } = usePage();
+  const { url, props } = usePage();
   const isDashboardActive = url.startsWith('/admin/dashboard');
+  const approvalCount = props.notifications?.pendingApprovalsCount || 0;
+
+  const managementSections = [
+    {
+      heading: "MANAJEMEN KANTIN",
+      items: [
+        {
+          label: "Daftar Kantin",
+          icon: (
+            <svg className="w-[18px] h-[18px]" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M5.223 2.224a1.5 1.5 0 011.054-.424h11.446c.398 0 .78.158 1.054.424l3 3A1.5 1.5 0 0121 6.286V19.5A1.5 1.5 0 0119.5 21h-15A1.5 1.5 0 013 19.5V6.286a1.5 1.5 0 01.223-1.062l3-3zM4.5 7.5v12h15v-12H4.5zm2.25-3l-1.5 1.5h13.5l-1.5-1.5h-10.5zM12 10.5a.75.75 0 00-.75.75v3a.75.75 0 001.5 0v-3a.75.75 0 00-.75-.75z" />
+            </svg>
+          ),
+          href: route('admin.canteens.index'),
+          activePath: '/admin/canteens',
+        },
+      ],
+    },
+    {
+      heading: "MANAJEMEN MAHASISWA",
+      items: [
+        {
+          label: "Daftar Mahasiswa",
+          icon: (
+            <svg className="w-[18px] h-[18px]" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+            </svg>
+          ),
+          href: route('admin.buyers.index'),
+          activePath: '/admin/buyers',
+        },
+        {
+          label: "Persetujuan Akun Mahasiswa",
+          multiline: true,
+          badge: approvalCount,
+          icon: (
+            <svg className="w-[18px] h-[18px]" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6z" />
+              <path fillRule="evenodd" d="M16.707 10.293a1 1 0 010 1.414l-3 3a1 1 0 01-1.414 0l-1.5-1.5a1 1 0 011.414-1.414L13 12.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+          ),
+          href: route('admin.approvals.index'),
+          activePath: '/admin/approvals',
+        },
+      ],
+    },
+  ];
 
   return (
     <aside

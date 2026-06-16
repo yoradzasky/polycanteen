@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -65,14 +66,28 @@ class _EditMenuScreenState extends State<EditMenuScreen> {
     if (m.varian != null && m.varian!.isNotEmpty) {
       for (final v in m.varian!) {
         final item = _VariasiItem();
-        item.namaController.text = v['nama'] ?? '';
-        item.tipe = v['tipe'] ?? 'opsional';
-        final pilihan = v['pilihan'] as List<dynamic>? ?? [];
+        item.namaController.text = (v['nama'] ?? '').toString();
+        item.tipe = (v['tipe'] ?? 'opsional').toString();
+
+        // pilihan bisa berupa List langsung atau JSON string yang perlu di-decode
+        dynamic rawPilihan = v['pilihan'];
+        List<dynamic> pilihan = [];
+        if (rawPilihan is List) {
+          pilihan = rawPilihan;
+        } else if (rawPilihan is String) {
+          try {
+            final decoded = jsonDecode(rawPilihan);
+            if (decoded is List) pilihan = decoded;
+          } catch (_) {}
+        }
+
         for (final p in pilihan) {
-          item.pilihanList.add(_VariasiPilihan(
-            nama: p['nama'] ?? '',
-            harga: (p['harga'] is int) ? p['harga'] : int.tryParse(p['harga'].toString()) ?? 0,
-          ));
+          if (p is Map) {
+            item.pilihanList.add(_VariasiPilihan(
+              nama: (p['nama'] ?? '').toString(),
+              harga: (p['harga'] is int) ? p['harga'] : int.tryParse(p['harga'].toString()) ?? 0,
+            ));
+          }
         }
         _variasiList.add(item);
       }
@@ -225,7 +240,7 @@ class _EditMenuScreenState extends State<EditMenuScreen> {
       backgroundColor: const Color(0xFFFAFAFA),
       appBar: AppBar(
         backgroundColor: _kPrimaryBlue,
-        leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
+        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20), onPressed: () => Navigator.pop(context)),
         centerTitle: true,
         title: const Text('Edit Menu', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
         elevation: 0,
@@ -309,7 +324,7 @@ class _EditMenuScreenState extends State<EditMenuScreen> {
   }
 
   Widget _buildDropdown() {
-    return DropdownButtonFormField<String>(initialValue: _selectedKategori, decoration: InputDecoration(hintText: 'Pilih Kategori (Makanan/Minuman)', hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14), filled: true, fillColor: Colors.white, contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey[300]!)), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey[300]!)), focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: _kPrimaryBlue, width: 1.5))), items: _kategoriList.map((k) => DropdownMenuItem(value: k, child: Text(k))).toList(), onChanged: (val) => setState(() => _selectedKategori = val));
+    return DropdownButtonFormField<String>(isExpanded: true, initialValue: _selectedKategori, decoration: InputDecoration(hintText: 'Pilih Kategori (Makanan/Minuman)', hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14), filled: true, fillColor: Colors.white, contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey[300]!)), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey[300]!)), focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: _kPrimaryBlue, width: 1.5))), items: _kategoriList.map((k) => DropdownMenuItem(value: k, child: Text(k))).toList(), onChanged: (val) => setState(() => _selectedKategori = val));
   }
 
   Widget _buildCheckboxes() {

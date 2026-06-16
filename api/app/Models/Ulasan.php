@@ -13,6 +13,7 @@ class Ulasan extends Model
         'pesanan_id',
         'mahasiswa_id',
         'kantin_id',
+        'menu_id', // TAMBAHAN
         'rating',
         'komentar',
     ];
@@ -30,5 +31,11 @@ class Ulasan extends Model
     public function kantin(): BelongsTo
     {
         return $this->belongsTo(Kantin::class);
+    }
+
+    // TAMBAHAN RELASI
+    public function menu(): BelongsTo
+    {
+        return $this->belongsTo(Menu::class);
     }
 }

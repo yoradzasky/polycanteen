@@ -17,7 +17,9 @@ return new class extends Migration {
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('status_akun')->default('aktif');
-            $table->enum('role', ['admin', 'mahasiswa', 'pemilik', 'pegawai', 'kurir', 'kantin']);
+            $table->enum('role', ['admin', 'mahasiswa', 'pemilik', 'pegawai']);
+            $table->string('foto_profile')->nullable();
+            $table->string('fcm_token')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

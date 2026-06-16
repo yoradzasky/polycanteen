@@ -29,7 +29,6 @@ class StoreMenuRequest extends FormRequest
             'estimasi_waktu' => 'nullable|integer|min:1',
             'foto_menu' => 'nullable|image|max:10240',
             'varian' => 'nullable|json',
-            'topping' => 'nullable|json',
         ];
     }
 }

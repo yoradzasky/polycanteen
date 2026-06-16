@@ -20,6 +20,11 @@ class Pesanan extends Model
         'nomor_antrian',
         'catatan_pesanan',
         'alasan_penolakan',
+        'courier_user_id',
+        'alamat_pengantaran',
+        'dest_lat',
+        'dest_lng',
+        'qr_token',
     ];
 
     /**
@@ -90,5 +95,10 @@ class Pesanan extends Model
     public function ulasan(): HasOne
     {
         return $this->hasOne(Ulasan::class);
+    }
+
+    public function courierUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'courier_user_id');
     }
 }

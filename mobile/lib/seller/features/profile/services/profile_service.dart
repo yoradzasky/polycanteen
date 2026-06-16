@@ -9,7 +9,7 @@ import '../models/kantin_profile.dart';
 class ProfileService {
   static final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: dotenv.env['BASE_URL'] ?? 'http://10.0.2.2:8000/api',
+      baseUrl: dotenv.env['BASE_URL'] ?? 'http://192.168.1.14:8000/api',
       headers: {'Accept': 'application/json'},
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),

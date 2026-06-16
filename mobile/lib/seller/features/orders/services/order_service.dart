@@ -12,7 +12,7 @@ class OrderService {
   late final Dio _dio;
 
   OrderService() {
-    final baseUrl = dotenv.env['BASE_URL'] ?? 'http://192.168.1.22:8000/api';
+    final baseUrl = dotenv.env['BASE_URL'] ?? 'http://192.168.1.14:8000/api';
     final cleanBase = baseUrl.replaceAll(RegExp(r'/mobile$'), '');
 
     _dio = Dio(
@@ -121,6 +121,55 @@ class OrderService {
       if (body['success'] != true) {
         throw Exception(body['message'] ?? 'Gagal mengupdate status pesanan');
       }
+    } on DioException catch (e) {
+      throw Exception(_handleDioError(e));
+    }
+  }
+
+  // ───── POST /pemilik/deliveries/{id}/confirm ─────
+  Future<void> confirmDelivery(int orderId, String qrToken) async {
+    try {
+      final response = await _dio.post(
+        '/pemilik/deliveries/$orderId/confirm',
+        data: {'qr_token': qrToken},
+        options: await _authOptions(),
+      );
+
+      var body = response.data;
+      if (body is String) {
+        try {
+          body = jsonDecode(body);
+        } catch (_) {
+          throw Exception('Respons server tidak valid.');
+        }
+      }
+
+      if (body['success'] == false) {
+        throw Exception(body['message'] ?? 'Gagal mengkonfirmasi pengantaran');
+      }
+    } on DioException catch (e) {
+      throw Exception(_handleDioError(e));
+    }
+  }
+
+  // ───── POST /pemilik/deliveries/{id}/start ─────
+  Future<void> startDelivery(int orderId) async {
+    try {
+      final response = await _dio.post(
+        '/pemilik/deliveries/$orderId/start',
+        options: await _authOptions(),
+      );
+
+      var body = response.data;
+      if (body is String) {
+        try {
+          body = jsonDecode(body);
+        } catch (_) {
+          throw Exception('Respons server tidak valid.');
+        }
+      }
+      
+      // DeliveryController returns 200 with message if success
     } on DioException catch (e) {
       throw Exception(_handleDioError(e));
     }

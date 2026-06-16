@@ -2,34 +2,36 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use App\Models\Mahasiswa;
-use App\Models\Kantin;
-use App\Models\Pemilik;
-use App\Models\Pegawai;
-use App\Models\Menu;
-use App\Models\Keranjang;
-use App\Models\Pesanan;
-use App\Models\PesananDetail;
-use App\Models\Payment;
-use App\Models\Ulasan;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
-use Faker\Factory as Faker;
 
 class DatabaseSeeder extends Seeder
 {
+    /**
+     * Seed the application's database.
+     * Urutan penting karena ada foreign key constraints.
+     */
     public function run(): void
     {
-        $faker = Faker::create('id_ID');
+        $this->call([
+            // 1. Users (independen)
+            UserSeeder::class,
 
-        // 1. Admin (User)
-        User::create([
-            'username' => 'Admin Utama',
-            'email' => 'admin@kantin.com',
-            'password' => Hash::make('password123'),
-            'role' => 'admin',
-            'status_akun' => 'aktif',
+            // 2. Kantin (independen)
+            KantinSeeder::class,
+
+            // 3. Profil turunan dari User + Kantin
+            MahasiswaSeeder::class,
+            PemilikSeeder::class,
+            PegawaiSeeder::class,
+            BuyerApplicationSeeder::class,
+
+            // 4. Menu (butuh Kantin)
+            MenuSeeder::class,
+
+            // 5. Pesanan + Detail + Payment + Keranjang + Ulasan
+            PesananSeeder::class,
+            KeranjangSeeder::class,
+            UlasanSeeder::class,
         ]);
 
         // === TEST USER PEMILIK (Bu Mariyam) ===
