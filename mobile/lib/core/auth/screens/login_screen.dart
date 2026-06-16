@@ -5,6 +5,7 @@ import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 import '../../layouts/student_main_layout.dart';
 import '../../layouts/seller_main_layout.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../../services/notification_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -87,6 +88,8 @@ class _LoginScreenState extends State<LoginScreen> {
         final prefs = EncryptedSharedPreferences();
         await prefs.setString('auth_token', token);
         await prefs.setString('user_role', userRole);
+
+        await NotificationService.sendTokenToServer();
 
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(

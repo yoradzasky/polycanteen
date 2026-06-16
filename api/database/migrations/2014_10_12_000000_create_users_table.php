@@ -19,6 +19,7 @@ return new class extends Migration {
             $table->string('status_akun')->default('aktif');
             $table->enum('role', ['admin', 'mahasiswa', 'pemilik', 'pegawai']);
             $table->string('foto_profile')->nullable();
+            $table->string('fcm_token')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

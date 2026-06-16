@@ -23,6 +23,7 @@ class BuyerApplication extends Model
         'rejection_reason',
         'approved_at',
         'rejected_at',
+        'fcm_token',
     ];
 
     protected $casts = [

@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\Student\KantinController as StudentKantinController
 use App\Http\Controllers\Api\Student\MenuController as StudentMenuController;
 use App\Http\Controllers\Api\Student\CartController;
 use App\Http\Controllers\Api\Student\ReviewController;
+use App\Http\Controllers\Api\FcmTokenController;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,6 +28,10 @@ Route::post('/login', [AuthController::class, 'login']);
 
 // Satu grup besar untuk semua yang butuh Login (Token Sanctum)
 Route::middleware('auth:sanctum')->group(function () {
+
+    // FCM Token Management
+    Route::post('/fcm-token', [FcmTokenController::class, 'update']);
+    Route::delete('/fcm-token', [FcmTokenController::class, 'delete']);
 
     // --- Rute Auth & Profil ---
     Route::get('/user', function (Request $request) {

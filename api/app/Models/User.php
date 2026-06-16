@@ -20,6 +20,7 @@ class User extends Authenticatable
         'status_akun',
         'role', // admin, mahasiswa, pemilik, pegawai
         'foto_profile',
+        'fcm_token',
     ];
 
     protected $hidden = [
