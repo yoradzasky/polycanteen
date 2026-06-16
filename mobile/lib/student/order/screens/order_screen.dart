@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 
 import '../../../student/tracking/screens/live_tracking_screen.dart';
 import 'order_detail_screen.dart';
+import '../widgets/review_popup.dart';
 
 class OrderScreen extends StatefulWidget {
   const OrderScreen({super.key});
@@ -106,7 +107,7 @@ class _OrderScreenState extends State<OrderScreen>
     if (dateStr == null) return '-';
     try {
       final dt = DateTime.parse(dateStr).toLocal();
-      return DateFormat('dd MMM yyyy, HH:mm', 'id_ID').format(dt);
+      return DateFormat('d MMMM yyyy HH.mm', 'id_ID').format(dt);
     } catch (_) {
       return dateStr;
     }
@@ -819,8 +820,9 @@ class _OrderScreenState extends State<OrderScreen>
                           Text(
                             _formatDate(createdAt),
                             style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade500,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey.shade700,
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -859,61 +861,90 @@ class _OrderScreenState extends State<OrderScreen>
                 ),
                 const SizedBox(height: 12),
 
-                // ── Action Buttons ──
-                Row(
-                  children: [
-                    // Beri Ulasan button (only for selesai + no review)
-                    if (status == 'selesai' && ulasan == null)
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () {
-                            // TODO: Navigate to review screen
+                // ── Star Rating Display (for reviewed orders) ──
+                if (status == 'selesai' && ulasan != null)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF8F0),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: const Color(0xFFF08D39).withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.rate_review_rounded,
+                          color: Color(0xFFF08D39),
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Rating Anda',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1A1A2E),
+                          ),
+                        ),
+                        const Spacer(),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: List.generate(5, (index) {
+                            final ratingValue =
+                                (ulasan is Map ? ulasan['rating'] : null) ?? 0;
+                            return Icon(
+                              index < ratingValue
+                                  ? Icons.star_rounded
+                                  : Icons.star_outline_rounded,
+                              color: index < ratingValue
+                                  ? const Color(0xFFF08D39)
+                                  : Colors.grey.shade300,
+                              size: 22,
+                            );
+                          }),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                // ── Nilai Button (for unreviewed orders) ──
+                if (status == 'selesai' && ulasan == null)
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        ReviewPopup.show(
+                          context,
+                          pesananId: orderId,
+                          onReviewSubmitted: () {
+                            _fetchOrders();
                           },
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFF2D3A8C),
-                            side: const BorderSide(color: Color(0xFF2D3A8C)),
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: const Text(
-                            'Beri Ulasan',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                            ),
-                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.star_rounded, size: 18),
+                      label: const Text(
+                        'Nilai',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
                         ),
                       ),
-                    if (status == 'selesai' && ulasan == null)
-                      const SizedBox(width: 8),
-
-                    // Pesan Lagi
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {
-                          // TODO: Navigate to menu/reorder
-                        },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF2D3A8C),
-                          side: const BorderSide(color: Color(0xFF2D3A8C)),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: const Text(
-                          'Pesan Lagi',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                          ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFFF08D39),
+                        side: const BorderSide(color: Color(0xFFF08D39)),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
 
                 // Lihat Detail
                 const SizedBox(height: 8),

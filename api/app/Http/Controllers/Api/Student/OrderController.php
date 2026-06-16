@@ -37,7 +37,7 @@ class OrderController extends Controller
                 'kantin:id,nama_kantin,logo_path',
                 'details.menu:id,nama_item,foto_menu',
                 'payment:id,pesanan_id,status_bayar,metode_bayar',
-                'ulasan:id,pesanan_id',
+                'ulasan:id,pesanan_id,rating',
             ];
 
             $statusAktif = [

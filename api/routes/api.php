@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Seller\ScannerController;
 use App\Http\Controllers\Api\Seller\DeliveryController;
 use App\Http\Controllers\Api\Student\TrackingController;
 use App\Http\Controllers\Api\Student\OrderController as StudentOrderController;
+use App\Http\Controllers\Api\Student\ReviewController;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,5 +60,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/orders/{id}', [StudentOrderController::class, 'show']);
         // Modul Tracking
         Route::get('/deliveries/{pesanan}', [TrackingController::class, 'show']);
+        // Modul Ulasan (Reviews)
+        Route::post('/reviews', [ReviewController::class, 'store']);
     });
 });
