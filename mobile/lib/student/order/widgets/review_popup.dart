@@ -300,8 +300,9 @@ class _ReviewPopupState extends State<ReviewPopup>
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFF08D39),
                         foregroundColor: Colors.white,
-                        disabledBackgroundColor:
-                            const Color(0xFFF08D39).withValues(alpha: 0.6),
+                        disabledBackgroundColor: const Color(
+                          0xFFF08D39,
+                        ).withValues(alpha: 0.6),
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(28),
@@ -317,7 +318,7 @@ class _ReviewPopupState extends State<ReviewPopup>
                               ),
                             )
                           : const Text(
-                              'SEND FEEDBACK',
+                              'Kirim Ulasan',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w800,

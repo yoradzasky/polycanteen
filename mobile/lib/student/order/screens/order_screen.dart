@@ -453,6 +453,7 @@ class _OrderScreenState extends State<OrderScreen>
                     status == 'dalam_perjalanan') ...[
                   SizedBox(
                     width: double.infinity,
+                    height: 48,
                     child: ElevatedButton(
                       onPressed: () {
                         Navigator.push(
@@ -467,17 +468,16 @@ class _OrderScreenState extends State<OrderScreen>
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF2D3A8C),
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        elevation: 0,
                       ),
                       child: const Text(
                         'Lacak Pesanan',
                         style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
                         ),
                       ),
                     ),
@@ -486,6 +486,7 @@ class _OrderScreenState extends State<OrderScreen>
                 ],
                 SizedBox(
                   width: double.infinity,
+                  height: 48,
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.push(
@@ -499,7 +500,6 @@ class _OrderScreenState extends State<OrderScreen>
                       backgroundColor: const Color(0xFFF08D39),
                       foregroundColor: Colors.white,
                       elevation: 0,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -507,8 +507,8 @@ class _OrderScreenState extends State<OrderScreen>
                     child: const Text(
                       'Lihat Detail Pesanan',
                       style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
                       ),
                     ),
                   ),
@@ -885,7 +885,7 @@ class _OrderScreenState extends State<OrderScreen>
                         ),
                         const SizedBox(width: 8),
                         const Text(
-                          'Rating Anda',
+                          'Ulasan Anda',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
@@ -917,7 +917,8 @@ class _OrderScreenState extends State<OrderScreen>
                 if (status == 'selesai' && ulasan == null)
                   SizedBox(
                     width: double.infinity,
-                    child: OutlinedButton.icon(
+                    height: 48,
+                    child: OutlinedButton(
                       onPressed: () {
                         ReviewPopup.show(
                           context,
@@ -927,20 +928,18 @@ class _OrderScreenState extends State<OrderScreen>
                           },
                         );
                       },
-                      icon: const Icon(Icons.star_rounded, size: 18),
-                      label: const Text(
-                        'Nilai',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                        ),
-                      ),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: const Color(0xFFF08D39),
                         side: const BorderSide(color: Color(0xFFF08D39)),
-                        padding: const EdgeInsets.symmetric(vertical: 10),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Nilai',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
                         ),
                       ),
                     ),
@@ -950,6 +949,7 @@ class _OrderScreenState extends State<OrderScreen>
                 const SizedBox(height: 8),
                 SizedBox(
                   width: double.infinity,
+                  height: 48,
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.push(
@@ -963,16 +963,15 @@ class _OrderScreenState extends State<OrderScreen>
                       backgroundColor: const Color(0xFFF08D39),
                       foregroundColor: Colors.white,
                       elevation: 0,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                     child: const Text(
-                      'Lihat Detail',
+                      'Lihat Detail Pesanan',
                       style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
                       ),
                     ),
                   ),

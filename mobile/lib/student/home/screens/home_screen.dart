@@ -3,6 +3,7 @@ import '../services/home_service.dart';
 import 'package:intl/intl.dart';
 import '../widgets/filter_menu.dart';
 import '../../menu/screens/menu_detail.dart';
+import '../../order/screens/order_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -635,7 +636,18 @@ class _HomeScreenState extends State<HomeScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      if (activeOrder != null && activeOrder!['id'] != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => OrderDetailScreen(
+                              pesananId: activeOrder!['id'],
+                            ),
+                          ),
+                        ).then((_) => fetchHomeData());
+                      }
+                    },
                     child: const Text(
                       "Lihat Pesanan",
                       style: TextStyle(

@@ -41,7 +41,8 @@ class ReviewController extends Controller
             ]);
 
             // Pastikan pesanan milik mahasiswa yang login
-            $pesanan = Pesanan::where('id', $request->pesanan_id)
+            $pesanan = Pesanan::with('details')
+                ->where('id', $request->pesanan_id)
                 ->where('mahasiswa_id', $mahasiswaId)
                 ->first();
 
@@ -68,10 +69,21 @@ class ReviewController extends Controller
                 ], 422);
             }
 
+            $firstDetail = $pesanan->details->first();
+            $menuId = $firstDetail ? $firstDetail->menu_id : null;
+
+            if (!$menuId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pesanan tidak memiliki detail menu untuk diulas.',
+                ], 422);
+            }
+
             $ulasan = Ulasan::create([
                 'pesanan_id'   => $pesanan->id,
                 'mahasiswa_id' => $mahasiswaId,
                 'kantin_id'    => $pesanan->kantin_id,
+                'menu_id'      => $menuId,
                 'rating'       => $request->rating,
                 'komentar'     => $request->komentar,
             ]);

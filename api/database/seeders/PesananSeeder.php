@@ -489,6 +489,61 @@ class PesananSeeder extends Seeder
             }
         }
 
+        // ── Generate 2 Pesanan Selesai (Belum Dirating) per Mahasiswa ───────
+        foreach ($mahasiswaList as $mIndex => $mahasiswa) {
+            for ($i = 0; $i < 2; $i++) {
+                $kantinIndex = rand(0, $kantinList->count() - 1);
+                $kantin = $kantinList[$kantinIndex];
+                
+                // Skip jika kantin tidak punya menu
+                if (!isset($menuByKantin[$kantin->id]) || $menuByKantin[$kantin->id]->isEmpty()) {
+                    continue;
+                }
+
+                $menuCount = $menuByKantin[$kantin->id]->count();
+                $tipe = $layananTipes[$i % 3];
+                $mbayar = $metodeBayar[$i % 3];
+
+                $numItems = rand(1, 2);
+                $menuItems = [];
+                for ($j = 0; $j < $numItems; $j++) {
+                    $mIndexMenu = rand(0, $menuCount - 1);
+                    $menuItems[] = [
+                        'menu_index' => $mIndexMenu,
+                        'jumlah' => rand(1, 2),
+                        'varian' => null,
+                    ];
+                }
+
+                $waktuSelesai = now()->subDays(rand(1, 5))->subHours(rand(1, 24));
+
+                $scenarios[] = [
+                    'mahasiswa_index' => $mIndex,
+                    'kantin_index'    => $kantinIndex,
+                    'tipe_pesanan'    => $tipe,
+                    'status_pesanan'  => 'selesai',
+                    'nomor_antrian'   => 'A-' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT),
+                    'catatan_pesanan' => 'Pesanan riwayat belum dirating ' . ($i + 1),
+                    'courier_user'    => $tipe === 'delivery' ? (rand(0, 1) ? 'pegawai' : 'pemilik') : null,
+                    'alamat_pengantaran' => $tipe === 'delivery' ? 'Gedung ' . chr(rand(65, 68)) . ' No. ' . rand(1, 20) : null,
+                    'dest_lat'        => $tipe === 'delivery' ? -7.3315678 + (rand(-100, 100) / 100000) : null,
+                    'dest_lng'        => $tipe === 'delivery' ? 110.4952345 + (rand(-100, 100) / 100000) : null,
+                    'menu_items'      => $menuItems,
+                    'created_at'      => $waktuSelesai,
+                    'updated_at'      => $waktuSelesai,
+                    'payment' => [
+                        'metode_bayar'       => $mbayar,
+                        'status_bayar'       => 'berhasil',
+                        'nominal'            => null,
+                        'waktu_bayar'        => $waktuSelesai,
+                        'midtrans_order_id'  => 'ORDER-UNRATED-' . strtoupper(Str::random(8)),
+                        'midtrans_snap_token'=> null,
+                        'log_transaksi'      => 'Pembayaran riwayat via ' . $mbayar,
+                    ],
+                ];
+            }
+        }
+
         foreach ($scenarios as $s) {
             $mahasiswa = $mahasiswaList[$s['mahasiswa_index']];
             $kantin    = $kantinList[$s['kantin_index']];
