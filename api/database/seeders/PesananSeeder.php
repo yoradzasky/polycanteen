@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 namespace Database\Seeders;
 
@@ -29,19 +29,19 @@ class PesananSeeder extends Seeder
         $pegawaiUser = User::where('role', 'pegawai')->first();
         $pemilikUser = User::where('role', 'pemilik')->first();
 
-        // â”€â”€ Skenario Pesanan â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // --- Skenario Pesanan ----------------------------------------------------
         // Status yang dipakai di mobile:
         // - Tab "Baru Masuk": dibayar, pending
-        // - Tab "Diproses" : dimasak, dalam_perjalanan
-        // - Tab "Selesai"  : selesai
-        // - Lainnya        : ditolak, dibatalkan, menunggu_pembayaran
+        // - Tab "Diproses"  : dimasak, dalam_perjalanan
+        // - Tab "Selesai"   : selesai
+        // - Lainnya         : ditolak, dibatalkan, menunggu_pembayaran
 
         $scenarios = [
-            // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            // =====================================================================
             // PESANAN BARU MASUK (status: dibayar)
-            // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            // =====================================================================
 
-            // 1. Baru masuk dine-in â€” Budi di Kantin Barokah
+            // 1. Baru masuk dine-in - Budi di Kantin Barokah
             [
                 'mahasiswa_index' => 0,
                 'kantin_index'    => 0,
@@ -65,7 +65,7 @@ class PesananSeeder extends Seeder
                 ],
             ],
 
-            // 2. Baru masuk take-away â€” Siti di Warung Bu Sri
+            // 2. Baru masuk take-away - Siti di Warung Bu Sri
             [
                 'mahasiswa_index' => 1,
                 'kantin_index'    => 1,
@@ -89,7 +89,7 @@ class PesananSeeder extends Seeder
                 ],
             ],
 
-            // 3. Baru masuk delivery â€” Andi di Kantin Pak Agus
+            // 3. Baru masuk delivery - Andi di Kantin Pak Agus
             [
                 'mahasiswa_index' => 2,
                 'kantin_index'    => 2,
@@ -98,7 +98,7 @@ class PesananSeeder extends Seeder
                 'nomor_antrian'   => 'A-001',
                 'catatan_pesanan' => 'Tolong taruh di depan pintu gedung D',
                 'courier_user'    => null,
-                'alamat_pengantaran' => 'Gedung D Lantai 2 Ruang D203, Politeknik Negeri Salatiga',
+                'alamat_pengantaran' => 'Gedung D Lantai 2 Ruang D203, Politeknik Negeri Semarang',
                 'dest_lat'        => -7.3315678,
                 'dest_lng'        => 110.4952345,
                 'menu_items'      => [
@@ -116,11 +116,11 @@ class PesananSeeder extends Seeder
                 ],
             ],
 
-            // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            // =====================================================================
             // SEDANG DIMASAK (status: dimasak)
-            // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            // =====================================================================
 
-            // 4. Sedang dimasak dine-in â€” Dewi di Kantin Barokah
+            // 4. Sedang dimasak dine-in - Dewi di Kantin Barokah
             [
                 'mahasiswa_index' => 3,
                 'kantin_index'    => 0,
@@ -144,7 +144,7 @@ class PesananSeeder extends Seeder
                 ],
             ],
 
-            // 5. Sedang dimasak take-away â€” Rizky di Warung Bu Sri
+            // 5. Sedang dimasak take-away - Rizky di Warung Bu Sri
             [
                 'mahasiswa_index' => 4,
                 'kantin_index'    => 1,
@@ -168,7 +168,7 @@ class PesananSeeder extends Seeder
                 ],
             ],
 
-            // 6. Sedang dimasak delivery â€” Budi di Kantin Pak Agus
+            // 6. Sedang dimasak delivery - Budi di Kantin Pak Agus
             [
                 'mahasiswa_index' => 0,
                 'kantin_index'    => 2,
@@ -195,11 +195,11 @@ class PesananSeeder extends Seeder
                 ],
             ],
 
-            // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            // =====================================================================
             // DALAM PERJALANAN / PENGANTARAN (status: dalam_perjalanan)
-            // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            // =====================================================================
 
-            // 7. Delivery dalam perjalanan â€” Siti di Kantin Pak Agus, diantar pegawai
+            // 7. Delivery dalam perjalanan - Siti di Kantin Pak Agus, diantar pegawai
             [
                 'mahasiswa_index' => 1,
                 'kantin_index'    => 2,
@@ -208,7 +208,7 @@ class PesananSeeder extends Seeder
                 'nomor_antrian'   => 'A-003',
                 'catatan_pesanan' => 'Jangan lupa sendok garpu ya',
                 'courier_user'    => 'pegawai',
-                'alamat_pengantaran' => 'Gedung Kuliah Bersama Lt.3, Politeknik Negeri Salatiga',
+                'alamat_pengantaran' => 'Gedung Kuliah Bersama Lt.3, Politeknik Negeri Semarang',
                 'dest_lat'        => -7.3310456,
                 'dest_lng'        => 110.4958789,
                 'menu_items'      => [
@@ -226,7 +226,7 @@ class PesananSeeder extends Seeder
                 ],
             ],
 
-            // 8. Delivery dalam perjalanan â€” Dewi di Kantin Barokah, diantar pemilik
+            // 8. Delivery dalam perjalanan - Dewi di Kantin Barokah, diantar pemilik
             [
                 'mahasiswa_index' => 3,
                 'kantin_index'    => 0,
@@ -235,7 +235,7 @@ class PesananSeeder extends Seeder
                 'nomor_antrian'   => 'A-003',
                 'catatan_pesanan' => 'Tunggu di lobby ya kak',
                 'courier_user'    => 'pemilik',
-                'alamat_pengantaran' => 'Gedung Rektorat, Politeknik Negeri Salatiga',
+                'alamat_pengantaran' => 'Gedung Rektorat, Politeknik Negeri Semarang',
                 'dest_lat'        => -7.3305123,
                 'dest_lng'        => 110.4962456,
                 'menu_items'      => [
@@ -253,11 +253,11 @@ class PesananSeeder extends Seeder
                 ],
             ],
 
-            // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            // =====================================================================
             // PESANAN SELESAI
-            // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            // =====================================================================
 
-            // 9. Selesai dine-in â€” Rizky di Kantin Barokah
+            // 9. Selesai dine-in - Rizky di Kantin Barokah
             [
                 'mahasiswa_index' => 4,
                 'kantin_index'    => 0,
@@ -280,7 +280,7 @@ class PesananSeeder extends Seeder
                 ],
             ],
 
-            // 10. Selesai delivery â€” Andi di Warung Bu Sri, diantar pegawai
+            // 10. Selesai delivery - Andi di Warung Bu Sri, diantar pegawai
             [
                 'mahasiswa_index' => 2,
                 'kantin_index'    => 1,
@@ -289,7 +289,7 @@ class PesananSeeder extends Seeder
                 'nomor_antrian'   => 'A-003',
                 'catatan_pesanan' => null,
                 'courier_user'    => 'pegawai',
-                'alamat_pengantaran' => 'Perpustakaan Lantai 2, Politeknik Negeri Salatiga',
+                'alamat_pengantaran' => 'Perpustakaan Lantai 2, Politeknik Negeri Semarang',
                 'dest_lat'        => -7.3308765,
                 'dest_lng'        => 110.4960123,
                 'menu_items'      => [
@@ -307,11 +307,11 @@ class PesananSeeder extends Seeder
                 ],
             ],
 
-            // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            // =====================================================================
             // PESANAN LAINNYA (pending, ditolak, dibatalkan)
-            // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            // =====================================================================
 
-            // 11. Menunggu pembayaran â€” Dewi di Warung Bu Sri
+            // 11. Menunggu pembayaran - Dewi di Warung Bu Sri
             [
                 'mahasiswa_index' => 3,
                 'kantin_index'    => 1,
@@ -334,7 +334,7 @@ class PesananSeeder extends Seeder
                 ],
             ],
 
-            // 12. Ditolak kantin â€” Siti di Kantin Barokah
+            // 12. Ditolak kantin - Siti di Kantin Barokah
             [
                 'mahasiswa_index' => 1,
                 'kantin_index'    => 0,
@@ -358,7 +358,7 @@ class PesananSeeder extends Seeder
                 ],
             ],
 
-            // 13. Dibatalkan pelanggan â€” Rizky di Kantin Pak Agus
+            // 13. Dibatalkan pelanggan - Rizky di Kantin Pak Agus
             [
                 'mahasiswa_index' => 4,
                 'kantin_index'    => 2,
@@ -383,7 +383,7 @@ class PesananSeeder extends Seeder
             ],
         ];
 
-        // â”€â”€ Generate 20 Pesanan Baru Masuk per Kantin â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // --- Generate 20 Pesanan Baru Masuk per Kantin ---
         $layananTipes = ['dine-in', 'take-away', 'delivery'];
         $metodeBayar = ['qris', 'transfer', 'midtrans'];
 
@@ -434,7 +434,7 @@ class PesananSeeder extends Seeder
             }
         }
 
-        // â”€â”€ Generate 5 Pesanan Selesai per Mahasiswa â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // --- Generate 5 Pesanan Selesai per Mahasiswa ---
         foreach ($mahasiswaList as $mIndex => $mahasiswa) {
             for ($i = 0; $i < 5; $i++) {
                 $kantinIndex = rand(0, $kantinList->count() - 1);
@@ -489,7 +489,7 @@ class PesananSeeder extends Seeder
             }
         }
 
-        // â”€â”€ Generate 2 Pesanan Selesai (Belum Dirating) per Mahasiswa â”€â”€â”€â”€â”€â”€â”€
+        // --- Generate 2 Pesanan Selesai (Belum Dirating) per Mahasiswa ---
         foreach ($mahasiswaList as $mIndex => $mahasiswa) {
             for ($i = 0; $i < 2; $i++) {
                 $kantinIndex = rand(0, $kantinList->count() - 1);
@@ -567,21 +567,21 @@ class PesananSeeder extends Seeder
 
             // Buat pesanan
             $pesananData = [
-                'mahasiswa_id'    => $mahasiswa->id,
-                'kantin_id'       => $kantin->id,
-                'tipe_pesanan'    => $s['tipe_pesanan'],
-                'status_pesanan'  => $s['status_pesanan'],
-                'total_harga'     => $totalHarga,
-                'nomor_antrian'   => $s['nomor_antrian'] ?? null,
-                'catatan_pesanan' => $s['catatan_pesanan'] ?? null,
-                'alasan_penolakan'=> $s['alasan_penolakan'] ?? null,
-                'courier_user_id' => $courierUserId,
+                'mahasiswa_id'       => $mahasiswa->id,
+                'kantin_id'          => $kantin->id,
+                'tipe_pesanan'       => $s['tipe_pesanan'],
+                'status_pesanan'     => $s['status_pesanan'],
+                'total_harga'        => $totalHarga,
+                'nomor_antrian'      => $s['nomor_antrian'] ?? null,
+                'catatan_pesanan'    => $s['catatan_pesanan'] ?? null,
+                'alasan_penolakan'   => $s['alasan_penolakan'] ?? null,
+                'courier_user_id'    => $courierUserId,
                 'alamat_pengantaran' => $s['alamat_pengantaran'] ?? null,
-                'dest_lat'        => $s['dest_lat'] ?? null,
-                'dest_lng'        => $s['dest_lng'] ?? null,
-                'qr_token'        => in_array($s['status_pesanan'], ['selesai', 'dalam_perjalanan'])
-                    ? Str::uuid()->toString()
-                    : null,
+                'dest_lat'           => $s['dest_lat'] ?? null,
+                'dest_lng'           => $s['dest_lng'] ?? null,
+                'qr_token'           => in_array($s['status_pesanan'], ['selesai', 'dalam_perjalanan'])
+                                        ? Str::uuid()->toString()
+                                        : null,
             ];
 
             if (isset($s['created_at'])) {
@@ -614,7 +614,7 @@ class PesananSeeder extends Seeder
             }
 
             // Buat payment
-            $payData           = $s['payment'];
+            $payData            = $s['payment'];
             $payData['nominal'] = $payData['nominal'] ?? (int) $totalHarga;
 
             Payment::create([

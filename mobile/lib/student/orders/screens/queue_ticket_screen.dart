@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/order_service.dart';
-import 'order_list_screen.dart';
+import '../../order/screens/order_screen.dart';
 
 class QueueTicketScreen extends StatefulWidget {
   final int pesananId;
@@ -82,7 +82,18 @@ class _QueueTicketScreenState extends State<QueueTicketScreen> {
 
     final order = _orderData!;
     final items = order['detail_pesanan'] as List<dynamic>? ?? [];
-    final String antreanNomor = order['nomor_antrean'] ?? '-';
+    String antreanNomor = order['nomor_antrian'] ?? '-';
+    if (antreanNomor != '-' && antreanNomor.isNotEmpty) {
+      final parts = antreanNomor.split('-');
+      if (parts.length == 2) {
+        final prefix = parts[0].trim();
+        final suffix = parts[1].trim();
+        final number = int.tryParse(suffix);
+        if (number != null) {
+          antreanNomor = '$prefix- $number';
+        }
+      }
+    }
     final String kantinNama = order['kantin']?['nama_kantin'] ?? 'Kantin PolyCanteen';
     final String waktu = _formatDateTime(order['created_at']);
     final double subtotal = items.fold(0.0, (sum, item) => sum + (double.tryParse(item['subtotal'].toString()) ?? 0));
@@ -135,7 +146,7 @@ class _QueueTicketScreenState extends State<QueueTicketScreen> {
                         onPressed: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (context) => const OrderListScreen(),
+                              builder: (context) => const OrderScreen(),
                             ),
                           );
                         },
