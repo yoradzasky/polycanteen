@@ -34,6 +34,11 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'notifications' => [
+                'pendingApprovalsCount' => $request->user()?->role === 'admin' 
+                    ? \App\Models\BuyerApplication::where('status', 'pending')->count() 
+                    : 0,
+            ],
         ];
     }
 }

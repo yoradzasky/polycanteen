@@ -2,9 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
-
-import '../../layouts/seller_main_layout.dart';
 import '../../layouts/student_main_layout.dart';
+import '../../layouts/seller_main_layout.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -42,10 +41,11 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      // 1. AMBIL IP DARI FILE .env 
+      // 1. AMBIL IP DARI FILE .env
       // Jika gagal terbaca, baru dia pakai localhost sebagai cadangan
-      final String baseUrl = dotenv.env['BASE_URL'] ?? 'http://127.0.0.1:8000/api';
-      
+      final String baseUrl =
+          dotenv.env['BASE_URL'] ?? 'http://192.168.1.14:8000/api';
+
       // 2. GABUNGKAN BASE_URL dengan endpoint '/login'
       final Uri url = Uri.parse('$baseUrl/login');
 
@@ -66,7 +66,8 @@ class _LoginScreenState extends State<LoginScreen> {
       // Cek apakah response sukses dari Laravel
       if (response.statusCode == 200 && responseData['success'] == true) {
         final String token = responseData['data']['token'];
-        final String userRole = responseData['data']['user']['role'] ?? 'pegawai';
+        final String userRole =
+            responseData['data']['user']['role'] ?? 'pegawai';
 
         // Cek apakah role adalah admin - jika iya, tolak login
         if (userRole == 'admin') {
@@ -99,14 +100,13 @@ class _LoginScreenState extends State<LoginScreen> {
         if (userRole == 'mahasiswa') {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
-              builder: (_) => const StudentMainLayout(),
+              // Hapus kata 'const' dan masukkan parameter userRole
+              builder: (_) => StudentMainLayout(userRole: userRole),
             ),
           );
         } else {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (_) => const SellerMainLayout(),
-            ),
+            MaterialPageRoute(builder: (_) => const SellerMainLayout()),
           );
         }
       } else {
@@ -306,7 +306,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   bool _isFormValid = false;
 
@@ -331,7 +332,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _updateFormValid() {
-    final isValid = _fullNameController.text.trim().isNotEmpty &&
+    final isValid =
+        _fullNameController.text.trim().isNotEmpty &&
         _emailController.text.trim().isNotEmpty &&
         _phoneController.text.trim().isNotEmpty &&
         _passwordController.text.isNotEmpty &&
@@ -758,7 +760,7 @@ class _PhoneField extends StatelessWidget {
 }
 
 // Widget Input Generic untuk Register
-class _RegisterField extends StatelessWidget {
+class _RegisterField extends StatefulWidget {
   const _RegisterField({
     required this.controller,
     required this.label,
@@ -774,12 +776,25 @@ class _RegisterField extends StatelessWidget {
   final bool obscureText;
 
   @override
+  State<_RegisterField> createState() => _RegisterFieldState();
+}
+
+class _RegisterFieldState extends State<_RegisterField> {
+  late bool _isObscure;
+
+  @override
+  void initState() {
+    super.initState();
+    _isObscure = widget.obscureText;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          label,
+          widget.label,
           style: const TextStyle(
             color: Color(0xFF1A1A1A),
             fontSize: 14,
@@ -788,18 +803,29 @@ class _RegisterField extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         TextFormField(
-          keyboardType: keyboardType,
-          obscureText: obscureText,
+          controller: widget.controller,
+          keyboardType: widget.keyboardType,
+          obscureText: _isObscure,
           decoration: InputDecoration(
-            hintText: hint,
+            hintText: widget.hint,
             filled: true,
             fillColor: Colors.white,
             contentPadding: const EdgeInsets.symmetric(
               vertical: 18,
               horizontal: 16,
             ),
-            suffixIcon: obscureText
-                ? const Icon(Icons.visibility_off, color: Color(0xFF757575))
+            suffixIcon: widget.obscureText
+                ? IconButton(
+                    icon: Icon(
+                      _isObscure ? Icons.visibility_off : Icons.visibility,
+                      color: const Color(0xFF757575),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isObscure = !_isObscure;
+                      });
+                    },
+                  )
                 : null,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),

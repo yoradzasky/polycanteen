@@ -12,6 +12,11 @@ class MenuSeeder extends Seeder
     {
         $kantinList = Kantin::orderBy('id')->get();
 
+        // Pastikan ada minimal 3 kantin sebelum menjalankan seeder menu
+        if ($kantinList->count() < 3) {
+            return;
+        }
+
         // ── Kantin 1: Kantin Barokah ─────────────────────────────────────
         $kantin1 = $kantinList[0];
 
@@ -23,14 +28,26 @@ class MenuSeeder extends Seeder
                 'status_stok'     => true,
                 'deskripsi'       => 'Nasi goreng dengan telur, ayam, dan sayuran segar pilihan.',
                 'estimasi_waktu'  => 10,
-                'pilihan_layanan' => ['dine-in', 'take-away'],
+                'pilihan_layanan' => ['makan_di_tempat', 'dibungkus'],
                 'varian'          => [
-                    ['nama' => 'Level Pedas', 'pilihan' => ['tidak pedas', 'pedas', 'extra pedas']],
-                ],
-                'topping'         => [
-                    ['nama' => 'Telur Mata Sapi', 'harga' => 3000],
-                    ['nama' => 'Sosis',           'harga' => 4000],
-                    ['nama' => 'Kerupuk',         'harga' => 1000],
+                    [
+                        'nama' => 'Level Pedas',
+                        'tipe' => 'wajib',
+                        'pilihan' => [
+                            ['nama' => 'tidak pedas', 'harga' => 0],
+                            ['nama' => 'pedas', 'harga' => 0],
+                            ['nama' => 'extra pedas', 'harga' => 0],
+                        ]
+                    ],
+                    [
+                        'nama' => 'Topping Tambahan',
+                        'tipe' => 'opsional',
+                        'pilihan' => [
+                            ['nama' => 'Telur Ceplok', 'harga' => 4000],
+                            ['nama' => 'Sosis Bakar', 'harga' => 5000],
+                            ['nama' => 'Kerupuk', 'harga' => 1000],
+                        ]
+                    ]
                 ],
             ],
             [
@@ -40,13 +57,17 @@ class MenuSeeder extends Seeder
                 'status_stok'     => true,
                 'deskripsi'       => 'Mie goreng dengan potongan ayam dan bumbu khas.',
                 'estimasi_waktu'  => 8,
-                'pilihan_layanan' => ['dine-in', 'take-away'],
+                'pilihan_layanan' => ['makan_di_tempat', 'dibungkus'],
                 'varian'          => [
-                    ['nama' => 'Level Pedas', 'pilihan' => ['tidak pedas', 'pedas', 'extra pedas']],
-                ],
-                'topping'         => [
-                    ['nama' => 'Telur Dadar', 'harga' => 3000],
-                    ['nama' => 'Bakso',       'harga' => 5000],
+                    [
+                        'nama' => 'Level Pedas',
+                        'tipe' => 'wajib',
+                        'pilihan' => [
+                            ['nama' => 'tidak pedas', 'harga' => 0],
+                            ['nama' => 'pedas', 'harga' => 0],
+                            ['nama' => 'extra pedas', 'harga' => 0],
+                        ]
+                    ],
                 ],
             ],
             [
@@ -56,11 +77,17 @@ class MenuSeeder extends Seeder
                 'status_stok'     => true,
                 'deskripsi'       => 'Teh manis dingin yang menyegarkan.',
                 'estimasi_waktu'  => 3,
-                'pilihan_layanan' => ['dine-in', 'take-away'],
+                'pilihan_layanan' => ['makan_di_tempat', 'dibungkus'],
                 'varian'          => [
-                    ['nama' => 'Suhu', 'pilihan' => ['es', 'panas']],
+                    [
+                        'nama' => 'Suhu',
+                        'tipe' => 'wajib',
+                        'pilihan' => [
+                            ['nama' => 'es', 'harga' => 0],
+                            ['nama' => 'panas', 'harga' => 0],
+                        ]
+                    ],
                 ],
-                'topping'         => null,
             ],
             [
                 'nama_item'       => 'Soto Ayam',
@@ -69,12 +96,8 @@ class MenuSeeder extends Seeder
                 'status_stok'     => false, // contoh stok habis
                 'deskripsi'       => 'Soto ayam kuah bening dengan pelengkap bihun, tauge, dan perkedel.',
                 'estimasi_waktu'  => 7,
-                'pilihan_layanan' => ['dine-in'],
+                'pilihan_layanan' => ['makan_di_tempat'],
                 'varian'          => null,
-                'topping'         => [
-                    ['nama' => 'Tambah Nasi', 'harga' => 4000],
-                    ['nama' => 'Kerupuk',     'harga' => 1000],
-                ],
             ],
         ];
 
@@ -93,14 +116,26 @@ class MenuSeeder extends Seeder
                 'status_stok'     => true,
                 'deskripsi'       => 'Pecel dengan sayuran rebus segar dan bumbu kacang khas.',
                 'estimasi_waktu'  => 5,
-                'pilihan_layanan' => ['dine-in', 'take-away'],
+                'pilihan_layanan' => ['makan_di_tempat', 'dibungkus'],
                 'varian'          => [
-                    ['nama' => 'Nasi', 'pilihan' => ['nasi putih', 'nasi uduk', 'tanpa nasi']],
-                ],
-                'topping'         => [
-                    ['nama' => 'Tempe Goreng', 'harga' => 2000],
-                    ['nama' => 'Tahu Goreng',  'harga' => 2000],
-                    ['nama' => 'Rempeyek',     'harga' => 2000],
+                    [
+                        'nama' => 'Nasi',
+                        'tipe' => 'wajib',
+                        'pilihan' => [
+                            ['nama' => 'nasi putih', 'harga' => 0],
+                            ['nama' => 'nasi uduk', 'harga' => 2000], // harga beda untuk uduk
+                            ['nama' => 'tanpa nasi', 'harga' => 0],
+                        ]
+                    ],
+                    [
+                        'nama' => 'Tambahan Lauk',
+                        'tipe' => 'opsional',
+                        'pilihan' => [
+                            ['nama' => 'Telur Asin', 'harga' => 4000],
+                            ['nama' => 'Tahu Goreng', 'harga' => 1000],
+                            ['nama' => 'Tempe Mendoan', 'harga' => 1500],
+                        ]
+                    ]
                 ],
             ],
             [
@@ -110,14 +145,25 @@ class MenuSeeder extends Seeder
                 'status_stok'     => true,
                 'deskripsi'       => 'Bakso sapi kenyal dengan kuah kaldu gurih dan mi.',
                 'estimasi_waktu'  => 5,
-                'pilihan_layanan' => ['dine-in', 'take-away'],
+                'pilihan_layanan' => ['makan_di_tempat', 'dibungkus'],
                 'varian'          => [
-                    ['nama' => 'Jenis Mi', 'pilihan' => ['mi kuning', 'bihun', 'tanpa mi']],
-                    ['nama' => 'Level Pedas', 'pilihan' => ['biasa', 'pedas']],
-                ],
-                'topping'         => [
-                    ['nama' => 'Bakso Urat Ekstra', 'harga' => 5000],
-                    ['nama' => 'Tahu Isi',          'harga' => 3000],
+                    [
+                        'nama' => 'Jenis Mi',
+                        'tipe' => 'wajib',
+                        'pilihan' => [
+                            ['nama' => 'mi kuning', 'harga' => 0],
+                            ['nama' => 'bihun', 'harga' => 0],
+                            ['nama' => 'tanpa mi', 'harga' => 0],
+                        ]
+                    ],
+                    [
+                        'nama' => 'Level Pedas',
+                        'tipe' => 'wajib',
+                        'pilihan' => [
+                            ['nama' => 'biasa', 'harga' => 0],
+                            ['nama' => 'pedas', 'harga' => 0],
+                        ]
+                    ],
                 ],
             ],
             [
@@ -127,11 +173,18 @@ class MenuSeeder extends Seeder
                 'status_stok'     => true,
                 'deskripsi'       => 'Jus alpukat segar dengan susu kental manis.',
                 'estimasi_waktu'  => 5,
-                'pilihan_layanan' => ['dine-in', 'take-away'],
+                'pilihan_layanan' => ['makan_di_tempat', 'dibungkus'],
                 'varian'          => [
-                    ['nama' => 'Gula', 'pilihan' => ['normal', 'kurang manis', 'tanpa gula']],
+                    [
+                        'nama' => 'Gula',
+                        'tipe' => 'wajib',
+                        'pilihan' => [
+                            ['nama' => 'normal', 'harga' => 0],
+                            ['nama' => 'kurang manis', 'harga' => 0],
+                            ['nama' => 'tanpa gula', 'harga' => 0],
+                        ]
+                    ],
                 ],
-                'topping'         => null,
             ],
             [
                 'nama_item'       => 'Kopi Susu Segar',
@@ -140,14 +193,24 @@ class MenuSeeder extends Seeder
                 'status_stok'     => true,
                 'deskripsi'       => 'Kopi robusta dengan susu segar, disajikan dingin.',
                 'estimasi_waktu'  => 4,
-                'pilihan_layanan' => ['dine-in', 'take-away'],
+                'pilihan_layanan' => ['makan_di_tempat', 'dibungkus'],
                 'varian'          => [
-                    ['nama' => 'Suhu',   'pilihan' => ['es', 'panas']],
-                    ['nama' => 'Ukuran', 'pilihan' => ['regular', 'large']],
-                ],
-                'topping'         => [
-                    ['nama' => 'Whipped Cream', 'harga' => 3000],
-                    ['nama' => 'Ekstra Shot',   'harga' => 4000],
+                    [
+                        'nama' => 'Suhu',
+                        'tipe' => 'wajib',
+                        'pilihan' => [
+                            ['nama' => 'es', 'harga' => 0],
+                            ['nama' => 'panas', 'harga' => 0],
+                        ]
+                    ],
+                    [
+                        'nama' => 'Ukuran',
+                        'tipe' => 'wajib',
+                        'pilihan' => [
+                            ['nama' => 'regular', 'harga' => 0],
+                            ['nama' => 'large', 'harga' => 3000], // Large +3000
+                        ]
+                    ],
                 ],
             ],
         ];
@@ -167,15 +230,28 @@ class MenuSeeder extends Seeder
                 'status_stok'     => true,
                 'deskripsi'       => 'Ayam goreng crispy digeprek dengan sambal bawang.',
                 'estimasi_waktu'  => 12,
-                'pilihan_layanan' => ['dine-in', 'take-away', 'delivery'],
+                'pilihan_layanan' => ['makan_di_tempat', 'dibungkus', 'pengantaran'],
                 'varian'          => [
-                    ['nama' => 'Level Pedas', 'pilihan' => ['level 1', 'level 2', 'level 3', 'level 4', 'level 5']],
-                    ['nama' => 'Bagian Ayam', 'pilihan' => ['dada', 'paha', 'sayap']],
-                ],
-                'topping'         => [
-                    ['nama' => 'Keju Slice',     'harga' => 5000],
-                    ['nama' => 'Telor Ceplok',   'harga' => 3000],
-                    ['nama' => 'Ekstra Sambal',  'harga' => 1000],
+                    [
+                        'nama' => 'Level Pedas',
+                        'tipe' => 'wajib',
+                        'pilihan' => [
+                            ['nama' => 'level 1', 'harga' => 0],
+                            ['nama' => 'level 2', 'harga' => 0],
+                            ['nama' => 'level 3', 'harga' => 0],
+                            ['nama' => 'level 4', 'harga' => 0],
+                            ['nama' => 'level 5', 'harga' => 0],
+                        ]
+                    ],
+                    [
+                        'nama' => 'Bagian Ayam',
+                        'tipe' => 'wajib',
+                        'pilihan' => [
+                            ['nama' => 'dada', 'harga' => 0],
+                            ['nama' => 'paha', 'harga' => 0],
+                            ['nama' => 'sayap', 'harga' => 0],
+                        ]
+                    ],
                 ],
             ],
             [
@@ -183,15 +259,38 @@ class MenuSeeder extends Seeder
                 'kategori'        => 'Makanan',
                 'harga'           => 20000,
                 'status_stok'     => true,
-                'deskripsi'       => 'Nasi dengan 3 pilihan lauk (ayam/tempe/telur) + sayur + sambal.',
+                'deskripsi'       => 'Nasi dengan 3 pilihan lauk + sayur + sambal.',
                 'estimasi_waktu'  => 5,
-                'pilihan_layanan' => ['take-away', 'delivery'],
+                'pilihan_layanan' => ['dibungkus', 'pengantaran'],
                 'varian'          => [
-                    ['nama' => 'Lauk 1', 'pilihan' => ['ayam goreng', 'ayam balado', 'ayam bakar']],
-                    ['nama' => 'Lauk 2', 'pilihan' => ['tempe orek', 'tahu balado', 'perkedel']],
-                    ['nama' => 'Sayur',  'pilihan' => ['capcay', 'tumis kangkung', 'sayur asem']],
+                    [
+                        'nama' => 'Lauk 1',
+                        'tipe' => 'wajib',
+                        'pilihan' => [
+                            ['nama' => 'ayam goreng', 'harga' => 0],
+                            ['nama' => 'ayam balado', 'harga' => 0],
+                            ['nama' => 'ayam bakar', 'harga' => 0],
+                        ]
+                    ],
+                    [
+                        'nama' => 'Lauk 2',
+                        'tipe' => 'wajib',
+                        'pilihan' => [
+                            ['nama' => 'tempe orek', 'harga' => 0],
+                            ['nama' => 'tahu balado', 'harga' => 0],
+                            ['nama' => 'perkedel', 'harga' => 0],
+                        ]
+                    ],
+                    [
+                        'nama' => 'Sayur',
+                        'tipe' => 'wajib',
+                        'pilihan' => [
+                            ['nama' => 'capcay', 'harga' => 0],
+                            ['nama' => 'tumis kangkung', 'harga' => 0],
+                            ['nama' => 'sayur asem', 'harga' => 0],
+                        ]
+                    ],
                 ],
-                'topping'         => null,
             ],
             [
                 'nama_item'       => 'Es Jeruk Peras',
@@ -200,11 +299,18 @@ class MenuSeeder extends Seeder
                 'status_stok'     => true,
                 'deskripsi'       => 'Jeruk segar diperas, manis dan segar.',
                 'estimasi_waktu'  => 3,
-                'pilihan_layanan' => ['dine-in', 'take-away'],
+                'pilihan_layanan' => ['makan_di_tempat', 'dibungkus'],
                 'varian'          => [
-                    ['nama' => 'Gula', 'pilihan' => ['manis', 'kurang manis', 'tanpa gula']],
+                    [
+                        'nama' => 'Gula',
+                        'tipe' => 'wajib',
+                        'pilihan' => [
+                            ['nama' => 'manis', 'harga' => 0],
+                            ['nama' => 'kurang manis', 'harga' => 0],
+                            ['nama' => 'tanpa gula', 'harga' => 0],
+                        ]
+                    ],
                 ],
-                'topping'         => null,
             ],
         ];
 

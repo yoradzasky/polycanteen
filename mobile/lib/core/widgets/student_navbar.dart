@@ -16,64 +16,66 @@ class StudentNavbar extends StatelessWidget {
   Widget build(BuildContext context) {
     const Color inactiveColor = Color(0xFF9FA5C0);
 
-    return SafeArea(
-      child: Container(
-        height: 70, // Fixed height for the bottom bar
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -4),
+    double bottomPadding = MediaQuery.of(context).padding.bottom;
+
+    return Container(
+      // Tinggi navbar 70 + ruang untuk gesture bar
+      height: 70 + bottomPadding,
+      padding: EdgeInsets.only(bottom: bottomPadding),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildNavItem(
+              icon: Icons.home,
+              label: 'Beranda',
+              index: 0,
+              isActive: currentIndex == 0,
+              activeColor: primaryColor,
+              inactiveColor: inactiveColor,
             ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: _buildNavItem(
-                icon: Icons.home,
-                label: 'Beranda',
-                index: 0,
-                isActive: currentIndex == 0,
-                activeColor: primaryColor,
-                inactiveColor: inactiveColor,
-              ),
+          ),
+          Expanded(
+            child: _buildNavItem(
+              icon: Icons.restaurant,
+              label: 'Menu',
+              index: 1,
+              isActive: currentIndex == 1,
+              activeColor: primaryColor,
+              inactiveColor: inactiveColor,
             ),
-            Expanded(
-              child: _buildNavItem(
-                icon: Icons.restaurant,
-                label: 'Menu',
-                index: 1,
-                isActive: currentIndex == 1,
-                activeColor: primaryColor,
-                inactiveColor: inactiveColor,
-              ),
+          ),
+          Expanded(
+            child: _buildNavItem(
+              icon: Icons.shopping_bag,
+              label: 'Pesanan',
+              index: 2,
+              isActive: currentIndex == 2,
+              activeColor: primaryColor,
+              inactiveColor: inactiveColor,
             ),
-            Expanded(
-              child: _buildNavItem(
-                icon: Icons.shopping_bag,
-                label: 'Pesanan',
-                index: 2,
-                isActive: currentIndex == 2,
-                activeColor: primaryColor,
-                inactiveColor: inactiveColor,
-              ),
+          ),
+          Expanded(
+            child: _buildNavItem(
+              icon: Icons.person,
+              label: 'Profil',
+              index: 3,
+              isActive: currentIndex == 3,
+              activeColor: primaryColor,
+              inactiveColor: inactiveColor,
             ),
-            Expanded(
-              child: _buildNavItem(
-                icon: Icons.person,
-                label: 'Profil',
-                index: 3,
-                isActive: currentIndex == 3,
-                activeColor: primaryColor,
-                inactiveColor: inactiveColor,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

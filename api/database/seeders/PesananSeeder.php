@@ -51,8 +51,8 @@ class PesananSeeder extends Seeder
                 'catatan_pesanan' => 'Tidak pedas ya kak',
                 'courier_user'    => null,
                 'menu_items'      => [
-                    ['menu_index' => 0, 'jumlah' => 1, 'varian' => ['Level Pedas' => 'tidak pedas'], 'topping' => [['nama' => 'Kerupuk', 'harga' => 1000]]],
-                    ['menu_index' => 2, 'jumlah' => 2, 'varian' => ['Suhu' => 'es'],             'topping' => null],
+                    ['menu_index' => 0, 'jumlah' => 1, 'varian' => ['Level Pedas' => 'tidak pedas']],
+                    ['menu_index' => 2, 'jumlah' => 2, 'varian' => ['Suhu' => 'es']],
                 ],
                 'payment' => [
                     'metode_bayar'       => 'qris',
@@ -75,8 +75,8 @@ class PesananSeeder extends Seeder
                 'catatan_pesanan' => 'Sambalnya pisah ya',
                 'courier_user'    => null,
                 'menu_items'      => [
-                    ['menu_index' => 0, 'jumlah' => 1, 'varian' => ['Nasi' => 'nasi putih'],    'topping' => [['nama' => 'Tempe Goreng', 'harga' => 2000]]],
-                    ['menu_index' => 3, 'jumlah' => 1, 'varian' => ['Suhu' => 'es', 'Ukuran' => 'regular'], 'topping' => null],
+                    ['menu_index' => 0, 'jumlah' => 1, 'varian' => ['Nasi' => 'nasi putih']],
+                    ['menu_index' => 3, 'jumlah' => 1, 'varian' => ['Suhu' => 'es', 'Ukuran' => 'regular']],
                 ],
                 'payment' => [
                     'metode_bayar'       => 'transfer',
@@ -102,8 +102,8 @@ class PesananSeeder extends Seeder
                 'dest_lat'        => -7.3315678,
                 'dest_lng'        => 110.4952345,
                 'menu_items'      => [
-                    ['menu_index' => 0, 'jumlah' => 2, 'varian' => ['Level Pedas' => 'level 3', 'Bagian Ayam' => 'dada'], 'topping' => [['nama' => 'Ekstra Sambal', 'harga' => 1000]]],
-                    ['menu_index' => 2, 'jumlah' => 2, 'varian' => ['Gula' => 'normal'],          'topping' => null],
+                    ['menu_index' => 0, 'jumlah' => 2, 'varian' => ['Level Pedas' => 'level 3', 'Bagian Ayam' => 'dada']],
+                    ['menu_index' => 2, 'jumlah' => 2, 'varian' => ['Gula' => 'normal']],
                 ],
                 'payment' => [
                     'metode_bayar'       => 'midtrans',
@@ -130,8 +130,8 @@ class PesananSeeder extends Seeder
                 'catatan_pesanan' => 'Ekstra nasi dong',
                 'courier_user'    => null,
                 'menu_items'      => [
-                    ['menu_index' => 1, 'jumlah' => 1, 'varian' => ['Level Pedas' => 'pedas'],   'topping' => [['nama' => 'Bakso', 'harga' => 5000]]],
-                    ['menu_index' => 2, 'jumlah' => 1, 'varian' => ['Suhu' => 'panas'],          'topping' => null],
+                    ['menu_index' => 1, 'jumlah' => 1, 'varian' => ['Level Pedas' => 'pedas']],
+                    ['menu_index' => 2, 'jumlah' => 1, 'varian' => ['Suhu' => 'panas']],
                 ],
                 'payment' => [
                     'metode_bayar'       => 'qris',
@@ -154,8 +154,8 @@ class PesananSeeder extends Seeder
                 'catatan_pesanan' => null,
                 'courier_user'    => null,
                 'menu_items'      => [
-                    ['menu_index' => 1, 'jumlah' => 1, 'varian' => ['Jenis Mi' => 'bihun', 'Level Pedas' => 'biasa'], 'topping' => [['nama' => 'Tahu Isi', 'harga' => 3000]]],
-                    ['menu_index' => 2, 'jumlah' => 1, 'varian' => ['Gula' => 'kurang manis'],  'topping' => null],
+                    ['menu_index' => 1, 'jumlah' => 1, 'varian' => ['Jenis Mi' => 'bihun', 'Level Pedas' => 'biasa']],
+                    ['menu_index' => 2, 'jumlah' => 1, 'varian' => ['Gula' => 'kurang manis']],
                 ],
                 'payment' => [
                     'metode_bayar'       => 'transfer',
@@ -181,8 +181,8 @@ class PesananSeeder extends Seeder
                 'dest_lat'        => -7.3320000,
                 'dest_lng'        => 110.4945678,
                 'menu_items'      => [
-                    ['menu_index' => 0, 'jumlah' => 1, 'varian' => ['Level Pedas' => 'level 2', 'Bagian Ayam' => 'paha'], 'topping' => [['nama' => 'Keju Slice', 'harga' => 5000]]],
-                    ['menu_index' => 2, 'jumlah' => 1, 'varian' => ['Gula' => 'manis'],          'topping' => null],
+                    ['menu_index' => 0, 'jumlah' => 1, 'varian' => ['Level Pedas' => 'level 2', 'Bagian Ayam' => 'paha']],
+                    ['menu_index' => 2, 'jumlah' => 1, 'varian' => ['Gula' => 'manis']],
                 ],
                 'payment' => [
                     'metode_bayar'       => 'midtrans',
@@ -212,8 +212,8 @@ class PesananSeeder extends Seeder
                 'dest_lat'        => -7.3310456,
                 'dest_lng'        => 110.4958789,
                 'menu_items'      => [
-                    ['menu_index' => 0, 'jumlah' => 1, 'varian' => ['Level Pedas' => 'level 1', 'Bagian Ayam' => 'sayap'], 'topping' => [['nama' => 'Telor Ceplok', 'harga' => 3000]]],
-                    ['menu_index' => 1, 'jumlah' => 1, 'varian' => ['Lauk 1' => 'ayam balado', 'Lauk 2' => 'perkedel', 'Sayur' => 'sayur asem'], 'topping' => null],
+                    ['menu_index' => 0, 'jumlah' => 1, 'varian' => ['Level Pedas' => 'level 1', 'Bagian Ayam' => 'sayap']],
+                    ['menu_index' => 1, 'jumlah' => 1, 'varian' => ['Lauk 1' => 'ayam balado', 'Lauk 2' => 'perkedel', 'Sayur' => 'sayur asem']],
                 ],
                 'payment' => [
                     'metode_bayar'       => 'qris',
@@ -239,8 +239,8 @@ class PesananSeeder extends Seeder
                 'dest_lat'        => -7.3305123,
                 'dest_lng'        => 110.4962456,
                 'menu_items'      => [
-                    ['menu_index' => 0, 'jumlah' => 1, 'varian' => ['Level Pedas' => 'pedas'], 'topping' => [['nama' => 'Telur Mata Sapi', 'harga' => 3000], ['nama' => 'Sosis', 'harga' => 4000]]],
-                    ['menu_index' => 2, 'jumlah' => 2, 'varian' => ['Suhu' => 'es'],            'topping' => null],
+                    ['menu_index' => 0, 'jumlah' => 1, 'varian' => ['Level Pedas' => 'pedas']],
+                    ['menu_index' => 2, 'jumlah' => 2, 'varian' => ['Suhu' => 'es']],
                 ],
                 'payment' => [
                     'metode_bayar'       => 'transfer',
@@ -267,7 +267,7 @@ class PesananSeeder extends Seeder
                 'catatan_pesanan' => null,
                 'courier_user'    => null,
                 'menu_items'      => [
-                    ['menu_index' => 0, 'jumlah' => 1, 'varian' => ['Level Pedas' => 'extra pedas'], 'topping' => [['nama' => 'Sosis', 'harga' => 4000]]],
+                    ['menu_index' => 0, 'jumlah' => 1, 'varian' => ['Level Pedas' => 'extra pedas']],
                 ],
                 'payment' => [
                     'metode_bayar'       => 'qris',
@@ -293,8 +293,8 @@ class PesananSeeder extends Seeder
                 'dest_lat'        => -7.3308765,
                 'dest_lng'        => 110.4960123,
                 'menu_items'      => [
-                    ['menu_index' => 1, 'jumlah' => 1, 'varian' => ['Jenis Mi' => 'mi kuning', 'Level Pedas' => 'pedas'], 'topping' => [['nama' => 'Bakso Urat Ekstra', 'harga' => 5000]]],
-                    ['menu_index' => 2, 'jumlah' => 1, 'varian' => ['Gula' => 'tanpa gula'],    'topping' => null],
+                    ['menu_index' => 1, 'jumlah' => 1, 'varian' => ['Jenis Mi' => 'mi kuning', 'Level Pedas' => 'pedas']],
+                    ['menu_index' => 2, 'jumlah' => 1, 'varian' => ['Gula' => 'tanpa gula']],
                 ],
                 'payment' => [
                     'metode_bayar'       => 'qris',
@@ -321,7 +321,7 @@ class PesananSeeder extends Seeder
                 'catatan_pesanan' => null,
                 'courier_user'    => null,
                 'menu_items'      => [
-                    ['menu_index' => 0, 'jumlah' => 1, 'varian' => ['Nasi' => 'nasi uduk'],     'topping' => null],
+                    ['menu_index' => 0, 'jumlah' => 1, 'varian' => ['Nasi' => 'nasi uduk']],
                 ],
                 'payment' => [
                     'metode_bayar'       => 'midtrans',
@@ -345,7 +345,7 @@ class PesananSeeder extends Seeder
                 'alasan_penolakan'=> 'Bahan habis, maaf pesanan tidak bisa diproses hari ini.',
                 'courier_user'    => null,
                 'menu_items'      => [
-                    ['menu_index' => 1, 'jumlah' => 2, 'varian' => ['Level Pedas' => 'pedas'], 'topping' => [['nama' => 'Telur Dadar', 'harga' => 3000]]],
+                    ['menu_index' => 1, 'jumlah' => 2, 'varian' => ['Level Pedas' => 'pedas']],
                 ],
                 'payment' => [
                     'metode_bayar'       => 'qris',
@@ -368,8 +368,8 @@ class PesananSeeder extends Seeder
                 'catatan_pesanan' => null,
                 'courier_user'    => null,
                 'menu_items'      => [
-                    ['menu_index' => 0, 'jumlah' => 1, 'varian' => ['Level Pedas' => 'level 5', 'Bagian Ayam' => 'dada'], 'topping' => null],
-                    ['menu_index' => 2, 'jumlah' => 1, 'varian' => ['Gula' => 'kurang manis'],  'topping' => null],
+                    ['menu_index' => 0, 'jumlah' => 1, 'varian' => ['Level Pedas' => 'level 5', 'Bagian Ayam' => 'dada']],
+                    ['menu_index' => 2, 'jumlah' => 1, 'varian' => ['Gula' => 'kurang manis']],
                 ],
                 'payment' => [
                     'metode_bayar'       => 'transfer',
@@ -406,7 +406,6 @@ class PesananSeeder extends Seeder
                         'menu_index' => $mIndex,
                         'jumlah' => rand(1, 3),
                         'varian' => null,
-                        'topping' => null,
                     ];
                 }
 
@@ -435,6 +434,61 @@ class PesananSeeder extends Seeder
             }
         }
 
+        // ── Generate 5 Pesanan Selesai per Mahasiswa ────────────────────
+        foreach ($mahasiswaList as $mIndex => $mahasiswa) {
+            for ($i = 0; $i < 5; $i++) {
+                $kantinIndex = rand(0, $kantinList->count() - 1);
+                $kantin = $kantinList[$kantinIndex];
+                
+                // Skip jika kantin tidak punya menu
+                if (!isset($menuByKantin[$kantin->id]) || $menuByKantin[$kantin->id]->isEmpty()) {
+                    continue;
+                }
+
+                $menuCount = $menuByKantin[$kantin->id]->count();
+                $tipe = $layananTipes[$i % 3];
+                $mbayar = $metodeBayar[$i % 3];
+
+                $numItems = rand(1, 3);
+                $menuItems = [];
+                for ($j = 0; $j < $numItems; $j++) {
+                    $mIndexMenu = rand(0, $menuCount - 1);
+                    $menuItems[] = [
+                        'menu_index' => $mIndexMenu,
+                        'jumlah' => rand(1, 2),
+                        'varian' => null,
+                    ];
+                }
+
+                $waktuSelesai = now()->subDays(rand(1, 30))->subHours(rand(1, 24));
+
+                $scenarios[] = [
+                    'mahasiswa_index' => $mIndex,
+                    'kantin_index'    => $kantinIndex,
+                    'tipe_pesanan'    => $tipe,
+                    'status_pesanan'  => 'selesai',
+                    'nomor_antrian'   => 'A-' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT),
+                    'catatan_pesanan' => 'Pesanan riwayat ' . ($i + 1),
+                    'courier_user'    => $tipe === 'delivery' ? (rand(0, 1) ? 'pegawai' : 'pemilik') : null,
+                    'alamat_pengantaran' => $tipe === 'delivery' ? 'Gedung ' . chr(rand(65, 68)) . ' No. ' . rand(1, 20) : null,
+                    'dest_lat'        => $tipe === 'delivery' ? -7.3315678 + (rand(-100, 100) / 100000) : null,
+                    'dest_lng'        => $tipe === 'delivery' ? 110.4952345 + (rand(-100, 100) / 100000) : null,
+                    'menu_items'      => $menuItems,
+                    'created_at'      => $waktuSelesai,
+                    'updated_at'      => $waktuSelesai,
+                    'payment' => [
+                        'metode_bayar'       => $mbayar,
+                        'status_bayar'       => 'berhasil',
+                        'nominal'            => null,
+                        'waktu_bayar'        => $waktuSelesai,
+                        'midtrans_order_id'  => 'ORDER-HIS-' . strtoupper(Str::random(8)),
+                        'midtrans_snap_token'=> null,
+                        'log_transaksi'      => 'Pembayaran riwayat via ' . $mbayar,
+                    ],
+                ];
+            }
+        }
+
         foreach ($scenarios as $s) {
             $mahasiswa = $mahasiswaList[$s['mahasiswa_index']];
             $kantin    = $kantinList[$s['kantin_index']];
@@ -453,13 +507,7 @@ class PesananSeeder extends Seeder
             foreach ($s['menu_items'] as $item) {
                 $menu       = $menuList[$item['menu_index']];
                 $harga      = (float) $menu->harga;
-                $toppingTotal = 0;
-                if (!empty($item['topping'])) {
-                    foreach ($item['topping'] as $t) {
-                        $toppingTotal += $t['harga'];
-                    }
-                }
-                $totalHarga += ($harga + $toppingTotal) * $item['jumlah'];
+                $totalHarga += $harga * $item['jumlah'];
             }
 
             // Buat pesanan
@@ -481,6 +529,13 @@ class PesananSeeder extends Seeder
                     : null,
             ];
 
+            if (isset($s['created_at'])) {
+                $pesananData['created_at'] = $s['created_at'];
+            }
+            if (isset($s['updated_at'])) {
+                $pesananData['updated_at'] = $s['updated_at'];
+            }
+
             // Nonaktifkan auto-generate nomor antrian dari model event agar
             // seeder bisa set nomor_antrian secara eksplisit
             $pesanan = Pesanan::withoutEvents(function () use ($pesananData) {
@@ -491,13 +546,7 @@ class PesananSeeder extends Seeder
             foreach ($s['menu_items'] as $item) {
                 $menu        = $menuList[$item['menu_index']];
                 $harga       = (float) $menu->harga;
-                $toppingTotal = 0;
-                if (!empty($item['topping'])) {
-                    foreach ($item['topping'] as $t) {
-                        $toppingTotal += $t['harga'];
-                    }
-                }
-                $subtotal = ($harga + $toppingTotal) * $item['jumlah'];
+                $subtotal    = $harga * $item['jumlah'];
 
                 PesananDetail::create([
                     'pesanan_id'       => $pesanan->id,
@@ -506,7 +555,6 @@ class PesananSeeder extends Seeder
                     'jumlah_pesanan'   => $item['jumlah'],
                     'subtotal'         => $subtotal,
                     'varian_snapshot'  => $item['varian'] ?? null,
-                    'topping_snapshot' => $item['topping'] ?? null,
                 ]);
             }
 

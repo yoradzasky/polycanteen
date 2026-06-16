@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 
+import '../../../../core/widgets/seller_navbar.dart';
+import '../../profile/screens/profile.dart';
 import '../services/menu_service.dart';
 import 'add_menu_screen.dart';
 import 'edit_menu_screen.dart';
@@ -94,7 +96,7 @@ class _MenuListScreenState extends State<MenuListScreen> {
     final menu = _menus[index];
     final previousStatus = menu.statusStok;
 
-    // Optimistic update
+    // Optimistic update (SUDAH DIHAPUS TOPPING)
     setState(() {
       _menus[index] = Menu(
         id: menu.id,
@@ -107,14 +109,13 @@ class _MenuListScreenState extends State<MenuListScreen> {
         estimasiWaktu: menu.estimasiWaktu,
         pilihanLayanan: menu.pilihanLayanan,
         varian: menu.varian,
-        topping: menu.topping,
       );
     });
 
     try {
       await _menuService.toggleMenuStatus(menu.id);
     } catch (e) {
-      // Revert on error
+      // Revert on error (SUDAH DIHAPUS TOPPING)
       if (!mounted) return;
       setState(() {
         _menus[index] = Menu(
@@ -128,7 +129,6 @@ class _MenuListScreenState extends State<MenuListScreen> {
           estimasiWaktu: menu.estimasiWaktu,
           pilihanLayanan: menu.pilihanLayanan,
           varian: menu.varian,
-          topping: menu.topping,
         );
       });
       if (!mounted) return;
