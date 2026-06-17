@@ -46,7 +46,6 @@ class NotificationService {
       AndroidNotification? android = message.notification?.android;
 
       if (notification != null && android != null) {
-        // FIX 2: Gunakan Named Arguments di sini
         _localNotifications.show(
           id: notification.hashCode,
           title: notification.title,
