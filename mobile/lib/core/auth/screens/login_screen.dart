@@ -117,7 +117,12 @@ class _LoginScreenState extends State<LoginScreen> {
             );
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Tidak ada pesanan pending untuk testing.')),
+              const SnackBar(content: Text('Tidak ada pesanan pending. Mengalihkan ke Halaman Utama...')),
+            );
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (_) => StudentMainLayout(userRole: userRole),
+              ),
             );
           }
           return;
