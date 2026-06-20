@@ -301,6 +301,7 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _fullNameController = TextEditingController();
+  final TextEditingController _nimController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -308,11 +309,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
       TextEditingController();
 
   bool _isFormValid = false;
+  bool _isRegistering = false;
 
   @override
   void initState() {
     super.initState();
     _fullNameController.addListener(_updateFormValid);
+    _nimController.addListener(_updateFormValid);
     _emailController.addListener(_updateFormValid);
     _phoneController.addListener(_updateFormValid);
     _passwordController.addListener(_updateFormValid);
@@ -322,6 +325,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   void dispose() {
     _fullNameController.dispose();
+    _nimController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
@@ -332,6 +336,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void _updateFormValid() {
     final isValid =
         _fullNameController.text.trim().isNotEmpty &&
+        _nimController.text.trim().isNotEmpty &&
         _emailController.text.trim().isNotEmpty &&
         _phoneController.text.trim().isNotEmpty &&
         _passwordController.text.isNotEmpty &&
@@ -342,6 +347,70 @@ class _RegisterScreenState extends State<RegisterScreen> {
       setState(() {
         _isFormValid = isValid;
       });
+    }
+  }
+
+  Future<void> _register() async {
+    final String name = _fullNameController.text.trim();
+    final String email = _emailController.text.trim();
+    final String nim = _nimController.text.trim();
+    final String phone = _phoneController.text.trim();
+    final String password = _passwordController.text;
+
+    setState(() {
+      _isRegistering = true;
+    });
+
+    try {
+      final String baseUrl =
+          dotenv.env['BASE_URL'] ?? 'http://192.168.1.14:8000/api';
+      final Uri url = Uri.parse('$baseUrl/register');
+
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
+          'name': name,
+          'email': email,
+          'nim': nim,
+          'phone': phone,
+          'password': password,
+        }),
+      ).timeout(const Duration(seconds: 10));
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 201 && responseData['success'] == true) {
+        if (!mounted) return;
+        _showSuccessDialog(context);
+      } else {
+        if (!mounted) return;
+        String errorMessage = responseData['message'] ?? 'Pendaftaran gagal.';
+        if (responseData['errors'] != null) {
+          errorMessage = responseData['errors'].values.first[0];
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      debugPrint('ERROR REGISTER: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Gagal terhubung ke server. Pastikan API menyala!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isRegistering = false;
+        });
+      }
     }
   }
 
@@ -402,6 +471,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       const SizedBox(height: 16),
                       _RegisterField(
+                        controller: _nimController,
+                        label: 'NIM (Nomor Induk Mahasiswa)',
+                        hint: 'Masukkan NIM Anda',
+                        keyboardType: TextInputType.number,
+                      ),
+                      const SizedBox(height: 16),
+                      _RegisterField(
                         controller: _emailController,
                         label: 'Email',
                         hint: 'Masukkan emailmu',
@@ -427,8 +503,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: _isFormValid
-                              ? () => _showSuccessDialog(context)
+                          onPressed: (_isFormValid && !_isRegistering)
+                              ? _register
                               : null,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF2D50EE),
@@ -437,14 +513,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
-                          child: const Text(
-                            'Daftar',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                          child: _isRegistering
+                              ? const SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text(
+                                  'Daftar',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                         ),
                       ),
                       const SizedBox(height: 20),

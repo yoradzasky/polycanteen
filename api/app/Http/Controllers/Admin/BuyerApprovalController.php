@@ -62,9 +62,16 @@ class BuyerApprovalController extends Controller
                 ->with('error', $exception->getMessage());
         }
 
+        $message = "Akun {$result['user']->username} berhasil disetujui.";
+        if ($result['is_default'] ?? true) {
+            $message .= " Password default: {$result['default_password']}";
+        } else {
+            $message .= " Menggunakan password yang didaftarkan oleh mahasiswa.";
+        }
+
         return redirect()
             ->route('admin.approvals.index')
-            ->with('success', "Akun {$result['user']->username} berhasil disetujui. Password default: {$result['default_password']}");
+            ->with('success', $message);
     }
 
     public function reject(Request $request, int $application): RedirectResponse

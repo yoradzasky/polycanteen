@@ -58,4 +58,40 @@ class AuthController extends Controller
             'message' => 'Logout berhasil, token telah dihapus'
         ]);
     }
+
+    /**
+     * Register API (Submit BuyerApplication)
+     */
+    public function register(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:buyer_applications,email|unique:users,email',
+            'nim' => 'required|string|unique:buyer_applications,nim|unique:mahasiswa,nim',
+            'phone' => 'required|string|max:20',
+            'password' => 'required|string|min:6',
+            'foto_ktm' => 'nullable|image|max:2048', // Max 2MB
+        ]);
+
+        $fotoKtmPath = null;
+        if ($request->hasFile('foto_ktm')) {
+            $fotoKtmPath = $request->file('foto_ktm')->store('ktm', 'public');
+        }
+
+        $application = \App\Models\BuyerApplication::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'nim' => $request->nim,
+            'phone' => $request->phone,
+            'password' => Hash::make($request->password),
+            'foto_ktm_path' => $fotoKtmPath,
+            'status' => 'pending',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pendaftaran berhasil diajukan. Silakan tunggu persetujuan admin.',
+            'data' => $application
+        ], 201);
+    }
 }  
