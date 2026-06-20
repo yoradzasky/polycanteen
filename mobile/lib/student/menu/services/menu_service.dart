@@ -37,11 +37,11 @@ class MenuService {
     return Options(headers: {'Authorization': 'Bearer $token'});
   }
 
-  // ───── GET /student/kantin/{kantinId}/menu ─────
+  // ───── GET /mahasiswa/kantin/{kantinId}/menu ─────
   Future<List<dynamic>> getMenuByKantin(int kantinId) async {
     try {
       final response = await _dio.get(
-        '/student/kantin/$kantinId/menu',
+        '/mahasiswa/kantin/$kantinId/menu',
         options: await _authOptions(),
       );
 
@@ -72,12 +72,12 @@ class MenuService {
     }
   }
 
-  // ───── GET /student/keranjang ─────
+  // ───── GET /mahasiswa/keranjang ─────
   // Untuk mengambil data keranjang dari database saat halaman dibuka
   Future<List<dynamic>> getCartItems() async {
     try {
       final response = await _dio.get(
-        '/student/keranjang',
+        '/mahasiswa/keranjang',
         options: await _authOptions(),
       );
 
@@ -105,7 +105,7 @@ class MenuService {
     }
   }
 
-  // ───── POST /student/keranjang ─────
+  // ───── POST /mahasiswa/keranjang ─────
   // Digunakan saat tombol (+) atau "Tambah ke Keranjang" diklik
   Future<void> addToCart({
     required int menuId, 
@@ -114,7 +114,7 @@ class MenuService {
   }) async {
     try {
       await _dio.post(
-        '/student/keranjang',
+        '/mahasiswa/keranjang',
         data: {
           'menu_id': menuId,
           'jumlah': jumlah,
@@ -157,7 +157,7 @@ class MenuService {
     try {
       // Sesuaikan endpoint ini dengan rute di backend Laravel kamu nanti
       await _dio.delete(
-        '/student/keranjang/$menuId',
+        '/mahasiswa/keranjang/$menuId',
         options: await _authOptions(),
       );
     } on DioException catch (e) {

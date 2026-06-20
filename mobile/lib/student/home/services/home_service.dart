@@ -37,11 +37,11 @@ class HomeService {
     return Options(headers: {'Authorization': 'Bearer $token'});
   }
 
-  // ───── GET /student/beranda ─────
+  // ───── GET /mahasiswa/beranda ─────
   Future<Map<String, dynamic>> getBerandaData() async {
     try {
       final response = await _dio.get(
-        '/student/beranda',
+        '/mahasiswa/beranda',
         options: await _authOptions(),
       );
 

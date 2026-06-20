@@ -38,11 +38,11 @@ class CanteenListService {
     return Options(headers: {'Authorization': 'Bearer $token'});
   }
 
-  // ───── GET /student/kantin ─────
+  // ───── GET /mahasiswa/kantin ─────
   Future<List<dynamic>> getKantinList() async {
     try {
       final response = await _dio.get(
-        '/student/kantin',
+        '/mahasiswa/kantin',
         options: await _authOptions(),
       );
 

@@ -12,18 +12,16 @@ class NotificationService {
 
   static Future<void> initialize() async {
     // Request permission (Required for iOS and Android 13+)
-    await _messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    await _messaging.requestPermission(alert: true, badge: true, sound: true);
 
     // Setup Local Notifications for foreground messages
     const AndroidInitializationSettings androidInit =
         AndroidInitializationSettings('@mipmap/launcher_icon');
-    const InitializationSettings initSettings =
-        InitializationSettings(android: androidInit);
+    const InitializationSettings initSettings = InitializationSettings(
+      android: androidInit,
+    );
 
+    // FIX 1: Gunakan Named Argument di sini
     await _localNotifications.initialize(settings: initSettings);
 
     // Create Notification Channel for Android
@@ -37,7 +35,8 @@ class NotificationService {
 
       await _localNotifications
           .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>()
+            AndroidFlutterLocalNotificationsPlugin
+          >()
           ?.createNotificationChannel(channel);
     }
 
@@ -85,13 +84,15 @@ class NotificationService {
       if (authToken.isEmpty) return;
 
       final baseUrl = dotenv.env['BASE_URL'] ?? 'http://192.168.1.14:8000/api';
-      final dio = Dio(BaseOptions(
-        baseUrl: baseUrl,
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $authToken',
-        },
-      ));
+      final dio = Dio(
+        BaseOptions(
+          baseUrl: baseUrl,
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer $authToken',
+          },
+        ),
+      );
 
       await dio.post('/fcm-token', data: {'fcm_token': fcmToken});
     } catch (e) {
@@ -107,13 +108,15 @@ class NotificationService {
       if (authToken.isEmpty) return;
 
       final baseUrl = dotenv.env['BASE_URL'] ?? 'http://192.168.1.14:8000/api';
-      final dio = Dio(BaseOptions(
-        baseUrl: baseUrl,
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $authToken',
-        },
-      ));
+      final dio = Dio(
+        BaseOptions(
+          baseUrl: baseUrl,
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer $authToken',
+          },
+        ),
+      );
 
       await dio.delete('/fcm-token');
     } catch (e) {
