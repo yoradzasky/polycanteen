@@ -29,6 +29,7 @@ class MenuSeeder extends Seeder
                 'deskripsi'       => 'Nasi goreng dengan telur, ayam, dan sayuran segar pilihan.',
                 'estimasi_waktu'  => 10,
                 'pilihan_layanan' => ['makan_di_tempat', 'dibungkus'],
+                'foto_menu'       => 'https://images.unsplash.com/photo-1603133872878-685f2026d5f5?w=500&auto=format&fit=crop',
                 'varian'          => [
                     [
                         'nama' => 'Level Pedas',
@@ -58,6 +59,7 @@ class MenuSeeder extends Seeder
                 'deskripsi'       => 'Mie goreng dengan potongan ayam dan bumbu khas.',
                 'estimasi_waktu'  => 8,
                 'pilihan_layanan' => ['makan_di_tempat', 'dibungkus'],
+                'foto_menu'       => 'https://images.unsplash.com/photo-1585032226651-759b368d7246?w=500&auto=format&fit=crop',
                 'varian'          => [
                     [
                         'nama' => 'Level Pedas',
@@ -78,6 +80,7 @@ class MenuSeeder extends Seeder
                 'deskripsi'       => 'Teh manis dingin yang menyegarkan.',
                 'estimasi_waktu'  => 3,
                 'pilihan_layanan' => ['makan_di_tempat', 'dibungkus'],
+                'foto_menu'       => 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=500&auto=format&fit=crop',
                 'varian'          => [
                     [
                         'nama' => 'Suhu',
@@ -97,6 +100,7 @@ class MenuSeeder extends Seeder
                 'deskripsi'       => 'Soto ayam kuah bening dengan pelengkap bihun, tauge, dan perkedel.',
                 'estimasi_waktu'  => 7,
                 'pilihan_layanan' => ['makan_di_tempat'],
+                'foto_menu'       => 'https://images.unsplash.com/photo-1626804475315-77626996d911?w=500&auto=format&fit=crop',
                 'varian'          => null,
             ],
         ];
@@ -117,6 +121,7 @@ class MenuSeeder extends Seeder
                 'deskripsi'       => 'Pecel dengan sayuran rebus segar dan bumbu kacang khas.',
                 'estimasi_waktu'  => 5,
                 'pilihan_layanan' => ['makan_di_tempat', 'dibungkus'],
+                'foto_menu'       => 'https://images.unsplash.com/photo-1590137876181-2a5a7e340308?w=500&auto=format&fit=crop',
                 'varian'          => [
                     [
                         'nama' => 'Nasi',
@@ -146,6 +151,7 @@ class MenuSeeder extends Seeder
                 'deskripsi'       => 'Bakso sapi kenyal dengan kuah kaldu gurih dan mi.',
                 'estimasi_waktu'  => 5,
                 'pilihan_layanan' => ['makan_di_tempat', 'dibungkus'],
+                'foto_menu'       => 'https://images.unsplash.com/photo-1541518763669-27fef04b14ea?w=500&auto=format&fit=crop',
                 'varian'          => [
                     [
                         'nama' => 'Jenis Mi',
@@ -174,6 +180,7 @@ class MenuSeeder extends Seeder
                 'deskripsi'       => 'Jus alpukat segar dengan susu kental manis.',
                 'estimasi_waktu'  => 5,
                 'pilihan_layanan' => ['makan_di_tempat', 'dibungkus'],
+                'foto_menu'       => 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=500&auto=format&fit=crop',
                 'varian'          => [
                     [
                         'nama' => 'Gula',
@@ -194,6 +201,7 @@ class MenuSeeder extends Seeder
                 'deskripsi'       => 'Kopi robusta dengan susu segar, disajikan dingin.',
                 'estimasi_waktu'  => 4,
                 'pilihan_layanan' => ['makan_di_tempat', 'dibungkus'],
+                'foto_menu'       => 'https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=500&auto=format&fit=crop',
                 'varian'          => [
                     [
                         'nama' => 'Suhu',
@@ -231,6 +239,7 @@ class MenuSeeder extends Seeder
                 'deskripsi'       => 'Ayam goreng crispy digeprek dengan sambal bawang.',
                 'estimasi_waktu'  => 12,
                 'pilihan_layanan' => ['makan_di_tempat', 'dibungkus', 'pengantaran'],
+                'foto_menu'       => 'https://images.unsplash.com/photo-1626240906144-48615b161f3d?w=500&auto=format&fit=crop',
                 'varian'          => [
                     [
                         'nama' => 'Level Pedas',
@@ -262,6 +271,7 @@ class MenuSeeder extends Seeder
                 'deskripsi'       => 'Nasi dengan 3 pilihan lauk + sayur + sambal.',
                 'estimasi_waktu'  => 5,
                 'pilihan_layanan' => ['dibungkus', 'pengantaran'],
+                'foto_menu'       => 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop',
                 'varian'          => [
                     [
                         'nama' => 'Lauk 1',
@@ -300,6 +310,7 @@ class MenuSeeder extends Seeder
                 'deskripsi'       => 'Jeruk segar diperas, manis dan segar.',
                 'estimasi_waktu'  => 3,
                 'pilihan_layanan' => ['makan_di_tempat', 'dibungkus'],
+                'foto_menu'       => 'https://images.unsplash.com/photo-1613478223719-2ab802602423?w=500&auto=format&fit=crop',
                 'varian'          => [
                     [
                         'nama' => 'Gula',

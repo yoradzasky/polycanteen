@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../services/payment_service.dart';
 import '../../orders/screens/queue_ticket_screen.dart';
+import '../../orders/services/order_service.dart';
 import 'qris_payment_screen.dart';
 
 class PaymentScreen extends StatefulWidget {
@@ -16,9 +17,46 @@ class PaymentScreen extends StatefulWidget {
 
 class _PaymentScreenState extends State<PaymentScreen> {
   final PaymentService _paymentService = PaymentService();
+  final OrderService _orderService = OrderService();
   bool _isLoading = false;
+  bool _isLoadingDetails = true;
   String _selectedMethod = 'qris';
   String _selectedOrderType = 'Makan di Tempat';
+  List<dynamic> _orderItems = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOrderDetails();
+  }
+
+  Future<void> _loadOrderDetails() async {
+    try {
+      setState(() => _isLoadingDetails = true);
+      final details = await _orderService.getOrderDetail(widget.pesananId);
+      setState(() {
+        _orderItems = details['detail_pesanan'] ?? [];
+        _selectedOrderType = _formatOrderType(details['tipe_pesanan'] ?? 'dine_in');
+        _isLoadingDetails = false;
+      });
+    } catch (e) {
+      print('DEBUG: Error loading order details: $e');
+      setState(() => _isLoadingDetails = false);
+    }
+  }
+
+  String _formatOrderType(String type) {
+    switch (type.toLowerCase()) {
+      case 'takeaway':
+      case 'bungkus':
+        return 'Bungkus';
+      case 'delivery':
+      case 'pengantaran':
+        return 'Pengantaran';
+      default:
+        return 'Makan di Tempat';
+    }
+  }
 
   String _formatCurrency(double amount) {
     return 'Rp ${amount.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}';
@@ -121,79 +159,91 @@ class _PaymentScreenState extends State<PaymentScreen> {
         ),
         centerTitle: true,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          OrderTypeSelector(
-            selectedType: _selectedOrderType,
-            onChanged: (type) => setState(() => _selectedOrderType = type),
-          ),
-          const SizedBox(height: 24),
-          
-          const SectionTitle(title: 'Pesanan Anda'),
-          const OrderItemCard(
-            name: 'Nasi Goreng Spesial',
-            price: 'Rp 36.000',
-            qty: 2,
-            imagePath: 'assets/images/nasigoreng.jpg',
-          ),
-          const OrderItemCard(
-            name: 'Soto Ayam Kuning',
-            price: 'Rp 36.000',
-            qty: 3,
-            imagePath: 'assets/images/sotoayam.jpg',
-          ),
-          const SizedBox(height: 24),
-          
-          const SectionTitle(title: 'Metode Pembayaran'),
-          PaymentMethodSelectorHorizontal(
-            selectedMethod: _selectedMethod,
-            onChanged: (method) {
-              setState(() => _selectedMethod = method);
-            },
-          ),
-          const SizedBox(height: 24),
-          
-          PaymentSummaryCard(
-            subtotal: formattedTotal,
-            total: formattedTotal,
-            totalItems: 5,
-          ),
-          const SizedBox(height: 32),
-          
-          SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: ElevatedButton(
-              onPressed: _isLoading ? null : _handlePayment,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B5BBD),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 0,
+      body: _isLoadingDetails
+          ? const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B5BBD)),
               ),
-              child: _isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.credit_card, color: Colors.white, size: 20),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Bayar Sekarang - $formattedTotal',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
+            )
+          : ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                OrderTypeSelector(
+                  selectedType: _selectedOrderType,
+                  onChanged: (type) => setState(() => _selectedOrderType = type),
+                ),
+                const SizedBox(height: 24),
+                
+                if (_orderItems.isNotEmpty) ...[
+                  const SectionTitle(title: 'Pesanan Anda'),
+                  ..._orderItems.map((item) {
+                    final menu = item['menu'] ?? {};
+                    final name = menu['nama_item'] ?? '-';
+                    final priceVal = double.tryParse(item['harga_saat_beli']?.toString() ?? '0') ?? 0;
+                    final qty = int.tryParse(item['jumlah_pesanan']?.toString() ?? '1') ?? 1;
+                    final String? image = menu['foto_menu'];
+                    return OrderItemCard(
+                      name: name,
+                      price: _formatCurrency(priceVal),
+                      qty: qty,
+                      imagePath: image,
+                    );
+                  }),
+                  const SizedBox(height: 24),
+                ],
+                
+                const SectionTitle(title: 'Metode Pembayaran'),
+                PaymentMethodSelectorHorizontal(
+                  selectedMethod: _selectedMethod,
+                  onChanged: (method) {
+                    setState(() => _selectedMethod = method);
+                  },
+                ),
+                const SizedBox(height: 24),
+                
+                PaymentSummaryCard(
+                  subtotal: formattedTotal,
+                  total: formattedTotal,
+                  totalItems: _orderItems.fold<int>(0, (sum, item) {
+                    final qty = int.tryParse(item['jumlah_pesanan']?.toString() ?? '1') ?? 1;
+                    return sum + qty;
+                  }),
+                ),
+                const SizedBox(height: 32),
+                
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _handlePayment,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF3B5BBD),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
                     ),
+                    child: _isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.credit_card, color: Colors.white, size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Bayar Sekarang - $formattedTotal',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -219,14 +269,15 @@ class SectionTitle extends StatelessWidget {
 }
 
 class OrderItemCard extends StatelessWidget {
-  final String name, price, imagePath;
+  final String name, price;
+  final String? imagePath;
   final int qty;
   const OrderItemCard({
     super.key,
     required this.name,
     required this.price,
     required this.qty,
-    required this.imagePath,
+    this.imagePath,
   });
 
   @override
@@ -244,7 +295,25 @@ class OrderItemCard extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.asset(imagePath, width: 60, height: 60, fit: BoxFit.cover),
+                child: imagePath != null && imagePath!.startsWith('http')
+                    ? Image.network(
+                        imagePath!,
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          width: 60,
+                          height: 60,
+                          color: Colors.grey[300],
+                          child: const Icon(Icons.restaurant, color: Colors.grey, size: 30),
+                        ),
+                      )
+                    : Container(
+                        width: 60,
+                        height: 60,
+                        color: Colors.grey[300],
+                        child: const Icon(Icons.restaurant, color: Colors.grey, size: 30),
+                      ),
               ),
               const SizedBox(width: 12),
               Expanded(

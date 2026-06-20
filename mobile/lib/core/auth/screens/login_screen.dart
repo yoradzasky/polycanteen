@@ -7,6 +7,7 @@ import '../../layouts/seller_main_layout.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../../student/payment/screens/payment_screen.dart';
 import '../../../student/orders/services/order_service.dart';
+import '../../../student/home/screens/home_screen.dart';
 import '../../services/notification_service.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -94,40 +95,6 @@ class _LoginScreenState extends State<LoginScreen> {
         await NotificationService.sendTokenToServer();
 
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Login Berhasil!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-
-        // Logic khusus testing: redirect mahasiswa1 ke PaymentScreen
-        if (email == 'mahasiswa1@kantin.com') {
-          // Cari pesanan yang belum dibayar secara dinamis
-          final orderData = await OrderService().getLatestPendingOrder();
-          
-          if (orderData != null) {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (_) => PaymentScreen(
-                  pesananId: orderData['id'], 
-                  totalHarga: double.parse(orderData['total_harga'].toString())
-                ),
-              ),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Tidak ada pesanan pending. Mengalihkan ke Halaman Utama...')),
-            );
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (_) => StudentMainLayout(userRole: userRole),
-              ),
-            );
-          }
-          return;
-        }
-
         // Redirect ke halaman utama sesuai role
         if (userRole == 'mahasiswa') {
           Navigator.of(context).pushReplacement(

@@ -3,6 +3,18 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use App\Models\User;
+use App\Models\Kantin;
+use App\Models\Mahasiswa;
+use App\Models\Pemilik;
+use App\Models\Pegawai;
+use App\Models\Menu;
+use App\Models\Keranjang;
+use App\Models\Pesanan;
+use App\Models\PesananDetail;
+use App\Models\Payment;
+use App\Models\Ulasan;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -12,6 +24,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $faker = \Faker\Factory::create('id_ID');
         $this->call([
             // 1. Users (independen)
             UserSeeder::class,
@@ -161,9 +174,24 @@ class DatabaseSeeder extends Seeder
                 'status_stok' => true,
                 'deskripsi' => $faker->sentence,
                 'estimasi_waktu' => $faker->numberBetween(5, 30),
-                'pilihan_layanan' => ['dine_in', 'takeaway'],
-                'varian' => [['nama' => 'Biasa', 'harga_tambahan' => 0], ['nama' => 'Jumbo', 'harga_tambahan' => 5000]],
-                'topping' => [['nama' => 'Keju', 'harga' => 3000, 'required' => false]]
+                'pilihan_layanan' => ['makan_di_tempat', 'dibungkus'],
+                'varian' => [
+                    [
+                        'nama' => 'Ukuran',
+                        'tipe' => 'wajib',
+                        'pilihan' => [
+                            ['nama' => 'Biasa', 'harga' => 0],
+                            ['nama' => 'Jumbo', 'harga' => 5000],
+                        ]
+                    ],
+                    [
+                        'nama' => 'Topping',
+                        'tipe' => 'opsional',
+                        'pilihan' => [
+                            ['nama' => 'Keju', 'harga' => 3000],
+                        ]
+                    ]
+                ]
             ]);
         }
 
@@ -173,8 +201,9 @@ class DatabaseSeeder extends Seeder
                 'mahasiswa_id' => $mahasiswas[$i]->id,
                 'menu_id' => $menus[$i]->id,
                 'jumlah' => $faker->numberBetween(1, 3),
-                'varian_selected' => ['nama' => 'Biasa', 'harga_tambahan' => 0],
-                'topping_selected' => [['nama' => 'Keju', 'harga' => 3000]],
+                'varian_selected' => [
+                    'Ukuran' => ['nama' => 'Biasa', 'harga' => 0]
+                ],
             ]);
         }
 
@@ -185,13 +214,18 @@ class DatabaseSeeder extends Seeder
         for ($i = 0; $i < 10; $i++) {
             $harga = $menus[$i]->harga;
             $jumlah = $faker->numberBetween(1, 3);
-            $total_harga = $harga * $jumlah + 3000; // include topping 3000
+            $total_harga = $harga * $jumlah;
+
+            // Khusus mahasiswa1@kantin.com ($i = 0), kita buat pesanan pending untuk testing
+            $status_pesanan = ($i === 0) ? 'menunggu_pembayaran' : $faker->randomElement(['dibayar', 'dimasak', 'dalam_perjalanan', 'selesai', 'ditolak']);
+            $status_bayar = ($i === 0) ? 'pending' : 'sukses';
+            $waktu_bayar = ($i === 0) ? null : now();
 
             $pesanan = Pesanan::create([
                 'mahasiswa_id' => $mahasiswas[$i]->id,
                 'kantin_id' => $menus[$i]->kantin_id,
                 'tipe_pesanan' => $faker->randomElement(['dine_in', 'take_away']),
-                'status_pesanan' => $faker->randomElement(['dibayar', 'dimasak', 'dalam_perjalanan', 'selesai', 'ditolak']),
+                'status_pesanan' => $status_pesanan,
                 'total_harga' => $total_harga,
                 'nomor_antrian' => 'A-0' . str_pad($i + 1, 2, '0', STR_PAD_LEFT),
                 'catatan_pesanan' => $faker->sentence
@@ -203,30 +237,32 @@ class DatabaseSeeder extends Seeder
                 'harga_saat_beli' => $harga,
                 'jumlah_pesanan' => $jumlah,
                 'subtotal' => $total_harga,
-                'varian_snapshot' => ['nama' => 'Biasa', 'harga_tambahan' => 0],
-                'topping_snapshot' => [['nama' => 'Keju', 'harga' => 3000]]
+                'varian_snapshot' => [
+                    'Ukuran' => ['nama' => 'Biasa', 'harga' => 0]
+                ]
             ]);
 
             Payment::create([
                 'pesanan_id' => $pesanan->id,
                 'metode_bayar' => 'qris',
-                'status_bayar' => 'sukses',
-                'log_transaksi' => '{"transaction_status":"settlement"}',
+                'status_bayar' => $status_bayar,
+                'log_transaksi' => ($i === 0) ? '{"transaction_status":"pending"}' : '{"transaction_status":"settlement"}',
                 'nominal' => $total_harga,
-                'waktu_bayar' => now(),
+                'waktu_bayar' => $waktu_bayar,
                 'midtrans_order_id' => $pesanan->nomor_antrian,
                 'midtrans_snap_token' => 'token_' . $faker->word
             ]);
 
-            Ulasan::create([
-                'pesanan_id' => $pesanan->id,
-                'mahasiswa_id' => $mahasiswas[$i]->id,
-                'kantin_id' => $menus[$i]->kantin_id,
-                'rating' => $faker->numberBetween(3, 5),
-                'komentar' => $faker->sentence
-            ]);
+            if ($status_pesanan === 'selesai') {
+                Ulasan::create([
+                    'pesanan_id' => $pesanan->id,
+                    'mahasiswa_id' => $mahasiswas[$i]->id,
+                    'kantin_id' => $menus[$i]->kantin_id,
+                    'menu_id' => $menus[$i]->id,
+                    'rating' => $faker->numberBetween(3, 5),
+                    'komentar' => $faker->sentence
+                ]);
+            }
         }
-
-        $this->call(PesananSeeder::class);
     }
 }

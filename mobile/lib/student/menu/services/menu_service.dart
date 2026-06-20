@@ -127,6 +127,30 @@ class MenuService {
     }
   }
 
+  // ───── POST /student/keranjang/checkout ─────
+  // Mengonversi isi keranjang menjadi pesanan
+  Future<Map<String, dynamic>> checkout() async {
+    try {
+      final response = await _dio.post(
+        '/student/keranjang/checkout',
+        options: await _authOptions(),
+      );
+      
+      var body = response.data;
+      if (body is String) {
+        body = jsonDecode(body);
+      }
+      
+      if (body is Map && body['success'] == true) {
+        return body['data']; // Mengembalikan data pesanan {id, total_harga}
+      }
+      
+      throw Exception(body['message'] ?? 'Format response checkout tidak valid');
+    } on DioException catch (e) {
+      throw Exception(_handleDioError(e));
+    }
+  }
+
   // ───── DELETE/PUT /student/keranjang/{menuId} ─────
   // Digunakan saat tombol (-) diklik untuk mengurangi atau menghapus dari keranjang
   Future<void> decreaseCartQty(int menuId) async {

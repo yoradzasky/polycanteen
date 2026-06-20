@@ -74,6 +74,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Rute Keranjang (Cart)
         Route::get('/keranjang', [CartController::class, 'index']);
         Route::post('/keranjang', [CartController::class, 'store']);
+        Route::post('/keranjang/checkout', [CartController::class, 'checkout']);
         Route::put('/keranjang/{id}', [CartController::class, 'update']);
         Route::delete('/keranjang/{menu_id}', [CartController::class, 'destroy']);
         Route::delete('/keranjang/clear/all', [CartController::class, 'clearAll']);
@@ -84,9 +85,10 @@ Route::middleware('auth:sanctum')->group(function () {
         // TAMBAHKAN BARIS INI: Rute untuk update profil mahasiswa
         Route::post('/profil/update', [MahasiswaController::class, 'updateProfile']);
 
-        // Nanti kamu bisa menambahkan rute mahasiswa lainnya di bawah ini,
-        // sesuai dengan tugas Modul 1 kamu (misal: list kantin, list menu per kantin, dsb).
-
+        // --- TAMBAHAN ROUTE UNTUK PEMBAYARAN MAHASISWA ---
+        Route::get('/orders/latest-pending', [PaymentController::class, 'getLatestPendingOrder']);
+        Route::post('/payment/{pesanan_id}', [PaymentController::class, 'createPayment']);
+        Route::get('/payment/status/{pesanan_id}', [PaymentController::class, 'checkStatus']);
     });
 
     // --- Grup Khusus Penjual (Prefix: /pemilik) ---
@@ -113,12 +115,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/deliveries/{pesanan}/confirm', [DeliveryController::class, 'confirm']);
     });
 
-    // =================================================================
-    // --- TAMBAHAN ROUTE UNTUK PEMBAYARAN MAHASISWA ---
-    // =================================================================
-    Route::get('/student/orders/latest-pending', [PaymentController::class, 'getLatestPendingOrder']);
-    Route::post('/student/payment/{pesanan_id}', [PaymentController::class, 'createPayment']);
-    Route::get('/student/payment/status/{pesanan_id}', [PaymentController::class, 'checkStatus']);
+
 
     // --- Grup Khusus Mahasiswa (Prefix: /mahasiswa) ---
     Route::prefix('mahasiswa')->group(function () {

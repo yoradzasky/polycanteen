@@ -184,18 +184,26 @@ class _ProfileHeaderAndInfo extends StatelessWidget {
                       width: 88,
                       height: 88,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Image.asset(
-                        "assets/images/profile.jpg",
+                      errorBuilder: (context, error, stackTrace) => Container(
                         width: 88,
                         height: 88,
-                        fit: BoxFit.cover,
+                        color: Colors.grey[300],
+                        child: Icon(
+                          Icons.person,
+                          size: 48,
+                          color: Colors.grey[600],
+                        ),
                       ),
                     )
-                  : Image.asset(
-                      "assets/images/profile.jpg",
+                  : Container(
                       width: 88,
                       height: 88,
-                      fit: BoxFit.cover,
+                      color: Colors.grey[300],
+                      child: Icon(
+                        Icons.person,
+                        size: 48,
+                        color: Colors.grey[600],
+                      ),
                     ),
             ),
           ),

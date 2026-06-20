@@ -224,18 +224,26 @@ class _EditProfileUserScreenState extends State<EditProfileUserScreen> {
                                   width: 80,
                                   height: 80,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (context, url, error) => Image.asset(
-                                    "assets/images/profile.jpg",
+                                  errorBuilder: (context, url, error) => Container(
                                     width: 80,
                                     height: 80,
-                                    fit: BoxFit.cover,
+                                    color: Colors.grey[300],
+                                    child: Icon(
+                                      Icons.person,
+                                      size: 44,
+                                      color: Colors.grey[600],
+                                    ),
                                   ),
                                 )
-                              : Image.asset(
-                                  "assets/images/profile.jpg",
+                              : Container(
                                   width: 80,
                                   height: 80,
-                                  fit: BoxFit.cover,
+                                  color: Colors.grey[300],
+                                  child: Icon(
+                                    Icons.person,
+                                    size: 44,
+                                    color: Colors.grey[600],
+                                  ),
                                 )),
                     ),
                   ),

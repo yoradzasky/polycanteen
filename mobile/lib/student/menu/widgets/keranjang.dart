@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../payment/screens/payment_screen.dart';
+import '../services/menu_service.dart';
 
 class KeranjangWidget extends StatelessWidget {
   final List<Map<String, dynamic>> cartItems;
@@ -41,8 +43,31 @@ class KeranjangWidget extends StatelessWidget {
     }
 
     return GestureDetector(
-      onTap: () {
-        // TODO: Navigasi ke halaman detail Checkout/Keranjang
+      onTap: () async {
+        try {
+          // Lakukan checkout keranjang untuk mendapatkan pesanan baru secara dinamis
+          final orderData = await MenuService().checkout();
+          if (context.mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PaymentScreen(
+                  pesananId: orderData['id'],
+                  totalHarga: double.parse(orderData['total_harga'].toString()),
+                ),
+              ),
+            );
+          }
+        } catch (e) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Gagal memproses checkout: ${e.toString().replaceAll('Exception: ', '')}'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
