@@ -6,6 +6,9 @@ import '../../seller/features/orders/screens/order_list_screen.dart';
 import '../../seller/features/menu/screens/menu_list_screen.dart';
 import '../../seller/features/scanner/screens/qr_scanner_screen.dart';
 import '../../seller/features/profile/screens/profile.dart';
+import '../../seller/features/finance/screens/finance_report_screen.dart';
+import '../../seller/features/finance/services/finance_service.dart';
+import 'package:provider/provider.dart';
 
 class SellerMainLayout extends StatefulWidget {
   const SellerMainLayout({super.key});
@@ -22,7 +25,11 @@ class _SellerMainLayoutState extends State<SellerMainLayout> {
   final List<Widget> _screens = [
     const OrderListScreen(),
     const MenuListScreen(),
-    const Center(child: Text("Halaman Belum Tersedia")), // Placeholder for Laporan/Riwayat
+    // Ganti Placeholder dengan Layar Laporan Keuangan
+    ChangeNotifierProvider(
+      create: (_) => FinanceProvider(),
+      child: const FinanceReportScreen(),
+    ),
     const ProfileTokoScreen(), // Profil Screen
   ];
 

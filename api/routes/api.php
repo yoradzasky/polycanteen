@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Seller\MenuController;
 use App\Http\Controllers\Api\Seller\KantinController;
 use App\Http\Controllers\Api\Seller\ScannerController;
 use App\Http\Controllers\Api\Seller\DeliveryController;
+use App\Http\Controllers\Api\Seller\FinanceController;
 use App\Http\Controllers\Api\Student\TrackingController;
 use App\Http\Controllers\Api\Student\OrderController as StudentOrderController;
 use App\Http\Controllers\Api\Student\MahasiswaController;
@@ -114,6 +115,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/deliveries/{pesanan}', [DeliveryController::class, 'show']);
         Route::post('/deliveries/{pesanan}/start', [DeliveryController::class, 'start']);
         Route::post('/deliveries/{pesanan}/confirm', [DeliveryController::class, 'confirm']);
+
+        // Modul Keuangan & Laporan
+        Route::get('/finance/summary', [FinanceController::class, 'summary']);
+        Route::get('/finance/history', [FinanceController::class, 'history']);
     });
 
 
