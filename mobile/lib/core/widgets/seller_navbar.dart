@@ -75,18 +75,21 @@ class SellerNavbar extends StatelessWidget {
                   const Expanded(
                     child: SizedBox.shrink(),
                   ), // Empty space untuk QR button
-                  Expanded(
-                    child: _buildNavItem(
-                      icon: userRole == 'pemilik'
-                          ? Icons.show_chart
-                          : Icons.schedule,
-                      label: userRole == 'pemilik' ? 'Laporan' : 'Riwayat',
-                      index: 2,
-                      isActive: currentIndex == 2,
-                      activeColor: primaryColor,
-                      inactiveColor: inactiveColor,
+                  if (userRole == 'pemilik')
+                    Expanded(
+                      child: _buildNavItem(
+                        icon: Icons.show_chart,
+                        label: 'Laporan',
+                        index: 2,
+                        isActive: currentIndex == 2,
+                        activeColor: primaryColor,
+                        inactiveColor: inactiveColor,
+                      ),
+                    )
+                  else
+                    const Expanded(
+                      child: SizedBox.shrink(),
                     ),
-                  ),
                   Expanded(
                     child: _buildNavItem(
                       icon: Icons.person,

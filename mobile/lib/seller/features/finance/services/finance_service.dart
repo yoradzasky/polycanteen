@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // --- SERVICE ---
@@ -9,8 +9,8 @@ class FinanceService {
   final String baseUrl = dotenv.env['BASE_URL'] ?? 'http://10.0.2.2:8000/api';
 
   Future<Map<String, dynamic>> getFinanceSummary() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
+    final prefs = EncryptedSharedPreferences();
+    final token = await prefs.getString('token');
 
     final response = await http.get(
       Uri.parse('$baseUrl/pemilik/finance/summary'),
@@ -31,8 +31,8 @@ class FinanceService {
   }
 
   Future<List<dynamic>> getFinanceHistory() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
+    final prefs = EncryptedSharedPreferences();
+    final token = await prefs.getString('token');
 
     final response = await http.get(
       Uri.parse('$baseUrl/pemilik/finance/history'),
