@@ -42,6 +42,8 @@ class OrderController extends Controller
 
             $statusAktif = [
                 'pending',
+                'menunggu_persetujuan',
+                'menunggu_pembayaran',
                 'dibayar',
                 'dikonfirmasi',
                 'diproses',
@@ -159,4 +161,64 @@ class OrderController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * 3. PATCH /mahasiswa/orders/{id}/submit
+     * Mengajukan pesanan dengan tipe pesanan, alamat, koordinat, catatan, dan status pending.
+     */
+    public function submitOrder(Request $request, $id)
+    {
+        try {
+            $mahasiswaId = $this->getMahasiswaId();
+            if (!$mahasiswaId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak. Anda tidak terdaftar sebagai mahasiswa.',
+                ], 403);
+            }
+
+            $pesanan = Pesanan::where('mahasiswa_id', $mahasiswaId)->findOrFail($id);
+
+            $validated = $request->validate([
+                'tipe_pesanan' => 'required|string',
+                'alamat_pengantaran' => 'nullable|string',
+                'dest_lat' => 'nullable|numeric',
+                'dest_lng' => 'nullable|numeric',
+                'catatan_pesanan' => 'nullable|string',
+            ]);
+
+            // Map tipe pesanan dari Flutter ke database format
+            $tipe = 'dine_in';
+            $inputTipe = strtolower($validated['tipe_pesanan']);
+            if (str_contains($inputTipe, 'makan di tempat') || $inputTipe === 'dine_in') {
+                $tipe = 'dine_in';
+            } elseif (str_contains($inputTipe, 'bungkus') || $inputTipe === 'take_away' || $inputTipe === 'takeaway') {
+                $tipe = 'take_away';
+            } elseif (str_contains($inputTipe, 'pengantaran') || $inputTipe === 'delivery') {
+                $tipe = 'delivery';
+            }
+
+            $pesanan->update([
+                'tipe_pesanan' => $tipe,
+                'alamat_pengantaran' => $validated['alamat_pengantaran'] ?? null,
+                'dest_lat' => $validated['dest_lat'] ?? null,
+                'dest_lng' => $validated['dest_lng'] ?? null,
+                'catatan_pesanan' => $validated['catatan_pesanan'] ?? $pesanan->catatan_pesanan,
+                'status_pesanan' => 'menunggu_persetujuan', // Set status to menunggu_persetujuan
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pesanan berhasil diajukan, menunggu persetujuan penjual.',
+                'data' => $pesanan
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error submitOrder: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memproses pesanan: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 }
+

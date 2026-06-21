@@ -122,7 +122,7 @@ class MahasiswaController extends Controller
         $request->validate([
             'nama_mahasiswa' => 'required|string|max:255',
             'nim'            => 'required|string|max:20',
-            'no_telp'        => 'required|string|max:15',
+            'no_telp'        => 'required|string|max:30',
             'email'          => 'required|email|unique:users,email,' . $request->user()->id,
             'foto_profile'   => 'nullable|image|mimes:jpeg,png,jpg|max:3072', // Maks 3MB
         ], [
@@ -130,6 +130,7 @@ class MahasiswaController extends Controller
             'nama_mahasiswa.required' => 'Nama mahasiswa tidak boleh kosong.',
             'nim.required'            => 'NIM tidak boleh kosong.',
             'no_telp.required'        => 'Nomor telepon tidak boleh kosong.',
+            'no_telp.max'             => 'Nomor telepon tidak boleh lebih dari 30 karakter.',
             'email.required'          => 'Email tidak boleh kosong.',
             'email.email'             => 'Format email tidak valid.',
             'email.unique'            => 'Email ini sudah terdaftar di akun lain.',

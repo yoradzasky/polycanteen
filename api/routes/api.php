@@ -90,6 +90,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/orders/latest-pending', [PaymentController::class, 'getLatestPendingOrder']);
         Route::post('/payment/{pesanan_id}', [PaymentController::class, 'createPayment']);
         Route::get('/payment/status/{pesanan_id}', [PaymentController::class, 'checkStatus']);
+        Route::patch('/orders/{id}/submit', [StudentOrderController::class, 'submitOrder']);
     });
 
     // --- Grup Khusus Penjual (Prefix: /pemilik) ---
@@ -114,6 +115,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/deliveries/{pesanan}', [DeliveryController::class, 'show']);
         Route::post('/deliveries/{pesanan}/start', [DeliveryController::class, 'start']);
         Route::post('/deliveries/{pesanan}/confirm', [DeliveryController::class, 'confirm']);
+
+        // Modul Profil Pemilik
+        Route::get('/profile', [ProfileController::class, 'show']);
+        Route::post('/profile', [ProfileController::class, 'update']);
+        Route::get('/kantin/profile', [ProfileController::class, 'getKantinProfile']);
+        Route::post('/kantin/profile', [ProfileController::class, 'updateKantinProfile']);
+        Route::put('/change-password', [ProfileController::class, 'changePassword']);
     });
 
 
@@ -141,6 +149,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Modul Pesanan (Orders)
         Route::get('/orders', [StudentOrderController::class, 'index']);
         Route::get('/orders/{id}', [StudentOrderController::class, 'show']);
+        Route::patch('/orders/{id}/submit', [StudentOrderController::class, 'submitOrder']);
         
         // Modul Tracking
         Route::get('/deliveries/{pesanan}', [TrackingController::class, 'show']);
