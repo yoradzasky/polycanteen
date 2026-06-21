@@ -39,11 +39,11 @@ class MahasiswaService {
     return Options(headers: {'Authorization': 'Bearer $token'});
   }
 
-  // ───── GET /student/profil ─────
+  // ───── GET /mahasiswa/profil ─────
   Future<Map<String, dynamic>> getProfileData() async {
     try {
       final response = await _dio.get(
-        '/student/profil',
+        '/mahasiswa/profil',
         options: await _authOptions(),
       );
 
@@ -97,7 +97,7 @@ class MahasiswaService {
     return 'Terjadi kesalahan jaringan (Kode: ${e.response?.statusCode})';
   }
 
-  // ───── POST /student/profil/update ─────
+  // ───── POST /mahasiswa/profil/update ─────
   Future<Map<String, dynamic>> updateProfile({
     required String nama,
     required String nim,
@@ -129,7 +129,7 @@ class MahasiswaService {
 
       // 4. Kirim request ke Laravel
       final response = await _dio.post(
-        '/student/profil/update',
+        '/mahasiswa/profil/update',
         data: formData,
         options: await _authOptions(),
       );

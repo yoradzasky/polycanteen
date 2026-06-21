@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 
-import '../../../../core/widgets/seller_navbar.dart';
-import '../../profile/screens/profile.dart';
 import '../services/menu_service.dart';
 import 'add_menu_screen.dart';
 import 'edit_menu_screen.dart';
@@ -35,7 +33,7 @@ class _MenuListScreenState extends State<MenuListScreen> {
   String? _error;
   String _userRole = 'pegawai';
   Timer? _debounce;
-  int _currentNavIndex = 1; // Kelola Menu aktif
+  final int _currentNavIndex = 1; // Kelola Menu aktif
 
   Color get _primaryColor =>
       _userRole == 'pegawai' ? const Color(0xFF5E7AC4) : _kPrimaryBlue;

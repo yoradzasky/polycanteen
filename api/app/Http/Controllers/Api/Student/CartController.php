@@ -19,7 +19,13 @@ class CartController extends Controller
     public function index(Request $request)
     {
         try {
-            $mahasiswaId = Auth::guard('sanctum')->user()->id ?? Auth::id();
+            $mahasiswaId = Auth::guard('sanctum')->user()->mahasiswa?->id ?? Auth::user()->mahasiswa?->id;
+            if (!$mahasiswaId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak. Anda tidak terdaftar sebagai mahasiswa.',
+                ], 403);
+            }
 
             $cartItems = Keranjang::where('mahasiswa_id', $mahasiswaId)
                 ->with([
@@ -87,7 +93,13 @@ class CartController extends Controller
                 'varian_selected' => 'nullable|array',
             ]);
 
-            $mahasiswaId = Auth::guard('sanctum')->user()->id ?? Auth::id();
+            $mahasiswaId = Auth::guard('sanctum')->user()->mahasiswa?->id ?? Auth::user()->mahasiswa?->id;
+            if (!$mahasiswaId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak. Anda tidak terdaftar sebagai mahasiswa.',
+                ], 403);
+            }
 
             // AMBIL SEMUA ITEM KERANJANG DENGAN MENU_ID YANG SAMA
             $existingItems = Keranjang::where('mahasiswa_id', $mahasiswaId)
@@ -157,7 +169,7 @@ class CartController extends Controller
                 return response()->json(['success' => false, 'message' => 'Cart item not found'], 404);
             }
 
-            $mahasiswaId = Auth::guard('sanctum')->user()->id ?? Auth::id();
+            $mahasiswaId = Auth::guard('sanctum')->user()->mahasiswa?->id ?? Auth::user()->mahasiswa?->id;
             if ($cartItem->mahasiswa_id !== $mahasiswaId) {
                 return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
             }
@@ -186,7 +198,13 @@ class CartController extends Controller
     public function destroy(Request $request, $menuId)
     {
         try {
-            $mahasiswaId = Auth::guard('sanctum')->user()->id ?? Auth::id();
+            $mahasiswaId = Auth::guard('sanctum')->user()->mahasiswa?->id ?? Auth::user()->mahasiswa?->id;
+            if (!$mahasiswaId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak. Anda tidak terdaftar sebagai mahasiswa.',
+                ], 403);
+            }
 
             // Ambil SEMUA data keranjang untuk menu_id ini
             $cartItems = Keranjang::where('mahasiswa_id', $mahasiswaId)
@@ -232,7 +250,13 @@ class CartController extends Controller
     public function clearAll()
     {
         try {
-            $mahasiswaId = Auth::guard('sanctum')->user()->id ?? Auth::id();
+            $mahasiswaId = Auth::guard('sanctum')->user()->mahasiswa?->id ?? Auth::user()->mahasiswa?->id;
+            if (!$mahasiswaId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak. Anda tidak terdaftar sebagai mahasiswa.',
+                ], 403);
+            }
 
             Keranjang::where('mahasiswa_id', $mahasiswaId)->delete();
 
@@ -242,6 +266,136 @@ class CartController extends Controller
             ], 200);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Error clearing cart: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * POST /api/student/cart/checkout
+     * Checkout items in the cart to create a new Pesanan
+     */
+    public function checkout(Request $request)
+    {
+        try {
+            $user = Auth::guard('sanctum')->user() ?? Auth::user();
+            $mahasiswaId = $user->mahasiswa?->id;
+            if (!$mahasiswaId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak. Anda tidak terdaftar sebagai mahasiswa.',
+                ], 403);
+            }
+
+            // Get cart items
+            $cartItems = Keranjang::where('mahasiswa_id', $mahasiswaId)->with('menu')->get();
+
+            if ($cartItems->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Keranjang kosong.',
+                ], 400);
+            }
+
+            // Calculate totals and extract kantin_id
+            $totalHarga = 0;
+            $kantinId = null;
+
+            foreach ($cartItems as $item) {
+                if (!$kantinId) {
+                    $kantinId = $item->menu->kantin_id;
+                }
+
+                $varianPrice = 0;
+                if (is_array($item->varian_selected)) {
+                    foreach ($item->varian_selected as $key => $value) {
+                        if (is_array($value) && isset($value['harga'])) {
+                            $varianPrice += $value['harga'];
+                        } elseif (is_array($value)) {
+                            foreach ($value as $v) {
+                                if (is_array($v) && isset($v['harga'])) {
+                                    $varianPrice += $v['harga'];
+                                }
+                            }
+                        }
+                    }
+                }
+
+                $itemPrice = $item->menu->harga + $varianPrice;
+                $totalHarga += $itemPrice * $item->jumlah;
+            }
+
+            // Begin database transaction
+            \Illuminate\Support\Facades\DB::beginTransaction();
+
+            // Create Pesanan
+            $pesanan = \App\Models\Pesanan::create([
+                'mahasiswa_id' => $mahasiswaId,
+                'kantin_id' => $kantinId,
+                'tipe_pesanan' => 'dine-in', // Default
+                'status_pesanan' => 'pending',
+                'total_harga' => $totalHarga,
+                'nomor_antrian' => null,
+                'catatan_pesanan' => $request->input('catatan_pesanan'),
+            ]);
+
+            // Create PesananDetail and delete cart items
+            foreach ($cartItems as $item) {
+                $varianPrice = 0;
+                if (is_array($item->varian_selected)) {
+                    foreach ($item->varian_selected as $key => $value) {
+                        if (is_array($value) && isset($value['harga'])) {
+                            $varianPrice += $value['harga'];
+                        } elseif (is_array($value)) {
+                            foreach ($value as $v) {
+                                if (is_array($v) && isset($v['harga'])) {
+                                    $varianPrice += $v['harga'];
+                                }
+                            }
+                        }
+                    }
+                }
+
+                $itemPrice = $item->menu->harga + $varianPrice;
+
+                \App\Models\PesananDetail::create([
+                    'pesanan_id' => $pesanan->id,
+                    'menu_id' => $item->menu_id,
+                    'harga_saat_beli' => $itemPrice,
+                    'jumlah_pesanan' => $item->jumlah,
+                    'subtotal' => $itemPrice * $item->jumlah,
+                    'varian_snapshot' => $item->varian_selected,
+                ]);
+            }
+
+            // Create default Payment record
+            \App\Models\Payment::create([
+                'pesanan_id' => $pesanan->id,
+                'metode_bayar' => 'qris',
+                'status_bayar' => 'pending',
+                'log_transaksi' => 'Pesanan dibuat, menunggu pembayaran',
+                'nominal' => $totalHarga,
+                'midtrans_order_id' => 'ORDER-' . strtoupper(\Illuminate\Support\Str::random(8)),
+            ]);
+
+            // Clear Cart
+            Keranjang::where('mahasiswa_id', $mahasiswaId)->delete();
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Checkout berhasil.',
+                'data' => [
+                    'id' => $pesanan->id,
+                    'total_harga' => $pesanan->total_harga,
+                ]
+            ], 201);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Checkout gagal: ' . $e->getMessage(),
+            ], 500);
         }
     }
 
