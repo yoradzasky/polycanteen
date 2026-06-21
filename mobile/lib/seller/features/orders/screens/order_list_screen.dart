@@ -1,14 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../services/order_service.dart';
 import '../widgets/delivery_tracking_card.dart';
-import '../../../tracking/screens/delivery_tracking_screen.dart';
 import '../../../tracking/widgets/location_permission_sheet.dart';
 import '../../scanner/screens/qr_scanner_screen.dart';
 import 'order_detail_screen.dart';
@@ -35,6 +32,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
   List<dynamic> _orders = [];
   bool _isLoading = true;
   String _userRole = 'pegawai';
+  String _selectedTypeFilter = 'all';
 
   Color get _primaryColor => _userRole == 'pegawai'
       ? const Color(0xFF5E7AC4)
@@ -170,20 +168,43 @@ class _OrderListScreenState extends State<OrderListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // FILTER DATA BERDASARKAN TAB
-    // Note: 'dibayar' adalah status saat pesanan baru masuk (sudah dibayar mhs)
     List<dynamic> currentOrders = _orders.where((order) {
       final status = order['status_pesanan'];
+      
+      bool matchesTab = false;
       if (_selectedTabIndex == 0) {
-        return status == 'dibayar' || status == 'pending'; // Baru masuk
-      }
-      if (_selectedTabIndex == 1) {
-        return status == 'dimasak' ||
+        matchesTab = status == 'dibayar' || status == 'pending' || status == 'menunggu_persetujuan'; // Baru masuk
+      } else if (_selectedTabIndex == 1) {
+        matchesTab = status == 'dimasak' ||
             status == 'dalam_perjalanan' ||
             status == 'siap_diambil' ||
-            status == 'menunggu_dikirim'; // Diproses
+            status == 'menunggu_dikirim' ||
+            status == 'menunggu_pembayaran'; // Diproses
+      } else {
+        matchesTab = status == 'selesai'; // Selesai
       }
-      return status == 'selesai'; // Selesai
+
+      if (!matchesTab) return false;
+
+      // Filter berdasarkan tipe pesanan
+      final tipePesanan = (order['tipe_pesanan'] ?? '').toString().toLowerCase();
+      if (_selectedTypeFilter == 'all') {
+        return true;
+      } else if (_selectedTypeFilter == 'dine_in') {
+        return tipePesanan.contains('dine in') ||
+            tipePesanan.contains('makan di tempat') ||
+            tipePesanan == 'dine_in';
+      } else if (_selectedTypeFilter == 'take_away') {
+        return tipePesanan.contains('take away') ||
+            tipePesanan.contains('bungkus') ||
+            tipePesanan == 'take_away';
+      } else if (_selectedTypeFilter == 'delivery') {
+        return tipePesanan.contains('delivery') ||
+            tipePesanan.contains('pengantaran') ||
+            tipePesanan == 'delivery';
+      }
+
+      return true;
     }).toList();
 
     double totalPendapatan = _orders
@@ -361,7 +382,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
               SliverPersistentHeader(
                 pinned: true,
                 delegate: _StickyTabBarDelegate(
-                  height: 135.0,
+                  height: 190.0,
                   child: Container(
                     color: const Color(
                       0xFFF4F6FB,
@@ -387,12 +408,13 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                 0,
                                 'Baru Masuk',
                                 badgeCount: _orders
-                                    .where(
-                                      (o) =>
-                                          o['status_pesanan'] == 'dibayar' ||
-                                          o['status_pesanan'] == 'pending',
-                                    )
-                                    .length,
+                                  .where(
+                                    (o) =>
+                                        o['status_pesanan'] == 'dibayar' ||
+                                        o['status_pesanan'] == 'pending' ||
+                                        o['status_pesanan'] == 'menunggu_persetujuan',
+                                  )
+                                  .length,
                               ),
                               const SizedBox(width: 8),
                               _buildTab(
@@ -402,8 +424,10 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                     .where(
                                       (o) =>
                                           o['status_pesanan'] == 'dimasak' ||
-                                          o['status_pesanan'] ==
-                                              'dalam_perjalanan',
+                                          o['status_pesanan'] == 'dalam_perjalanan' ||
+                                          o['status_pesanan'] == 'siap_diambil' ||
+                                          o['status_pesanan'] == 'menunggu_dikirim' ||
+                                          o['status_pesanan'] == 'menunggu_pembayaran',
                                     )
                                     .length,
                               ),
@@ -417,6 +441,21 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                     )
                                     .length,
                               ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              _buildTypeFilterChip('Semua', 'all'),
+                              const SizedBox(width: 8),
+                              _buildTypeFilterChip('Makan di Tempat', 'dine_in'),
+                              const SizedBox(width: 8),
+                              _buildTypeFilterChip('Bungkus', 'take_away'),
+                              const SizedBox(width: 8),
+                              _buildTypeFilterChip('Pengantaran', 'delivery'),
                             ],
                           ),
                         ),
@@ -510,7 +549,13 @@ class _OrderListScreenState extends State<OrderListScreen> {
                       order: orderMap,
                       primaryColor: _primaryColor,
                       tabIndex: _selectedTabIndex,
-                      onTerima: () => _updateStatus(orderId, 'dimasak'),
+                      onTerima: () {
+                        if (status == 'pending' || status == 'menunggu_persetujuan') {
+                          _updateStatus(orderId, 'menunggu_pembayaran');
+                        } else {
+                          _updateStatus(orderId, 'dimasak');
+                        }
+                      },
                       onTolak: () {
                         showDialog(
                           context: context,
@@ -634,6 +679,36 @@ class _OrderListScreenState extends State<OrderListScreen> {
               ),
             ],
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTypeFilterChip(String label, String type) {
+    bool isSelected = _selectedTypeFilter == type;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedTypeFilter = type;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? _primaryColor : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? _primaryColor : Colors.grey.shade300,
+            width: 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : const Color(0xFF4F4F4F),
+            fontWeight: FontWeight.w600,
+            fontSize: 12,
+          ),
         ),
       ),
     );
@@ -1079,6 +1154,26 @@ class OrderCard extends StatelessWidget {
                           ),
                         ),
                       ),
+                    ] else if (order['status_pesanan'] == 'menunggu_pembayaran') ...[
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF3E0),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Text(
+                          'Belum Bayar',
+                          style: TextStyle(
+                            color: Color(0xFFE65100),
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                     ],
                   ],
                 ),
@@ -1394,6 +1489,65 @@ class OrderCard extends StatelessWidget {
                           fontSize: 16,
                         ),
                       ),
+                    ),
+                  ),
+                ] else if (tabIndex == 1 &&
+                    order['status_pesanan'] == 'menunggu_pembayaran') ...[
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => OrderDetailScreen(
+                              order: order,
+                              primaryColor: primaryColor,
+                            ),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Lihat Detail Pesanan',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF3E0),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.info_outline, color: Color(0xFFE65100), size: 20),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Menunggu pembayaran dari mahasiswa.',
+                            style: TextStyle(
+                              color: Color(0xFFE65100),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ] else if (tabIndex == 1 &&

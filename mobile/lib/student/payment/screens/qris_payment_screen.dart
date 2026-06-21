@@ -83,7 +83,12 @@ class _QrisPaymentScreenState extends State<QrisPaymentScreen> {
       if (transStatus == 'settlement' || 
           transStatus == 'capture' || 
           orderStatus == 'dibayar' ||
-          orderStatus == 'proses') { 
+          orderStatus == 'proses' ||
+          orderStatus == 'dimasak' ||
+          orderStatus == 'siap_diambil' ||
+          orderStatus == 'menunggu_dikirim' ||
+          orderStatus == 'dalam_perjalanan' ||
+          orderStatus == 'selesai') { 
         
         debugPrint('DEBUG: Payment Success detected! Status: $transStatus, Order: $orderStatus');
         _statusTimer?.cancel();

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../services/order_service.dart';
 
 class OrderListScreen extends StatefulWidget {
   const OrderListScreen({super.key});
@@ -11,7 +10,6 @@ class OrderListScreen extends StatefulWidget {
 
 class _OrderListScreenState extends State<OrderListScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final OrderService _orderService = OrderService();
   
   // Note: Since we don't have a listOrders API yet in the provided snippets, 
   // I will assume a standard implementation or use dummy data if needed.

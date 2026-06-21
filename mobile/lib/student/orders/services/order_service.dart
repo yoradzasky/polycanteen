@@ -44,4 +44,38 @@ class OrderService {
     }
     return null;
   }
+
+  Future<Map<String, dynamic>> submitOrder(
+    int pesananId, {
+    required String tipePesanan,
+    String? alamatPengantaran,
+    double? destLat,
+    double? destLng,
+    String? catatanPesanan,
+  }) async {
+    final token = await _prefs.getString('auth_token');
+    final response = await http.patch(
+      Uri.parse('$_baseUrl/student/orders/$pesananId/submit'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer ${token.isNotEmpty ? token : ''}',
+      },
+      body: jsonEncode({
+        'tipe_pesanan': tipePesanan,
+        'alamat_pengantaran': alamatPengantaran,
+        'dest_lat': destLat,
+        'dest_lng': destLng,
+        'catatan_pesanan': catatanPesanan,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final body = jsonDecode(response.body);
+      return body['data'];
+    } else {
+      final body = jsonDecode(response.body);
+      throw Exception(body['message'] ?? 'Gagal mengajukan pesanan');
+    }
+  }
 }

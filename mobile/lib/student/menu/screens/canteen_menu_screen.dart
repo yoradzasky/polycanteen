@@ -179,12 +179,6 @@ class _CanteenMenuScreenState extends State<CanteenMenuScreen> {
       // 2. GANTI logika manual tadi dengan menarik ulang data keranjang
       // yang sudah dikalkulasi dengan benar oleh backend Laravel
       await fetchCartData();
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Berhasil ditambahkan ke keranjang')),
-        );
-      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

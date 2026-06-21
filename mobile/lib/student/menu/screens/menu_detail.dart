@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/menu_service.dart';
-import '../../payment/screens/payment_screen.dart';
-import '../../orders/services/order_service.dart';
 
 class MenuDetailScreen extends StatefulWidget {
   final Map<String, dynamic> menuData;
@@ -138,9 +136,6 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Berhasil ditambahkan ke keranjang')),
-        );
         Navigator.pop(context, {
           'qty': qty,
           'varian': varianPayload.isNotEmpty ? varianPayload : null,

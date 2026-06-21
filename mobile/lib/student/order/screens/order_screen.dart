@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import '../../../student/tracking/screens/live_tracking_screen.dart';
 import 'order_detail_screen.dart';
 import '../widgets/review_popup.dart';
+import '../../payment/screens/payment_screen.dart';
 
 class OrderScreen extends StatefulWidget {
   const OrderScreen({super.key});
@@ -148,39 +149,63 @@ class _OrderScreenState extends State<OrderScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFDF4EB),
+      backgroundColor: const Color(0xFFFFF6ED),
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: const Color(0xFFFDF4EB),
+        backgroundColor: const Color(0xFFFFF6ED),
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         title: const Text(
           'Pesanan Saya',
           style: TextStyle(
             color: Color(0xFF1A1A2E),
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontWeight: FontWeight.w900,
+            fontSize: 20,
+            letterSpacing: -0.5,
           ),
         ),
         centerTitle: true,
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: const Color(0xFF2D3A8C),
-          unselectedLabelColor: const Color(0xFF9FA5C0),
-          indicatorColor: const Color(0xFF2D3A8C),
-          indicatorWeight: 3,
-          labelStyle: const TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 14,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(56),
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFFFE0C2), width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFF08D39).withValues(alpha: 0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: TabBar(
+              controller: _tabController,
+              labelColor: Colors.white,
+              unselectedLabelColor: const Color(0xFF9FA5C0),
+              indicator: BoxDecoration(
+                color: const Color(0xFFF2994A),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerColor: Colors.transparent,
+              labelStyle: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+              tabs: const [
+                Tab(text: 'Dalam Proses'),
+                Tab(text: 'Riwayat'),
+              ],
+            ),
           ),
-          unselectedLabelStyle: const TextStyle(
-            fontWeight: FontWeight.w500,
-            fontSize: 14,
-          ),
-          tabs: const [
-            Tab(text: 'Dalam Proses'),
-            Tab(text: 'Riwayat'),
-          ],
         ),
       ),
       body: _isLoading
@@ -255,15 +280,33 @@ class _OrderScreenState extends State<OrderScreen>
         (tipePesanan == 'delivery' && status == 'dalam_perjalanan') ||
         (tipePesanan != 'delivery' && status == 'siap_diambil');
 
+    final bool isPrePayment = status == 'pending' || 
+                              status == 'menunggu_persetujuan' || 
+                              status == 'menunggu_pembayaran';
+
+    String headerLabel = 'Nomor Antrean';
+    String headerVal = nomorAntrian;
+    if (status == 'pending') {
+      headerLabel = 'Status Pesanan';
+      headerVal = 'Belum Diajukan';
+    } else if (status == 'menunggu_persetujuan') {
+      headerLabel = 'Status Pesanan';
+      headerVal = 'Persetujuan';
+    } else if (status == 'menunggu_pembayaran') {
+      headerLabel = 'Status Pesanan';
+      headerVal = 'Belum Dibayar';
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFFE0C2), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 12,
+            color: const Color(0xFFF08D39).withValues(alpha: 0.04),
+            blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
@@ -292,9 +335,9 @@ class _OrderScreenState extends State<OrderScreen>
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Nomor Antrean',
-                          style: TextStyle(
+                        Text(
+                          headerLabel,
+                          style: const TextStyle(
                             color: Colors.white70,
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
@@ -302,12 +345,12 @@ class _OrderScreenState extends State<OrderScreen>
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          nomorAntrian,
+                          headerVal,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 32,
+                            fontSize: 24,
                             fontWeight: FontWeight.w900,
-                            letterSpacing: 1,
+                            letterSpacing: 0.5,
                           ),
                         ),
                       ],
@@ -357,7 +400,9 @@ class _OrderScreenState extends State<OrderScreen>
           // ── Progress Tracker ──
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-            child: _buildProgressTracker(activeStep, tipePesanan),
+            child: isPrePayment
+                ? _buildPrePaymentBanner(status)
+                : _buildProgressTracker(activeStep, tipePesanan),
           ),
 
           // ── Order Details ──
@@ -449,6 +494,109 @@ class _OrderScreenState extends State<OrderScreen>
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
+                if (status == 'pending') ...[
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PaymentScreen(
+                              pesananId: orderId,
+                              totalHarga: double.tryParse(totalHarga.toString()) ?? 0.0,
+                            ),
+                          ),
+                        ).then((_) => _fetchOrders());
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2D3A8C),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Pesan Sekarang',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ] else if (status == 'menunggu_persetujuan') ...[
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PaymentScreen(
+                              pesananId: orderId,
+                              totalHarga: double.tryParse(totalHarga.toString()) ?? 0.0,
+                            ),
+                          ),
+                        ).then((_) => _fetchOrders());
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2D3A8C),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Pantau Persetujuan',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ] else if (status == 'menunggu_pembayaran') ...[
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PaymentScreen(
+                              pesananId: orderId,
+                              totalHarga: double.tryParse(totalHarga.toString()) ?? 0.0,
+                            ),
+                          ),
+                        ).then((_) => _fetchOrders());
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF4CAF50),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Bayar Sekarang',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 if (tipePesanan == 'delivery' &&
                     status == 'dalam_perjalanan') ...[
                   SizedBox(
@@ -664,10 +812,11 @@ class _OrderScreenState extends State<OrderScreen>
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFFE0C2), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 12,
+            color: const Color(0xFFF08D39).withValues(alpha: 0.04),
+            blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
@@ -977,6 +1126,55 @@ class _OrderScreenState extends State<OrderScreen>
                   ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPrePaymentBanner(String status) {
+    String descText = '';
+    IconData bannerIcon = Icons.info_outline;
+    Color bannerBg = Colors.grey.shade100;
+    Color bannerTextCol = Colors.grey.shade700;
+
+    if (status == 'pending') {
+      descText = 'Pesanan belum diajukan. Silakan klik "Pesan Sekarang" di bawah ini.';
+      bannerIcon = Icons.shopping_cart_checkout;
+      bannerBg = const Color(0xFFFFF3E0);
+      bannerTextCol = const Color(0xFFE65100);
+    } else if (status == 'menunggu_persetujuan') {
+      descText = 'Menunggu penjual menyetujui ketersediaan menu Anda.';
+      bannerIcon = Icons.hourglass_empty;
+      bannerBg = const Color(0xFFE3F2FD);
+      bannerTextCol = const Color(0xFF0D47A1);
+    } else if (status == 'menunggu_pembayaran') {
+      descText = 'Penjual menyetujui pesanan Anda! Silakan lakukan pembayaran.';
+      bannerIcon = Icons.qr_code_2;
+      bannerBg = const Color(0xFFE8F5E9);
+      bannerTextCol = const Color(0xFF1B5E20);
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: bannerBg,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(bannerIcon, color: bannerTextCol, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              descText,
+              style: TextStyle(
+                color: bannerTextCol,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
