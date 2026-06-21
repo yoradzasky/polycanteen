@@ -117,9 +117,17 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 ),
                 child: CircleAvatar(
                   radius: 40,
+                  backgroundColor: Colors.grey[300],
                   backgroundImage: _fotoProfile != null
                       ? NetworkImage("$_fotoProfile?v=${DateTime.now().millisecondsSinceEpoch}")
-                      : const AssetImage("assets/images/profile.jpg") as ImageProvider,
+                      : null,
+                  child: _fotoProfile == null
+                      ? Icon(
+                          Icons.person,
+                          size: 40,
+                          color: Colors.grey[600],
+                        )
+                      : null,
                 ),
               ),
             ),

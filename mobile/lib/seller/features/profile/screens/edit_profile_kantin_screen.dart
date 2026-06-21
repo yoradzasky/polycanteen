@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:io';
 import 'dart:developer' as developer;
 import 'package:path_provider/path_provider.dart';
@@ -191,12 +190,19 @@ class _EditProfileKantinScreenState extends State<EditProfileKantinScreen> {
                     ),
                     child: CircleAvatar(
                       radius: 40,
-                      backgroundColor: Colors.grey[200],
+                      backgroundColor: Colors.grey[300],
                       backgroundImage: _selectedImage != null
                           ? FileImage(_selectedImage!)
                           : (_kantinData?.fotoKantin != null
                               ? NetworkImage(_kantinData!.fotoKantin!)
-                              : const AssetImage("assets/images/profile.jpg") as ImageProvider),
+                              : null),
+                      child: _selectedImage == null && _kantinData?.fotoKantin == null
+                          ? Icon(
+                              Icons.store,
+                              size: 40,
+                              color: Colors.grey[600],
+                            )
+                          : null,
                     ),
                   ),
                   Positioned(

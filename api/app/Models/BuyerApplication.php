@@ -19,6 +19,7 @@ class BuyerApplication extends Model
         'email',
         'account_expires_at',
         'foto_ktm_path',
+        'password',
         'status',
         'rejection_reason',
         'approved_at',

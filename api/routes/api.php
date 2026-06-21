@@ -18,13 +18,24 @@ use App\Http\Controllers\Api\Student\CartController;
 use App\Http\Controllers\Api\Student\ReviewController;
 use App\Http\Controllers\Api\FcmTokenController;
 
+// --- TAMBAHKAN IMPORT INI UNTUK MAHASISWA ---
+use App\Http\Controllers\Api\Student\PaymentController;
+use App\Http\Controllers\Api\Student\MidtransWebhookController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
 */
 
+// =================================================================
+// ROUTE WEBHOOK MIDTRANS (TANPA MIDDLEWARE AUTH)
+// =================================================================
+Route::post('/webhooks/midtrans', [MidtransWebhookController::class, 'handle']);
+
+
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register']);
 
 // Satu grup besar untuk semua yang butuh Login (Token Sanctum)
 Route::middleware('auth:sanctum')->group(function () {
@@ -64,6 +75,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Rute Keranjang (Cart)
         Route::get('/keranjang', [CartController::class, 'index']);
         Route::post('/keranjang', [CartController::class, 'store']);
+        Route::post('/keranjang/checkout', [CartController::class, 'checkout']);
         Route::put('/keranjang/{id}', [CartController::class, 'update']);
         Route::delete('/keranjang/{menu_id}', [CartController::class, 'destroy']);
         Route::delete('/keranjang/clear/all', [CartController::class, 'clearAll']);
@@ -74,9 +86,10 @@ Route::middleware('auth:sanctum')->group(function () {
         // TAMBAHKAN BARIS INI: Rute untuk update profil mahasiswa
         Route::post('/profil/update', [MahasiswaController::class, 'updateProfile']);
 
-        // Nanti kamu bisa menambahkan rute mahasiswa lainnya di bawah ini,
-        // sesuai dengan tugas Modul 1 kamu (misal: list kantin, list menu per kantin, dsb).
-
+        // --- TAMBAHAN ROUTE UNTUK PEMBAYARAN MAHASISWA ---
+        Route::get('/orders/latest-pending', [PaymentController::class, 'getLatestPendingOrder']);
+        Route::post('/payment/{pesanan_id}', [PaymentController::class, 'createPayment']);
+        Route::get('/payment/status/{pesanan_id}', [PaymentController::class, 'checkStatus']);
     });
 
     // --- Grup Khusus Penjual (Prefix: /pemilik) ---
@@ -103,14 +116,41 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/deliveries/{pesanan}/confirm', [DeliveryController::class, 'confirm']);
     });
 
+
+
     // --- Grup Khusus Mahasiswa (Prefix: /mahasiswa) ---
     Route::prefix('mahasiswa')->group(function () {
+        // Rute untuk mengambil data beranda dinamis
+        Route::get('/beranda', [MahasiswaController::class, 'getBerandaData']);
+
+        Route::get('/kantin', [StudentKantinController::class, 'index']);
+        Route::get('/kantin/{kantin_id}/menu', [StudentMenuController::class, 'index']);
+
+        // Rute Keranjang (Cart)
+        Route::get('/keranjang', [CartController::class, 'index']);
+        Route::post('/keranjang', [CartController::class, 'store']);
+        Route::post('/keranjang/checkout', [CartController::class, 'checkout']);
+        Route::put('/keranjang/{id}', [CartController::class, 'update']);
+        Route::delete('/keranjang/{menu_id}', [CartController::class, 'destroy']);
+        Route::delete('/keranjang/clear/all', [CartController::class, 'clearAll']);
+
+        // Rute profil mahasiswa
+        Route::get('/profil', [MahasiswaController::class, 'getProfileData']);
+        Route::post('/profil/update', [MahasiswaController::class, 'updateProfile']);
+
         // Modul Pesanan (Orders)
         Route::get('/orders', [StudentOrderController::class, 'index']);
         Route::get('/orders/{id}', [StudentOrderController::class, 'show']);
+        
         // Modul Tracking
         Route::get('/deliveries/{pesanan}', [TrackingController::class, 'show']);
+        
         // Modul Ulasan (Reviews)
         Route::post('/reviews', [ReviewController::class, 'store']);
+
+        // Rute pembayaran & status pesanan
+        Route::get('/orders/latest-pending', [PaymentController::class, 'getLatestPendingOrder']);
+        Route::post('/payment/{pesanan_id}', [PaymentController::class, 'createPayment']);
+        Route::get('/payment/status/{pesanan_id}', [PaymentController::class, 'checkStatus']);
     });
 });

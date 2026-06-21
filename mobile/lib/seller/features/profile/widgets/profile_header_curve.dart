@@ -57,7 +57,7 @@ class ProfileHeaderCurve extends StatelessWidget {
           const SizedBox(height: 24),
           
           // Bagian Foto Profil (Jika ada)
-          if (profileImage != null) profileImage!,
+          ?profileImage,
           
           const SizedBox(height: 16),
           

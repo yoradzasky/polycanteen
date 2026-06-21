@@ -54,7 +54,7 @@ class ApprovalService
             $user = User::create([
                 'username' => $application->name,
                 'email' => $application->email,
-                'password' => Hash::make($defaultPassword),
+                'password' => $application->password ?? Hash::make($defaultPassword),
                 'role' => 'mahasiswa',
                 'status_akun' => 'aktif',
                 'foto_profile' => $application->foto_ktm_path,
@@ -80,6 +80,7 @@ class ApprovalService
 
             return [
                 'user' => $user,
+                'is_default' => empty($application->password),
                 'default_password' => $defaultPassword,
             ];
         });

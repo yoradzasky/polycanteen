@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->date('account_expires_at')->nullable();
             $table->string('foto_ktm_path')->nullable();
+            $table->string('password')->nullable();
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->text('rejection_reason')->nullable();
             $table->string('fcm_token')->nullable();
