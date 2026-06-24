@@ -52,7 +52,7 @@ class OrderController extends Controller
                 'menunggu_dikirim',
                 'dalam_perjalanan'
             ];
-            $statusRiwayat = ['selesai', 'ditolak', 'dibatalkan'];
+            $statusRiwayat = ['selesai', 'ditolak', 'dibatalkan', 'gagal'];
 
             $dalamProses = Pesanan::where('mahasiswa_id', $mahasiswaId)
                 ->whereIn('status_pesanan', $statusAktif)
@@ -207,6 +207,19 @@ class OrderController extends Controller
                 'status_pesanan' => 'menunggu_persetujuan', // Set status to menunggu_persetujuan
             ]);
 
+            // Kirim notifikasi FCM ke penjual
+            try {
+                $fcmService = app(\App\Services\FcmNotificationService::class);
+                $mahasiswaNama = Auth::user()->mahasiswa?->nama_mahasiswa ?? Auth::user()->username;
+                $fcmService->sendToKantinOwners(
+                    $pesanan->kantin_id,
+                    'Pesanan Baru!',
+                    "Ada pesanan baru dari {$mahasiswaNama}."
+                );
+            } catch (\Throwable $e) {
+                Log::error('FCM new order notification error: ' . $e->getMessage());
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Pesanan berhasil diajukan, menunggu persetujuan penjual.',
@@ -217,6 +230,62 @@ class OrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat memproses pesanan: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * 4. PATCH /mahasiswa/orders/{id}/cancel
+     * Membatalkan pesanan sebelum disetujui penjual.
+     */
+    public function cancelOrder(Request $request, $id)
+    {
+        try {
+            $mahasiswaId = $this->getMahasiswaId();
+            if (!$mahasiswaId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak. Anda tidak terdaftar sebagai mahasiswa.',
+                ], 403);
+            }
+
+            $pesanan = Pesanan::where('mahasiswa_id', $mahasiswaId)->findOrFail($id);
+
+            // Cancel only if status is pending or menunggu_persetujuan
+            if (!in_array($pesanan->status_pesanan, ['pending', 'menunggu_persetujuan'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pesanan tidak dapat dibatalkan pada status saat ini.',
+                ], 400);
+            }
+
+            $pesanan->update([
+                'status_pesanan' => 'dibatalkan',
+            ]);
+
+            // Kirim notifikasi FCM ke pemilik & pegawai kantin
+            try {
+                $fcmService = app(\App\Services\FcmNotificationService::class);
+                $mahasiswaNama = Auth::user()->mahasiswa?->nama_mahasiswa ?? Auth::user()->username;
+                $fcmService->sendToKantinOwners(
+                    $pesanan->kantin_id,
+                    'Pesanan Dibatalkan',
+                    "Pesanan dari {$mahasiswaNama} telah dibatalkan oleh pembeli."
+                );
+            } catch (\Throwable $e) {
+                Log::error('FCM Cancel Notification Error: ' . $e->getMessage());
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pesanan berhasil dibatalkan.',
+                'data' => $pesanan
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error cancelOrder: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat membatalkan pesanan: ' . $e->getMessage(),
             ], 500);
         }
     }

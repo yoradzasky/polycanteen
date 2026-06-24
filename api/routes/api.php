@@ -91,6 +91,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/payment/{pesanan_id}', [PaymentController::class, 'createPayment']);
         Route::get('/payment/status/{pesanan_id}', [PaymentController::class, 'checkStatus']);
         Route::patch('/orders/{id}/submit', [StudentOrderController::class, 'submitOrder']);
+        Route::patch('/orders/{id}/cancel', [StudentOrderController::class, 'cancelOrder']);
     });
 
     // --- Grup Khusus Penjual (Prefix: /pemilik) ---
@@ -150,6 +151,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/orders', [StudentOrderController::class, 'index']);
         Route::get('/orders/{id}', [StudentOrderController::class, 'show']);
         Route::patch('/orders/{id}/submit', [StudentOrderController::class, 'submitOrder']);
+        Route::patch('/orders/{id}/cancel', [StudentOrderController::class, 'cancelOrder']);
         
         // Modul Tracking
         Route::get('/deliveries/{pesanan}', [TrackingController::class, 'show']);

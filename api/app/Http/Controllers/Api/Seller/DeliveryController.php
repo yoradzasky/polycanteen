@@ -21,13 +21,13 @@ class DeliveryController extends Controller
     {
         $user = $request->user();
         if (!in_array($user->role, ['pegawai', 'pemilik'])) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
         $pesanan->load(['mahasiswa', 'kantin', 'details.menu']);
 
         if ($pesanan->status_pesanan !== 'menunggu_dikirim') {
-            return response()->json(['message' => 'Status pesanan harus menunggu_dikirim'], 422);
+            return response()->json(['success' => false, 'message' => 'Status pesanan harus menunggu_dikirim'], 422);
         }
 
         $pesanan->update([
@@ -36,14 +36,36 @@ class DeliveryController extends Controller
             'qr_token' => Str::uuid()->toString(),
         ]);
 
-        $this->database->getReference('deliveries/' . $pesanan->id . '/location')
-            ->set([
-                'lat' => (float) $pesanan->kantin->latitude,
-                'lng' => (float) $pesanan->kantin->longitude,
-                'updated_at' => (int) (now()->timestamp * 1000),
-            ]);
+        // Write initial location to Firebase RTDB for live tracking
+        try {
+            $this->database->getReference('deliveries/' . $pesanan->id . '/location')
+                ->set([
+                    'lat' => (float) ($pesanan->kantin->latitude ?? 0),
+                    'lng' => (float) ($pesanan->kantin->longitude ?? 0),
+                    'updated_at' => (int) (now()->timestamp * 1000),
+                ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Firebase RTDB write failed for delivery start: ' . $e->getMessage());
+            // Delivery still starts, tracking will be updated when courier moves
+        }
+
+        // Kirim notifikasi FCM ke mahasiswa
+        try {
+            $pesanan->load('mahasiswa.user');
+            if ($pesanan->mahasiswa && $pesanan->mahasiswa->user) {
+                $fcmService = app(\App\Services\FcmNotificationService::class);
+                $fcmService->sendToUser(
+                    $pesanan->mahasiswa->user,
+                    'Pesanan Sedang Dikirim',
+                    'Pesanan Anda sedang dalam perjalanan / pengantaran.'
+                );
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('FCM delivery start error: ' . $e->getMessage());
+        }
 
         return response()->json([
+            'success' => true,
             'message' => 'Pengantaran dimulai',
             'pesanan_id' => $pesanan->id,
         ]);
@@ -100,7 +122,26 @@ class DeliveryController extends Controller
             'status_pesanan' => 'selesai',
         ]);
 
-        $this->database->getReference('deliveries/' . $pesanan->id)->remove();
+        try {
+            $this->database->getReference('deliveries/' . $pesanan->id)->remove();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Firebase RTDB remove failed for delivery confirm: ' . $e->getMessage());
+        }
+
+        // Kirim notifikasi FCM ke mahasiswa
+        try {
+            $pesanan->load('mahasiswa.user');
+            if ($pesanan->mahasiswa && $pesanan->mahasiswa->user) {
+                $fcmService = app(\App\Services\FcmNotificationService::class);
+                $fcmService->sendToUser(
+                    $pesanan->mahasiswa->user,
+                    'Pesanan Selesai',
+                    'Pesanan Anda telah selesai, terima kasih!'
+                );
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('FCM delivery confirm error: ' . $e->getMessage());
+        }
 
         return response()->json([
             'message' => 'Pesanan dikonfirmasi',

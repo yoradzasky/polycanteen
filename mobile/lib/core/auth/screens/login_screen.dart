@@ -174,27 +174,34 @@ class _LoginScreenState extends State<LoginScreen> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       const SizedBox(height: 8),
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF2D50EE),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: const Icon(
-                          Icons.restaurant,
-                          color: Colors.white,
-                          size: 36,
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.asset(
+                          'assets/logo.jpg',
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.cover,
                         ),
                       ),
                       const SizedBox(height: 24),
-                      const Text(
-                        'PolyCanteen',
+                      RichText(
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Color(0xFF1A1A1A),
-                          fontSize: 28,
-                          fontWeight: FontWeight.w700,
+                        text: const TextSpan(
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.5,
+                          ),
+                          children: [
+                            TextSpan(
+                              text: 'Poly',
+                              style: TextStyle(color: Color(0xFF1E232C)),
+                            ),
+                            TextSpan(
+                              text: 'Canteen',
+                              style: TextStyle(color: Color(0xFFF2994A)),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 8),

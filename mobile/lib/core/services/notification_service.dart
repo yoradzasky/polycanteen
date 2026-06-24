@@ -16,7 +16,7 @@ class NotificationService {
 
     // Setup Local Notifications for foreground messages
     const AndroidInitializationSettings androidInit =
-        AndroidInitializationSettings('@mipmap/launcher_icon');
+        AndroidInitializationSettings('logo');
     const InitializationSettings initSettings = InitializationSettings(
       android: androidInit,
     );
@@ -54,7 +54,7 @@ class NotificationService {
             android: AndroidNotificationDetails(
               'high_importance_channel',
               'High Importance Notifications',
-              icon: '@mipmap/launcher_icon',
+              icon: 'logo',
               importance: Importance.max,
               priority: Priority.high,
             ),

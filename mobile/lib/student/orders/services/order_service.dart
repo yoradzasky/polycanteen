@@ -78,4 +78,24 @@ class OrderService {
       throw Exception(body['message'] ?? 'Gagal mengajukan pesanan');
     }
   }
+
+  Future<Map<String, dynamic>> cancelOrder(int pesananId) async {
+    final token = await _prefs.getString('auth_token');
+    final response = await http.patch(
+      Uri.parse('$_baseUrl/student/orders/$pesananId/cancel'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer ${token.isNotEmpty ? token : ''}',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final body = jsonDecode(response.body);
+      return body['data'];
+    } else {
+      final body = jsonDecode(response.body);
+      throw Exception(body['message'] ?? 'Gagal membatalkan pesanan');
+    }
+  }
 }

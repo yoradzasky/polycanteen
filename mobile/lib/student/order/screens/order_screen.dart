@@ -99,6 +99,54 @@ class _OrderScreenState extends State<OrderScreen>
     }
   }
 
+  Future<void> _cancelOrder(int orderId) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Batalkan Pesanan?', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: const Text('Apakah Anda yakin ingin membatalkan pesanan ini?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Tidak', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Ya, Batalkan', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() => _isLoading = true);
+    try {
+      final token = await _prefs.getString('auth_token');
+      final response = await _dio.patch(
+        '/mahasiswa/orders/$orderId/cancel',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      if (response.statusCode == 200) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Pesanan berhasil dibatalkan'), backgroundColor: Colors.green),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal membatalkan pesanan: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      _fetchOrders(showLoading: true);
+    }
+  }
+
   String _formatCurrency(dynamic value) {
     final amount = (double.tryParse(value.toString()) ?? 0).toInt();
     return NumberFormat('#,###', 'id_ID').format(amount);
@@ -528,6 +576,28 @@ class _OrderScreenState extends State<OrderScreen>
                     ),
                   ),
                   const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: OutlinedButton(
+                      onPressed: () => _cancelOrder(orderId),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.red, width: 1.5),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Batalkan Pesanan',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                 ] else if (status == 'menunggu_persetujuan') ...[
                   SizedBox(
                     width: double.infinity,
@@ -555,6 +625,28 @@ class _OrderScreenState extends State<OrderScreen>
                       child: const Text(
                         'Pantau Persetujuan',
                         style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: OutlinedButton(
+                      onPressed: () => _cancelOrder(orderId),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.red, width: 1.5),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Batalkan Pesanan',
+                        style: TextStyle(
+                          color: Colors.red,
                           fontWeight: FontWeight.bold,
                           fontSize: 15,
                         ),
@@ -799,6 +891,10 @@ class _OrderScreenState extends State<OrderScreen>
       case 'dibatalkan':
         statusColor = const Color(0xFF9E9E9E);
         statusLabel = 'Dibatalkan';
+        break;
+      case 'gagal':
+        statusColor = const Color(0xFFE53935);
+        statusLabel = 'Gagal';
         break;
       default:
         statusColor = Colors.grey;

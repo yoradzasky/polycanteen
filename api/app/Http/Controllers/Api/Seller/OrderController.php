@@ -51,11 +51,15 @@ class OrderController extends Controller
             // FILTER: Hanya ambil pesanan hari ini agar query tidak berat
             // (Kecuali jika user sengaja minta riwayat lama lewat parameter tanggal)
             if ($request->has('tanggal')) {
-                $query->whereDate('created_at', $request->tanggal);
+                $query->where(function($q) use ($request) {
+                    $q->whereDate('created_at', $request->tanggal)
+                      ->orWhereDate('updated_at', $request->tanggal);
+                });
             } else {
-                // Default: Tampilkan pesanan hari ini ATAU pesanan yang belum selesai/dibatalkan
+                // Default: Tampilkan pesanan hari ini/diupdate hari ini ATAU pesanan yang belum selesai/dibatalkan
                 $query->where(function($q) {
                     $q->whereDate('created_at', now()->toDateString())
+                      ->orWhereDate('updated_at', now()->toDateString())
                       ->orWhereNotIn('status_pesanan', ['selesai', 'ditolak', 'dibatalkan']);
                 });
             }
@@ -150,6 +154,47 @@ class OrderController extends Controller
             }
 
             $order->save();
+
+            // Kirim notifikasi FCM ke mahasiswa
+            try {
+                $order->load('mahasiswa.user');
+                if ($order->mahasiswa && $order->mahasiswa->user) {
+                    $fcmService = app(\App\Services\FcmNotificationService::class);
+                    $title = '';
+                    $body = '';
+
+                    switch ($order->status_pesanan) {
+                        case 'menunggu_pembayaran':
+                            $title = 'Pesanan Diterima';
+                            $body = 'Pesanan Anda telah disetujui, silakan bayar';
+                            break;
+                        case 'ditolak':
+                            $title = 'Pesanan Ditolak';
+                            $alasan = $order->alasan_penolakan ?? 'Bahan makanan habis';
+                            $body = "Pesanan Anda ditolak: {$alasan}";
+                            break;
+                        case 'siap_diambil':
+                            $title = 'Pesanan Siap!';
+                            $body = 'Pesanan Anda siap diambil!';
+                            break;
+                        case 'dalam_perjalanan':
+                        case 'menunggu_dikirim':
+                            $title = 'Pesanan Sedang Dikirim';
+                            $body = 'Pesanan Anda sedang dalam perjalanan / pengantaran.';
+                            break;
+                        case 'selesai':
+                            $title = 'Pesanan Selesai';
+                            $body = 'Pesanan Anda telah selesai, terima kasih!';
+                            break;
+                    }
+
+                    if ($title !== '') {
+                        $fcmService->sendToUser($order->mahasiswa->user, $title, $body);
+                    }
+                }
+            } catch (\Throwable $e) {
+                Log::error('FCM updateStatus notification error: ' . $e->getMessage());
+            }
 
             // RETURN: Kita kembalikan data pesanan yang sudah di-update. 
             // Ini berguna agar Flutter tau nomor_antrian terbaru jika status berubah jadi 'dibayar'

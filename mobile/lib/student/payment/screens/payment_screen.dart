@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import '../services/payment_service.dart';
@@ -8,6 +10,7 @@ import '../../orders/services/order_service.dart';
 import 'qris_payment_screen.dart';
 import '../../../seller/tracking/widgets/location_permission_sheet.dart';
 import '../../../core/layouts/student_main_layout.dart';
+import 'location_picker_screen.dart';
 
 class PaymentScreen extends StatefulWidget {
   final int pesananId;
@@ -33,6 +36,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   double? _latitude;
   double? _longitude;
   Timer? _statusTimer;
+  bool _isGettingAddress = false;
 
   @override
   void initState() {
@@ -181,6 +185,124 @@ class _PaymentScreenState extends State<PaymentScreen> {
     }
   }
 
+  Future<void> _fetchAndFillAddressFromGps() async {
+    if (_isGettingAddress) return;
+    setState(() => _isGettingAddress = true);
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Row(
+          children: [
+            SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+            ),
+            SizedBox(width: 12),
+            Text('Mendapatkan alamat lokasi Anda...'),
+          ],
+        ),
+        duration: Duration(seconds: 2),
+      ),
+    );
+
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (!mounted) return;
+        showPermissionErrorDialog(
+          context,
+          title: 'Layanan Lokasi Mati',
+          message: 'Aktifkan GPS Anda untuk menggunakan layanan pengantaran.',
+        );
+        setState(() => _isGettingAddress = false);
+        return;
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        if (!mounted) return;
+        final granted = await showLocationPermissionSheet(
+          context,
+          title: 'Mau pesananmu diantar tepat ke lokasimu?',
+          description: 'Bagikan lokasimu sekarang agar kurir dapat menemukan alamatmu dengan mudah.',
+        );
+        if (granted == true) {
+          permission = await Geolocator.requestPermission();
+        } else {
+          setState(() => _isGettingAddress = false);
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+        setState(() => _isGettingAddress = false);
+        return;
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+      );
+      
+      setState(() {
+        _latitude = position.latitude;
+        _longitude = position.longitude;
+      });
+
+      final url = Uri.parse(
+        'https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}&zoom=18&addressdetails=1'
+      );
+      final response = await http.get(
+        url,
+        headers: {'User-Agent': 'polycanteen-mobile-app'},
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final displayName = data['display_name']?.toString() ?? '';
+        if (displayName.isNotEmpty) {
+          setState(() {
+            _addressController.text = displayName;
+          });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Alamat berhasil diisi sesuai lokasi Anda!'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        } else {
+          throw 'Alamat tidak ditemukan';
+        }
+      } else {
+        throw 'Gagal mendapatkan data alamat';
+      }
+    } catch (e) {
+      debugPrint('Error reverse geocoding: $e');
+      if (mounted) {
+        if (_latitude != null && _longitude != null) {
+          setState(() {
+            _addressController.text = 'Koordinat: $_latitude, $_longitude';
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Gagal menerjemahkan lokasi. Menggunakan koordinat saja.'),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal mendapatkan lokasi: $e'), backgroundColor: Colors.red),
+          );
+        }
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isGettingAddress = false);
+      }
+    }
+  }
+
   Future<void> _handleSubmitOrder() async {
     if (_selectedOrderType == 'Pengantaran' && _addressController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -217,6 +339,56 @@ class _PaymentScreenState extends State<PaymentScreen> {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Gagal mengajukan pesanan: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleCancelOrder() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Batalkan Pesanan?', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: const Text('Apakah Anda yakin ingin membatalkan pesanan ini?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Tidak', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Ya, Batalkan', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() => _isLoading = true);
+    try {
+      await _orderService.cancelOrder(widget.pesananId);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Pesanan berhasil dibatalkan'), backgroundColor: Colors.green),
+        );
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const StudentMainLayout(
+              userRole: 'mahasiswa',
+              initialIndex: 2,
+            ),
+          ),
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal membatalkan pesanan: $e'), backgroundColor: Colors.red),
         );
       }
     }
@@ -411,9 +583,55 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     child: TextField(
                       controller: _addressController,
                       enabled: _orderStatus == 'pending', // Disable editing once submitted
-                      decoration: const InputDecoration(
+                      maxLines: null,
+                      decoration: InputDecoration(
                         hintText: 'Masukkan alamat lengkap pengantaran...',
                         border: InputBorder.none,
+                        suffixIcon: _orderStatus == 'pending'
+                            ? Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (_isGettingAddress)
+                                    const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B5BBD)),
+                                      ),
+                                    )
+                                  else ...[
+                                    IconButton(
+                                      icon: const Icon(Icons.my_location, color: Color(0xFF3B5BBD)),
+                                      tooltip: 'Ambil lokasi saat ini',
+                                      onPressed: _fetchAndFillAddressFromGps,
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.map, color: Color(0xFF3B5BBD)),
+                                      tooltip: 'Pilih lokasi dari peta',
+                                      onPressed: () async {
+                                        final result = await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => LocationPickerScreen(
+                                              initialLat: _latitude,
+                                              initialLng: _longitude,
+                                            ),
+                                          ),
+                                        );
+                                        if (result != null && result is Map<String, dynamic>) {
+                                          setState(() {
+                                            _addressController.text = result['address'] ?? '';
+                                            _latitude = result['lat'];
+                                            _longitude = result['lng'];
+                                          });
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ],
+                              )
+                            : null,
                       ),
                     ),
                   ),
@@ -509,6 +727,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                           ),
                   ),
                 ),
+
               ],
             ),
     );

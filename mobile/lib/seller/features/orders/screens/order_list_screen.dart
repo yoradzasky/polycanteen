@@ -757,119 +757,6 @@ class CompletedOrderCard extends StatelessWidget {
     required this.primaryColor,
   });
 
-  void _showOrderDetails(BuildContext context) {
-    List<dynamic> details = order['details'] ?? [];
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          backgroundColor: Colors.white,
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Detail Antrian ${order['nomor_antrian'] ?? '-'}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 18,
-                        color: Color(0xFF1A1A1A),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.close,
-                          color: Colors.grey,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Divider(height: 1, color: Colors.grey.shade200),
-                const SizedBox(height: 16),
-
-                // List Semua Item Pesanan
-                ...details.map((item) {
-                  String namaMenu = item['menu']?['nama_item'] ?? 'Item';
-                  String qty = item['jumlah_pesanan']?.toString() ?? '1';
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            namaMenu,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Color(0xFF4F4F4F),
-                            ),
-                          ),
-                        ),
-                        Text(
-                          'x$qty',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                            color: Color(0xFF1A1A1A),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }),
-
-                const SizedBox(height: 8),
-                Divider(height: 1, color: Colors.grey.shade200),
-                const SizedBox(height: 16),
-
-                // Total Harga
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Total Pembayaran',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF828282),
-                      ),
-                    ),
-                    Text(
-                      'Rp ${NumberFormat('#,###', 'id_ID').format((double.tryParse(order['total_harga'].toString()) ?? 0).toInt())}',
-                      style: TextStyle(
-                        color: primaryColor,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     List<dynamic> details = order['details'] ?? [];
@@ -895,7 +782,15 @@ class CompletedOrderCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
-          onTap: () => _showOrderDetails(context),
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (context) => OrderDetailsDialog(
+                order: order,
+                primaryColor: primaryColor,
+              ),
+            );
+          },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Row(
@@ -1792,6 +1687,448 @@ class _RejectOrderDialogState extends State<RejectOrderDialog> {
           ],
         ),
       ),
+    );
+  }
+}
+
+// ==========================================
+// WIDGET DETAIL ORDER DIALOG (PREMIUM)
+// ==========================================
+class OrderDetailsDialog extends StatelessWidget {
+  final Map<String, dynamic> order;
+  final Color primaryColor;
+
+  const OrderDetailsDialog({
+    super.key,
+    required this.order,
+    required this.primaryColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final details = order['details'] as List<dynamic>? ?? [];
+    final studentName = order['mahasiswa']?['nama_mahasiswa'] ?? 'Tanpa Nama';
+    final notes = order['catatan_pesanan'] ?? '';
+    final orderType = order['tipe_pesanan'] ?? '-';
+
+    // Format order time
+    String orderTime = '-';
+    if (order['created_at'] != null) {
+      try {
+        final dt = DateTime.parse(order['created_at']).toLocal();
+        orderTime = '${DateFormat('HH:mm').format(dt)} WIB';
+      } catch (_) {}
+    }
+
+    final totalHarga = (double.tryParse(order['total_harga']?.toString() ?? '0') ?? 0).toInt();
+
+    // Calculate subtotal dynamically
+    int subtotal = 0;
+    for (var item in details) {
+      subtotal += (double.tryParse(item['subtotal']?.toString() ?? '0') ?? 0).toInt();
+    }
+    final additionalFee = totalHarga - subtotal;
+
+    // Payment details
+    final payment = order['payment'] ?? {};
+    final paymentMethod = payment['metode_bayar']?.toString().toUpperCase() ?? 'QRIS';
+    final rawStatus = payment['status_bayar']?.toString().toLowerCase() ?? '';
+    final paymentStatus = (rawStatus == 'sukses' || rawStatus == 'berhasil') ? 'LUNAS' : rawStatus.toUpperCase();
+
+    // Map order type colors
+    Color typeColor = Colors.grey;
+    Color typeBgColor = Colors.grey.shade100;
+    if (orderType.toLowerCase().contains('dine in') || orderType.toLowerCase().contains('makan di tempat')) {
+      typeColor = const Color(0xFF27AE60);
+      typeBgColor = const Color(0xFFE8F5E9);
+    } else if (orderType.toLowerCase().contains('take away') || orderType.toLowerCase().contains('bungkus')) {
+      typeColor = const Color(0xFFF2994A);
+      typeBgColor = const Color(0xFFFFF3F0);
+    } else if (orderType.toLowerCase().contains('delivery') || orderType.toLowerCase().contains('pengantaran')) {
+      typeColor = const Color(0xFF2F80ED);
+      typeBgColor = const Color(0xFFE3F2FD);
+    }
+
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      backgroundColor: Colors.white,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      child: Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.8,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // --- HEADER ---
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 16, 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Antrian ${order['nomor_antrian'] ?? '-'}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 20,
+                            color: Color(0xFF1A1A2E),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '#ORD-${order['id'] ?? '-'}',
+                          style: TextStyle(
+                            color: Colors.grey.shade500,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.close, color: Colors.grey, size: 20),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1, color: Color(0xFFECEFF1)),
+
+            // --- SCROLLABLE CONTENT ---
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // --- INFO UTAMA ---
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Tipe Pesanan Badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: typeBgColor,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            orderType.toUpperCase(),
+                            style: TextStyle(
+                              color: typeColor,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                        // Payment Status Badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE8F5E9),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            paymentStatus.isNotEmpty ? paymentStatus : 'LUNAS',
+                            style: const TextStyle(
+                              color: Color(0xFF2E7D32),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Detail Customer
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF4F6FB),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.person_outline, size: 18, color: Colors.grey),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              studentName,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                color: Color(0xFF1A1A2E),
+                              ),
+                            ),
+                          ),
+                          Text(
+                            orderTime,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // --- ITEMS LIST ---
+                    const Text(
+                      'Rincian Pesanan',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1A1A2E),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ...List.generate(details.length, (idx) {
+                      final item = details[idx];
+                      final namaMenu = item['menu']?['nama_item'] ?? 'Item';
+                      final qty = int.tryParse(item['jumlah_pesanan']?.toString() ?? '1') ?? 1;
+                      final hargaSatuan = (double.tryParse(item['harga_saat_beli']?.toString() ?? '0') ?? 0).toInt();
+                      final hasVarian = item['varian_snapshot'] != null;
+
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF4F6FB),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                '${qty}x',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 12,
+                                  color: primaryColor,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    namaMenu,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                      color: Color(0xFF1A1A2E),
+                                    ),
+                                  ),
+                                  if (hasVarian) ...[
+                                    const SizedBox(height: 2),
+                                    const Text(
+                                      '• Memiliki varian',
+                                      style: TextStyle(color: Colors.grey, fontSize: 11),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            Text(
+                              'Rp ${NumberFormat('#,###', 'id_ID').format(hargaSatuan * qty)}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                color: Color(0xFF1A1A2E),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                    const SizedBox(height: 8),
+
+                    // --- CATATAN ---
+                    if (notes.toString().isNotEmpty) ...[
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF3F0),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFF2994A).withOpacity(0.15)),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(Icons.chat_bubble_outline, color: Color(0xFFF2994A), size: 16),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Catatan: "$notes"',
+                                style: const TextStyle(
+                                  color: Color(0xFFF2994A),
+                                  fontSize: 12,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
+                    Divider(height: 1, color: Colors.grey.shade200),
+                    const SizedBox(height: 16),
+
+                    // --- RINCIAN BIAYA ---
+                    _summaryRow('Subtotal', subtotal),
+                    if (additionalFee > 0) ...[
+                      const SizedBox(height: 8),
+                      _summaryRow('Biaya Lainnya', additionalFee),
+                    ],
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Metode Pembayaran',
+                          style: TextStyle(color: Colors.grey, fontSize: 13),
+                        ),
+                        Text(
+                          paymentMethod,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            color: Color(0xFF1A1A2E),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      child: Divider(height: 1, color: Color(0xFFECEFF1)),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Total Pembayaran',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: Color(0xFF1A1A2E),
+                          ),
+                        ),
+                        Text(
+                          'Rp ${NumberFormat('#,###', 'id_ID').format(totalHarga)}',
+                          style: TextStyle(
+                            color: primaryColor,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 18,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // --- ACTION BUTTON ---
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => OrderDetailScreen(
+                              order: order,
+                              primaryColor: primaryColor,
+                            ),
+                          ),
+                        );
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: primaryColor,
+                        side: BorderSide(color: primaryColor, width: 1.5),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Lihat Halaman Detail',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Tutup',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _summaryRow(String label, int price) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(color: Colors.grey, fontSize: 13),
+        ),
+        Text(
+          'Rp ${NumberFormat('#,###', 'id_ID').format(price)}',
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+            color: Color(0xFF1A1A2E),
+          ),
+        ),
+      ],
     );
   }
 }
