@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 // 1. Import file login screen kamu (bisa pakai relative path seperti ini)
 import 'core/auth/screens/login_screen.dart';
+import 'core/screens/splash_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -47,8 +48,8 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         textTheme: GoogleFonts.poppinsTextTheme(),
       ),
-      // 2. Ganti home bawaan menjadi class LoginScreen kamu
-      home: const LoginScreen(),
+      // 2. Ganti home bawaan menjadi class SplashScreen kamu
+      home: const SplashScreen(),
     );
   }
 }

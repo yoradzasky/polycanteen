@@ -45,14 +45,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       });
     } catch (e) {
       setState(() => _isLoading = false);
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text("Gagal memuat: $e")));
+      }
     }
   }
 
-  // Fungsi untuk memproses pemilihan foto dari source manapun
   Future<void> _pickImage(ImageSource source) async {
     final XFile? pickedFile = await _picker.pickImage(source: source);
     if (pickedFile != null) {
@@ -60,30 +60,53 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
-  // Fungsi untuk menampilkan pilihan kamera atau galeri
   void _showImagePickerOptions() {
     showModalBottomSheet(
       context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      backgroundColor: Colors.white,
       builder: (BuildContext context) {
         return SafeArea(
           child: Wrap(
             children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: Center(
+                  child: Container(
+                    width: 40,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+              ),
               ListTile(
-                leading: const Icon(Icons.camera_alt),
-                title: const Text('Ambil dari Kamera'),
+                leading: const Icon(Icons.camera_alt, color: Color(0xFFF2994A)),
+                title: const Text(
+                  'Ambil dari Kamera',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
                 onTap: () {
                   _pickImage(ImageSource.camera);
                   Navigator.pop(context);
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text('Pilih dari Galeri'),
+                leading: const Icon(Icons.photo_library, color: Color(0xFFF2994A)),
+                title: const Text(
+                  'Pilih dari Galeri',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
                 onTap: () {
                   _pickImage(ImageSource.gallery);
                   Navigator.pop(context);
                 },
               ),
+              const SizedBox(height: 20),
             ],
           ),
         );
@@ -104,7 +127,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (mounted) {
         Navigator.pop(context, true);
 
-        // --- UBAH BAGIAN INI ---
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
@@ -112,36 +134,30 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
-              ), // Bikin teks jadi putih tebal
+              ),
             ),
-            backgroundColor: Color(
-              0xFF4CAF50,
-            ), // Warna Hijau ala Material Design
-            behavior: SnackBarBehavior
-                .floating, // (Opsional) Bikin snackbar ngambang, gak nempel bawah banget
-            margin: EdgeInsets.all(
-              16,
-            ), // (Opsional) Kasih jarak kalau pake floating
-            duration: Duration(seconds: 3), // (Opsional) Tampil 3 detik
+            backgroundColor: Color(0xFF4CAF50),
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.all(16),
+            duration: Duration(seconds: 3),
           ),
         );
       }
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        // Hilangkan kata "Exception: " bawaan Flutter
         String pesanGagal = e.toString().replaceAll('Exception: ', '');
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              pesanGagal, // Sekarang menampilkan alasan spesifik dari Laravel
+              pesanGagal,
               style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            backgroundColor: const Color(0xFFE53935), // Warna Merah
+            backgroundColor: const Color(0xFFE53935),
             behavior: SnackBarBehavior.floating,
             margin: const EdgeInsets.all(16),
             duration: const Duration(seconds: 4),
@@ -153,23 +169,30 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading)
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: Color(0xFFFFF6ED),
+        body: Center(
+          child: CircularProgressIndicator(color: Color(0xFFF2994A)),
+        ),
+      );
+    }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F8F9), // Background agak keabuan
+      backgroundColor: const Color(0xFFFFF6ED),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
             children: [
-              // Custom Header: Tombol Back & Title
+              // Custom Header: Back button and title
               Row(
                 children: [
                   InkWell(
                     onTap: () => Navigator.pop(context),
+                    borderRadius: BorderRadius.circular(20),
                     child: Container(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(10),
                       decoration: const BoxDecoration(
                         color: Colors.white,
                         shape: BoxShape.circle,
@@ -183,43 +206,55 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ),
                       child: const Icon(
                         Icons.arrow_back_ios_new,
-                        size: 18,
+                        size: 16,
                         color: Colors.black,
                       ),
                     ),
                   ),
                   const Expanded(
                     child: Text(
-                      "Bio-data",
+                      "Edit Profil",
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 20,
+                        color: Color(0xFF1E232C),
                       ),
                     ),
                   ),
-                  const SizedBox(
-                    width: 40,
-                  ), // Spacer untuk menyeimbangkan layout
+                  const SizedBox(width: 40),
                 ],
               ),
               const SizedBox(height: 30),
 
-              // Ganti bagian GestureDetector ini
+              // Avatar edit section
               GestureDetector(
-                onTap: _showImagePickerOptions, // Panggil modal pilihan
+                onTap: _showImagePickerOptions,
                 child: Center(
                   child: Stack(
                     children: [
-                      CircleAvatar(
-                        radius: 50,
-                        backgroundImage: _selectedImage != null
-                            ? FileImage(_selectedImage!) as ImageProvider
-                            : (_currentPhotoUrl != null
-                                  ? NetworkImage(_currentPhotoUrl!)
-                                  : const NetworkImage(
-                                      "https://via.placeholder.com/150",
-                                    )),
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 4),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 8,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: CircleAvatar(
+                          radius: 54,
+                          backgroundImage: _selectedImage != null
+                              ? FileImage(_selectedImage!) as ImageProvider
+                              : (_currentPhotoUrl != null
+                                    ? NetworkImage(_currentPhotoUrl!)
+                                    : const NetworkImage(
+                                        "https://via.placeholder.com/150",
+                                      )),
+                        ),
                       ),
                       const Positioned(
                         bottom: 0,
@@ -244,52 +279,65 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
+                  color: Color(0xFF1E232C),
                 ),
               ),
               Text(
                 _currentEmail,
-                style: TextStyle(color: Colors.grey.shade600),
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
               ),
               const SizedBox(height: 32),
 
-              // Form Fields
-              _buildTextField("Nama Lengkap", _namaController),
-              _buildTextField("Nomor Induk Mahasiswa", _nimController),
-              _buildTextField("Nomor Telepon", _telpController),
+              // Form fields wrapper card
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: const Color(0xFFFFE0C2), width: 1),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFF08D39).withValues(alpha: 0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    _buildTextField("Nama Lengkap", _namaController),
+                    _buildTextField("Nomor Induk Mahasiswa", _nimController),
+                    _buildTextField("Nomor Telepon", _telpController),
+                  ],
+                ),
+              ),
 
-              const SizedBox(height: 40),
+              const SizedBox(height: 32),
 
               SizedBox(
                 width: double.infinity,
-                height: 50,
+                height: 52,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _isLoading
-                        ? Colors.grey
-                        : const Color(0xFF3B5BDB),
+                    backgroundColor: const Color(0xFFF2994A),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  onPressed: _isLoading ? null : _handleUpdate,
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Text(
-                          "Update Profile",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                  onPressed: _handleUpdate,
+                  child: const Text(
+                    "Simpan Perubahan",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
+              const SizedBox(height: 20),
             ],
           ),
         ),
@@ -303,7 +351,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     bool readOnly = false,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -311,19 +359,33 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             label,
             style: const TextStyle(
               fontWeight: FontWeight.bold,
-              color: Color(0xFF3B5BDB),
+              fontSize: 13,
+              color: Color(0xFFF2994A),
             ),
           ),
           const SizedBox(height: 8),
           TextField(
             controller: controller,
             readOnly: readOnly,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1E232C),
+            ),
             decoration: InputDecoration(
               filled: true,
-              fillColor: readOnly ? Colors.grey.shade100 : Colors.white,
+              fillColor: readOnly ? Colors.grey.shade50 : const Color(0xFFFFFDFB),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFFFE0C2), width: 1),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFF2994A), width: 1.5),
+              ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide.none,
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
           ),

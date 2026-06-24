@@ -37,7 +37,7 @@ class Pesanan extends Model
         static::updating(function (Pesanan $pesanan) {
             if (
                 $pesanan->isDirty('status_pesanan')
-                && $pesanan->status_pesanan === 'dibayar'
+                && ($pesanan->status_pesanan === 'dibayar' || $pesanan->status_pesanan === 'dimasak')
                 && empty($pesanan->nomor_antrian)
             ) {
                 $pesanan->nomor_antrian = static::generateNomorAntrian($pesanan->kantin_id);

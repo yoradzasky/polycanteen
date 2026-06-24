@@ -41,7 +41,11 @@ class MapIllustrationPainter extends CustomPainter {
 
 /// Pop-up cantik izin lokasi (Bottom Sheet).
 /// Mengembalikan `true` jika user menekan "Izinkan Akses Lokasi".
-Future<bool?> showLocationPermissionSheet(BuildContext context) {
+Future<bool?> showLocationPermissionSheet(
+  BuildContext context, {
+  String? title,
+  String? description,
+}) {
   return showModalBottomSheet<bool>(
     context: context,
     isDismissible: false,
@@ -142,9 +146,9 @@ Future<bool?> showLocationPermissionSheet(BuildContext context) {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Mau pengantaranmu sampai tepat di depan pelanggan?',
-                      style: TextStyle(
+                    Text(
+                      title ?? 'Mau pengantaranmu sampai tepat di depan pelanggan?',
+                      style: const TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 16,
                         color: Color(0xFF1A1A2E),
@@ -153,7 +157,7 @@ Future<bool?> showLocationPermissionSheet(BuildContext context) {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Bagikan lokasimu sekarang agar pelanggan bisa ditemukan dengan mudah.',
+                      description ?? 'Bagikan lokasimu sekarang agar pelanggan bisa ditemukan dengan mudah.',
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey.shade600,

@@ -91,6 +91,26 @@ class ScannerController extends Controller
                     'jumlah_item' => $jumlahItem,
                     'total_harga' => $pesanan->total_harga,
                     'status_pesanan' => $pesanan->status_pesanan,
+                    'tipe_pesanan' => $pesanan->tipe_pesanan,
+                    'catatan_pesanan' => $pesanan->catatan_pesanan,
+                    'created_at' => $pesanan->created_at,
+                    'updated_at' => $pesanan->updated_at,
+                    'details' => $pesanan->details->map(function ($detail) {
+                        return [
+                            'id' => $detail->id,
+                            'jumlah_pesanan' => $detail->jumlah_pesanan,
+                            'harga_saat_beli' => $detail->harga_saat_beli,
+                            'subtotal' => $detail->subtotal,
+                            'varian_snapshot' => $detail->varian_snapshot,
+                            'menu' => [
+                                'nama_item' => $detail->menu->nama_item ?? 'Item',
+                            ],
+                        ];
+                    }),
+                    'payment' => [
+                        'metode_bayar' => $pesanan->payment->metode_bayar ?? '-',
+                        'status_bayar' => $pesanan->payment->status_bayar ?? '-',
+                    ]
                 ],
             ]);
 
@@ -139,21 +159,56 @@ class ScannerController extends Controller
                 ], 404);
             }
 
-            // Hanya bisa konfirmasi pesanan yang sudah dibayar
-            if ($pesanan->status_pesanan !== 'dibayar') {
+            // Hanya bisa konfirmasi pesanan yang berstatus aktif/proses/siap diambil
+            $allowedStatuses = ['dibayar', 'dikonfirmasi', 'diproses', 'dimasak', 'siap_diambil', 'dalam_perjalanan', 'menunggu_dikirim'];
+            if (!in_array($pesanan->status_pesanan, $allowedStatuses)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Pesanan tidak dapat dikonfirmasi. Status saat ini: ' . $pesanan->status_pesanan,
                 ], 422);
             }
 
-            // Update status pesanan menjadi "diproses"
-            $pesanan->status_pesanan = 'diproses';
+            $oldStatus = $pesanan->status_pesanan;
+            if ($oldStatus === 'dibayar') {
+                $pesanan->status_pesanan = 'diproses';
+                $message = 'Pesanan berhasil dikonfirmasi';
+
+                try {
+                    $pesanan->load('mahasiswa.user');
+                    if ($pesanan->mahasiswa && $pesanan->mahasiswa->user) {
+                        $fcmService = app(\App\Services\FcmNotificationService::class);
+                        $fcmService->sendToUser(
+                            $pesanan->mahasiswa->user,
+                            'Pesanan Diproses',
+                            'Pesanan Anda sedang diproses oleh penjual.'
+                        );
+                    }
+                } catch (\Throwable $e) {
+                    Log::error('FCM confirm (diproses) error: ' . $e->getMessage());
+                }
+            } else {
+                $pesanan->status_pesanan = 'selesai';
+                $message = 'Pesanan berhasil diselesaikan';
+
+                try {
+                    $pesanan->load('mahasiswa.user');
+                    if ($pesanan->mahasiswa && $pesanan->mahasiswa->user) {
+                        $fcmService = app(\App\Services\FcmNotificationService::class);
+                        $fcmService->sendToUser(
+                            $pesanan->mahasiswa->user,
+                            'Pesanan Selesai',
+                            'Pesanan Anda telah selesai, terima kasih!'
+                        );
+                    }
+                } catch (\Throwable $e) {
+                    Log::error('FCM confirm (selesai) error: ' . $e->getMessage());
+                }
+            }
             $pesanan->save();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Pesanan berhasil dikonfirmasi',
+                'message' => $message,
                 'data' => [
                     'pesanan_id' => $pesanan->id,
                     'nomor_antrian' => $pesanan->nomor_antrian,
