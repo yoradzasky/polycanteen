@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import '../widgets/filter_menu.dart';
 import '../../menu/screens/menu_detail.dart';
 import '../../order/screens/order_detail_screen.dart';
+import '../../menu/services/menu_service.dart';
+import '../../payment/screens/payment_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -82,6 +84,72 @@ class _HomeScreenState extends State<HomeScreen> {
         errorMessage = e.toString().replaceAll('Exception: ', '');
         isLoading = false;
       });
+    }
+  }
+
+  Future<void> _handleQuickReorder(Map<String, dynamic> pastOrder) async {
+    // Show loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(
+          color: Color(0xFFF2994A),
+        ),
+      ),
+    );
+
+    try {
+      final menuService = MenuService();
+      
+      // 1. Clear current cart
+      await menuService.clearCart();
+      
+      // 2. Add each item from the past order to the cart
+      final details = pastOrder['details'] as List<dynamic>;
+      for (var detail in details) {
+        final menuId = detail['menu_id'] as int;
+        final qty = int.tryParse(detail['jumlah_pesanan']?.toString() ?? '1') ?? 1;
+        final varianSelected = detail['varian_snapshot'];
+        
+        await menuService.addToCart(
+          menuId: menuId,
+          jumlah: qty,
+          varianSelected: varianSelected,
+        );
+      }
+      
+      // 3. Perform checkout
+      final orderData = await menuService.checkout();
+      
+      // Dismiss loading dialog
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
+      // 4. Navigate to PaymentScreen
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PaymentScreen(
+              pesananId: orderData['id'],
+              totalHarga: double.parse(orderData['total_harga'].toString()),
+            ),
+          ),
+        ).then((_) => fetchHomeData());
+      }
+    } catch (e) {
+      // Dismiss loading dialog if error
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal melakukan pesan ulang: ${e.toString().replaceAll('Exception: ', '')}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -818,7 +886,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    onPressed: () {},
+                    onPressed: () => _handleQuickReorder(item),
                     icon: const Icon(Icons.bolt, color: Colors.white, size: 18),
                     label: const Text(
                       "Pesan 1 Klik",
