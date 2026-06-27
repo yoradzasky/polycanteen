@@ -33,6 +33,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
   bool _isLoading = true;
   String _userRole = 'pegawai';
   String _selectedTypeFilter = 'all';
+  Timer? _pollingTimer;
 
   Color get _primaryColor => _userRole == 'pegawai'
       ? const Color(0xFF5E7AC4)
@@ -42,8 +43,19 @@ class _OrderListScreenState extends State<OrderListScreen> {
   void initState() {
     super.initState();
     _loadRole();
-    _fetchOrders(); // Ambil data saat layar pertama kali dibuka
+    _fetchOrders(showLoading: true); // Ambil data saat layar pertama kali dibuka
     _checkLocationPermission();
+
+    // Auto-refresh di background setiap 10 detik agar pesanan masuk langsung ter-update
+    _pollingTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+      _fetchOrders(showLoading: false);
+    });
+  }
+
+  @override
+  void dispose() {
+    _pollingTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _checkLocationPermission() async {
@@ -72,32 +84,38 @@ class _OrderListScreenState extends State<OrderListScreen> {
   }
 
   // --- FUNGSI AMBIL DATA API ---
-  Future<void> _fetchOrders() async {
-    setState(() => _isLoading = true);
+  Future<void> _fetchOrders({bool showLoading = false}) async {
+    if (showLoading) {
+      setState(() => _isLoading = true);
+    }
     try {
       final response = await _orderService
           .getOrders(); // response sekarang berupa Map
-      setState(() {
-        _orders = response['data'] as List<dynamic>; // Ambil data pesanan
-
-        // Ambil data kantinnya
-        if (response['kantin'] != null) {
-          _namaKantin = response['kantin']['nama_kantin'] ?? 'Kantin Sipil';
-          // Atur posisi awal toggle otomatis sesuai database!
-          _isBuka = response['kantin']['status_toko'] == 'buka';
-        }
-
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Gagal memuat pesanan: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        setState(() {
+          _orders = response['data'] as List<dynamic>; // Ambil data pesanan
+
+          // Ambil data kantinnya
+          if (response['kantin'] != null) {
+            _namaKantin = response['kantin']['nama_kantin'] ?? 'Kantin Sipil';
+            // Atur posisi awal toggle otomatis sesuai database!
+            _isBuka = response['kantin']['status_toko'] == 'buka';
+          }
+
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        if (showLoading) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Gagal memuat pesanan: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }
@@ -124,7 +142,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
       );
       if (mounted) {
         Navigator.pop(context); // Tutup loading
-        _fetchOrders(); // Refresh data dari server agar antrian & status terbaru muncul
+        _fetchOrders(showLoading: false); // Refresh data dari server agar antrian & status terbaru muncul
       }
     } catch (e) {
       if (mounted) {
@@ -148,7 +166,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
       await _orderService.startDelivery(orderId);
       if (mounted) {
         Navigator.pop(context); // Tutup loading
-        _fetchOrders(); // Refresh
+        _fetchOrders(showLoading: false); // Refresh
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Pengantaran dimulai!'),

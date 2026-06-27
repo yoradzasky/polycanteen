@@ -165,6 +165,19 @@ class MenuService {
     }
   }
 
+  // ───── DELETE /mahasiswa/keranjang/clear/all ─────
+  // Digunakan untuk mengosongkan keranjang belanja
+  Future<void> clearCart() async {
+    try {
+      await _dio.delete(
+        '/mahasiswa/keranjang/clear/all',
+        options: await _authOptions(),
+      );
+    } on DioException catch (e) {
+      throw Exception(_handleDioError(e));
+    }
+  }
+
   // Helper untuk parsing error Dio
   String _handleDioError(DioException e) {
     final data = e.response?.data;

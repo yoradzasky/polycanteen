@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 import '../auth/screens/login_screen.dart';
+import '../layouts/student_main_layout.dart';
+import '../layouts/seller_main_layout.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -64,9 +67,29 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     if (!mounted) return;
 
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-    );
+    final prefs = EncryptedSharedPreferences();
+    final String token = await prefs.getString('auth_token');
+    final String userRole = await prefs.getString('user_role');
+
+    if (!mounted) return;
+
+    if (token.isNotEmpty && userRole.isNotEmpty) {
+      if (userRole == 'mahasiswa') {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => StudentMainLayout(userRole: userRole),
+          ),
+        );
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const SellerMainLayout()),
+        );
+      }
+    } else {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+    }
   }
 
   @override
