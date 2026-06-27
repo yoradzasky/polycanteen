@@ -59,7 +59,7 @@ class MidtransWebhookController extends Controller
                 } elseif ($transactionStatus == 'cancel' || $transactionStatus == 'deny' || $transactionStatus == 'expire') {
                     $pesanan->status_pesanan = 'gagal';
                 } elseif ($transactionStatus == 'pending') {
-                    $pesanan->status_pesanan = 'pending';
+                    $pesanan->status_pesanan = 'menunggu_pembayaran';
                 }
                 $pesanan->save();
 

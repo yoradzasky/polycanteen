@@ -260,13 +260,9 @@ class _OrderScreenState extends State<OrderScreen>
           ? const Center(
               child: CircularProgressIndicator(color: Color(0xFF2D3A8C)),
             )
-          : RefreshIndicator(
-              onRefresh: _fetchOrders,
-              color: const Color(0xFF2D3A8C),
-              child: TabBarView(
-                controller: _tabController,
-                children: [_buildDalamProsesTab(), _buildRiwayatTab()],
-              ),
+          : TabBarView(
+              controller: _tabController,
+              children: [_buildDalamProsesTab(), _buildRiwayatTab()],
             ),
     );
   }
@@ -276,20 +272,37 @@ class _OrderScreenState extends State<OrderScreen>
   // ==========================================
   Widget _buildDalamProsesTab() {
     if (_dalamProses.isEmpty) {
-      return _buildEmptyState(
-        icon: Icons.receipt_long_outlined,
-        title: 'Tidak ada pesanan aktif',
-        subtitle: 'Pesanan aktif Anda akan muncul di sini',
+      return RefreshIndicator(
+        onRefresh: () => _fetchOrders(showLoading: false),
+        color: const Color(0xFF2D3A8C),
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.6,
+              child: _buildEmptyState(
+                icon: Icons.receipt_long_outlined,
+                title: 'Tidak ada pesanan aktif',
+                subtitle: 'Pesanan aktif Anda akan muncul di sini',
+              ),
+            ),
+          ],
+        ),
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: _dalamProses.length,
-      itemBuilder: (context, index) {
-        final order = _dalamProses[index] as Map<String, dynamic>;
-        return _buildActiveOrderCard(order);
-      },
+    return RefreshIndicator(
+      onRefresh: () => _fetchOrders(showLoading: false),
+      color: const Color(0xFF2D3A8C),
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
+        itemCount: _dalamProses.length,
+        itemBuilder: (context, index) {
+          final order = _dalamProses[index] as Map<String, dynamic>;
+          return _buildActiveOrderCard(order);
+        },
+      ),
     );
   }
 
@@ -839,21 +852,38 @@ class _OrderScreenState extends State<OrderScreen>
   // ==========================================
   Widget _buildRiwayatTab() {
     if (_riwayat.isEmpty) {
-      return _buildEmptyState(
-        icon: Icons.history,
-        title: 'Belum ada riwayat pesanan',
-        subtitle: 'Riwayat pesanan Anda akan muncul di sini',
+      return RefreshIndicator(
+        onRefresh: () => _fetchOrders(showLoading: false),
+        color: const Color(0xFF2D3A8C),
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.6,
+              child: _buildEmptyState(
+                icon: Icons.history,
+                title: 'Belum ada riwayat pesanan',
+                subtitle: 'Riwayat pesanan Anda akan muncul di sini',
+              ),
+            ),
+          ],
+        ),
       );
     }
 
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        ...List.generate(_riwayat.length, (index) {
-          final order = _riwayat[index] as Map<String, dynamic>;
-          return _buildHistoryCard(order);
-        }),
-      ],
+    return RefreshIndicator(
+      onRefresh: () => _fetchOrders(showLoading: false),
+      color: const Color(0xFF2D3A8C),
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
+        children: [
+          ...List.generate(_riwayat.length, (index) {
+            final order = _riwayat[index] as Map<String, dynamic>;
+            return _buildHistoryCard(order);
+          }),
+        ],
+      ),
     );
   }
 

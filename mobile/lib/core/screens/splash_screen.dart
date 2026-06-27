@@ -62,33 +62,42 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   }
 
   Future<void> _checkSessionAndNavigate() async {
-    // Wait for the full animation plus some hover time
-    await Future.delayed(const Duration(milliseconds: 3200));
+    try {
+      // Wait for the full animation plus some hover time
+      await Future.delayed(const Duration(milliseconds: 3200));
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    final prefs = EncryptedSharedPreferences();
-    final String token = await prefs.getString('auth_token');
-    final String userRole = await prefs.getString('user_role');
+      final prefs = EncryptedSharedPreferences();
+      final String token = await prefs.getString('auth_token');
+      final String userRole = await prefs.getString('user_role');
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    if (token.isNotEmpty && userRole.isNotEmpty) {
-      if (userRole == 'mahasiswa') {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => StudentMainLayout(userRole: userRole),
-          ),
-        );
+      if (token.isNotEmpty && userRole.isNotEmpty) {
+        if (userRole == 'mahasiswa') {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => StudentMainLayout(userRole: userRole),
+            ),
+          );
+        } else {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const SellerMainLayout()),
+          );
+        }
       } else {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const SellerMainLayout()),
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
         );
       }
-    } else {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-      );
+    } catch (e) {
+      debugPrint("Error in _checkSessionAndNavigate: $e");
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+        );
+      }
     }
   }
 

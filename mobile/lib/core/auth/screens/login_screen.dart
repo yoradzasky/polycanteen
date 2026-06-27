@@ -11,6 +11,7 @@ import '../../../student/payment/screens/payment_screen.dart';
 import '../../../student/orders/services/order_service.dart';
 import '../../../student/home/screens/home_screen.dart';
 import '../../services/notification_service.dart';
+import '../../widgets/custom_snackbar.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -34,10 +35,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
     // Validasi kosong di sisi Flutter
     if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Email dan Kata Sandi tidak boleh kosong'),
-        ),
+      CustomSnackBar.show(
+        context,
+        message: 'Email dan Kata Sandi tidak boleh kosong',
+        isError: true,
       );
       return;
     }
@@ -78,11 +79,10 @@ class _LoginScreenState extends State<LoginScreen> {
         // Cek apakah role adalah admin - jika iya, tolak login
         if (userRole == 'admin') {
           if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Admin tidak dapat login melalui aplikasi mobile'),
-              backgroundColor: Colors.red,
-            ),
+          CustomSnackBar.show(
+            context,
+            message: 'Admin tidak dapat login melalui aplikasi mobile',
+            isError: true,
           );
           setState(() {
             _isLoading = false;
@@ -119,8 +119,10 @@ class _LoginScreenState extends State<LoginScreen> {
           errorMessage = responseData['errors'].values.first[0];
         }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+        CustomSnackBar.show(
+          context,
+          message: errorMessage,
+          isError: true,
         );
       }
     } catch (e) {
@@ -129,11 +131,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
       debugPrint('ERROR LOGIN: $e');
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Gagal terhubung ke server. Pastikan API menyala!'),
-          backgroundColor: Colors.red,
-        ),
+      CustomSnackBar.show(
+        context,
+        message: 'Gagal terhubung ke server. Pastikan API menyala!',
+        isError: true,
       );
     } finally {
       if (mounted) {
@@ -630,7 +631,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         title: const Text('Daftar Sebagai Pembeli'),
         centerTitle: false,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),

@@ -341,7 +341,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: _fetchOrders, // Tarik ke bawah untuk refresh
+        onRefresh: () => _fetchOrders(showLoading: false),
         color: _primaryColor,
         child: NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) {
@@ -485,128 +485,135 @@ class _OrderListScreenState extends State<OrderListScreen> {
             ];
           },
           body: _isLoading
-              ? Center(child: CircularProgressIndicator(color: _primaryColor))
-              : currentOrders.isEmpty
               ? ListView(
-                  physics:
-                      const AlwaysScrollableScrollPhysics(), // <-- INI KUNCI BIAR BISA DI-REFRESH
+                  physics: const AlwaysScrollableScrollPhysics(),
                   children: [
                     SizedBox(
-                      height:
-                          MediaQuery.of(context).size.height *
-                          0.5, // Kasih tinggi biar bisa ditarik
+                      height: MediaQuery.of(context).size.height * 0.5,
                       child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.receipt_long,
-                              size: 80,
-                              color: Colors.grey.shade300,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              _selectedTabIndex == 0
-                                  ? 'Tidak ada pesanan masuk'
-                                  : _selectedTabIndex == 1
-                                  ? 'Tidak ada pesanan diproses'
-                                  : 'Tidak ada pesanan selesai',
-                              style: TextStyle(
-                                color: Colors.grey.shade500,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
+                        child: CircularProgressIndicator(color: _primaryColor),
                       ),
                     ),
                   ],
                 )
-              : ListView.builder(
-                  padding: const EdgeInsets.only(
-                    left: 20,
-                    right: 20,
-                    top: 0,
-                    bottom: 20,
-                  ),
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  itemCount: currentOrders.length,
-                  itemBuilder: (context, index) {
-                    final orderMap =
-                        currentOrders[index] as Map<String, dynamic>;
-                    final status = orderMap['status_pesanan'];
-                    final orderId = orderMap['id'];
-
-                    if (status == 'selesai') {
-                      return CompletedOrderCard(
-                        key: ValueKey(orderId),
-                        order: orderMap,
-                        primaryColor: _primaryColor,
-                      );
-                    }
-
-                    if (status == 'dalam_perjalanan') {
-                      return DeliveryTrackingCard(
-                        key: ValueKey(orderId),
-                        order: orderMap,
-                        primaryColor: _primaryColor,
-                        onScanQr: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const QrScannerScreen(),
-                            ),
-                          ).then((_) => _fetchOrders());
-                        },
-                      );
-                    }
-
-                    return OrderCard(
-                      key: ValueKey(orderId),
-                      order: orderMap,
-                      primaryColor: _primaryColor,
-                      tabIndex: _selectedTabIndex,
-                      onTerima: () {
-                        if (status == 'pending' || status == 'menunggu_persetujuan') {
-                          _updateStatus(orderId, 'menunggu_pembayaran');
-                        } else {
-                          _updateStatus(orderId, 'dimasak');
-                        }
-                      },
-                      onTolak: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => RejectOrderDialog(
-                            onReject: (alasan) => _updateStatus(
-                              orderId,
-                              'ditolak',
-                              alasan: alasan,
+              : currentOrders.isEmpty
+                  ? ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: [
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.5,
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.receipt_long,
+                                  size: 80,
+                                  color: Colors.grey.shade300,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  _selectedTabIndex == 0
+                                      ? 'Tidak ada pesanan masuk'
+                                      : _selectedTabIndex == 1
+                                          ? 'Tidak ada pesanan diproses'
+                                          : 'Tidak ada pesanan selesai',
+                                  style: TextStyle(
+                                    color: Colors.grey.shade500,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
+                        ),
+                      ],
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.only(
+                        left: 20,
+                        right: 20,
+                        top: 0,
+                        bottom: 20,
+                      ),
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      itemCount: currentOrders.length,
+                      itemBuilder: (context, index) {
+                        final orderMap =
+                            currentOrders[index] as Map<String, dynamic>;
+                        final status = orderMap['status_pesanan'];
+                        final orderId = orderMap['id'];
+
+                        if (status == 'selesai') {
+                          return CompletedOrderCard(
+                            key: ValueKey(orderId),
+                            order: orderMap,
+                            primaryColor: _primaryColor,
+                          );
+                        }
+
+                        if (status == 'dalam_perjalanan') {
+                          return DeliveryTrackingCard(
+                            key: ValueKey(orderId),
+                            order: orderMap,
+                            primaryColor: _primaryColor,
+                            onScanQr: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const QrScannerScreen(),
+                                ),
+                              ).then((_) => _fetchOrders());
+                            },
+                          );
+                        }
+
+                        return OrderCard(
+                          key: ValueKey(orderId),
+                          order: orderMap,
+                          primaryColor: _primaryColor,
+                          tabIndex: _selectedTabIndex,
+                          onTerima: () {
+                            if (status == 'pending' || status == 'menunggu_persetujuan') {
+                              _updateStatus(orderId, 'menunggu_pembayaran');
+                            } else {
+                              _updateStatus(orderId, 'dimasak');
+                            }
+                          },
+                          onTolak: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => RejectOrderDialog(
+                                onReject: (alasan) => _updateStatus(
+                                  orderId,
+                                  'ditolak',
+                                  alasan: alasan,
+                                ),
+                              ),
+                            );
+                          },
+                          onSelesaiMasak: () {
+                            final tipe = orderMap['tipe_pesanan'] ?? '';
+                            if (tipe.toLowerCase().contains('pengantaran') ||
+                                tipe.toLowerCase().contains('delivery')) {
+                              _updateStatus(orderId, 'menunggu_dikirim');
+                            } else {
+                              _updateStatus(orderId, 'siap_diambil');
+                            }
+                          },
+                          onKirimPesanan: () => _startDelivery(orderId),
+                          onScanQr: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const QrScannerScreen(),
+                              ),
+                            ).then((_) => _fetchOrders());
+                          },
                         );
                       },
-                      onSelesaiMasak: () {
-                        final tipe = orderMap['tipe_pesanan'] ?? '';
-                        if (tipe.toLowerCase().contains('pengantaran') ||
-                            tipe.toLowerCase().contains('delivery')) {
-                          _updateStatus(orderId, 'menunggu_dikirim');
-                        } else {
-                          _updateStatus(orderId, 'siap_diambil');
-                        }
-                      },
-                      onKirimPesanan: () => _startDelivery(orderId),
-                      onScanQr: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const QrScannerScreen(),
-                          ),
-                        ).then((_) => _fetchOrders());
-                      },
-                    );
-                  },
-                ),
+                    ),
         ),
       ),
     );

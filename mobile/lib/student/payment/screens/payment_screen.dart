@@ -11,6 +11,7 @@ import 'qris_payment_screen.dart';
 import '../../../seller/tracking/widgets/location_permission_sheet.dart';
 import '../../../core/layouts/student_main_layout.dart';
 import 'location_picker_screen.dart';
+import '../../../core/widgets/custom_snackbar.dart';
 
 class PaymentScreen extends StatefulWidget {
   final int pesananId;
@@ -82,11 +83,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
           });
           if (_orderStatus == 'menunggu_pembayaran') {
             _stopStatusPolling();
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Pesanan Anda disetujui! Silakan lakukan pembayaran.'),
-                backgroundColor: Colors.green,
-              ),
+            CustomSnackBar.show(
+              context,
+              message: 'Pesanan Anda disetujui! Silakan lakukan pembayaran.',
+              isSuccess: true,
             );
           } else if (_orderStatus == 'ditolak') {
             _stopStatusPolling();
@@ -265,11 +265,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
             _addressController.text = displayName;
           });
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Alamat berhasil diisi sesuai lokasi Anda!'),
-                backgroundColor: Colors.green,
-              ),
+            CustomSnackBar.show(
+              context,
+              message: 'Alamat berhasil diisi sesuai lokasi Anda!',
+              isSuccess: true,
             );
           }
         } else {
@@ -285,14 +284,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
           setState(() {
             _addressController.text = 'Koordinat: $_latitude, $_longitude';
           });
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Gagal menerjemahkan lokasi. Menggunakan koordinat saja.'),
-            ),
+          CustomSnackBar.show(
+            context,
+            message: 'Gagal menerjemahkan lokasi. Menggunakan koordinat saja.',
           );
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Gagal mendapatkan lokasi: $e'), backgroundColor: Colors.red),
+          CustomSnackBar.show(
+            context,
+            message: 'Gagal mendapatkan lokasi: $e',
+            isError: true,
           );
         }
       }
@@ -305,8 +305,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   Future<void> _handleSubmitOrder() async {
     if (_selectedOrderType == 'Pengantaran' && _addressController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Mohon masukkan alamat lengkap pengantaran.')),
+      CustomSnackBar.show(
+        context,
+        message: 'Mohon masukkan alamat lengkap pengantaran.',
+        isError: true,
       );
       return;
     }
@@ -337,8 +339,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal mengajukan pesanan: $e'), backgroundColor: Colors.red),
+        CustomSnackBar.show(
+          context,
+          message: 'Gagal mengajukan pesanan: $e',
+          isError: true,
         );
       }
     }
@@ -370,8 +374,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
     try {
       await _orderService.cancelOrder(widget.pesananId);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Pesanan berhasil dibatalkan'), backgroundColor: Colors.green),
+        CustomSnackBar.show(
+          context,
+          message: 'Pesanan berhasil dibatalkan',
+          isSuccess: true,
         );
         Navigator.pushAndRemoveUntil(
           context,
@@ -387,8 +393,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal membatalkan pesanan: $e'), backgroundColor: Colors.red),
+        CustomSnackBar.show(
+          context,
+          message: 'Gagal membatalkan pesanan: $e',
+          isError: true,
         );
       }
     }
@@ -470,8 +478,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
     } catch (e) {
       print('DEBUG: Payment Error: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Gagal membuat pembayaran: $e")),
+        CustomSnackBar.show(
+          context,
+          message: "Gagal membuat pembayaran: $e",
+          isError: true,
         );
       }
     } finally {
@@ -670,6 +680,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       price: _formatCurrency(priceVal),
                       qty: qty,
                       imagePath: image,
+                      varianSnapshot: item['varian_snapshot'],
                     );
                   }),
                   const SizedBox(height: 24),
@@ -758,13 +769,112 @@ class OrderItemCard extends StatelessWidget {
   final String name, price;
   final String? imagePath;
   final int qty;
+  final dynamic varianSnapshot;
   const OrderItemCard({
     super.key,
     required this.name,
     required this.price,
     required this.qty,
     this.imagePath,
+    this.varianSnapshot,
   });
+
+  List<Widget> _buildVarianList(dynamic snapshot) {
+    List<Widget> children = [];
+    if (snapshot == null) return children;
+
+    try {
+      if (snapshot is Map) {
+        snapshot.forEach((key, val) {
+          if (val is Map) {
+            final optionName = val['nama'] ?? val['name'] ?? '';
+            if (optionName.toString().isNotEmpty) {
+              children.add(
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Text(
+                    '• $key: $optionName',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey.shade500,
+                    ),
+                  ),
+                ),
+              );
+            }
+          } else if (val is List) {
+            for (var item in val) {
+              if (item is Map) {
+                final optionName = item['nama'] ?? item['name'] ?? '';
+                if (optionName.toString().isNotEmpty) {
+                  children.add(
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(
+                        '• $key: $optionName',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+              } else {
+                children.add(
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(
+                      '• $key: $item',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                  ),
+                );
+              }
+            }
+          } else if (val != null) {
+            children.add(
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(
+                  '• $key: $val',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey.shade500,
+                  ),
+                ),
+              ),
+            );
+          }
+        });
+      } else if (snapshot is List) {
+        for (var item in snapshot) {
+          final optionName = item is Map
+              ? (item['nama'] ?? item['name'] ?? item.toString())
+              : item.toString();
+          children.add(
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(
+                '• $optionName',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey.shade500,
+                ),
+              ),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error parsing variant snapshot: $e');
+    }
+
+    return children;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -814,6 +924,10 @@ class OrderItemCard extends StatelessWidget {
                         color: Color(0xFF1F2937),
                       ),
                     ),
+                    if (varianSnapshot != null) ...[
+                      const SizedBox(height: 2),
+                      ..._buildVarianList(varianSnapshot),
+                    ],
                     const SizedBox(height: 4),
                     Text(
                       price,
