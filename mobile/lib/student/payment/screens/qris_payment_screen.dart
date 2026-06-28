@@ -130,7 +130,7 @@ class _QrisPaymentScreenState extends State<QrisPaymentScreen> {
       builder: (context) => AlertDialog(
         title: const Text('API Belum Siap'),
         content: const Text(
-          'Endpoint api/student/payment/status/{id} tidak ditemukan (404) di backend.\n\n'
+          'Endpoint api/mahasiswa/payment/status/{id} tidak ditemukan (404) di backend.\n\n'
           'Anda harus menambahkan route tersebut di Laravel agar pengecekan otomatis berfungsi.\n\n'
           'Ingin lanjut ke halaman tiket untuk sementara (Simulasi Berhasil)?'
         ),

@@ -58,11 +58,19 @@ class AuthService {
     try {
       // Ambil token dari storage lokal
       final token = await getToken();
+      final role = await _prefs.getString('user_role');
 
       if (token != null) {
+        String logoutUrl = '/logout';
+        if (role == 'pemilik') {
+          logoutUrl = '/penjual/logout';
+        } else if (role == 'mahasiswa') {
+          logoutUrl = '/mahasiswa/logout';
+        }
+
         // Tembak API logout Laravel
         await _dio.post(
-          '/logout',
+          logoutUrl,
           options: Options(
             headers: {
               'Authorization': 'Bearer $token',

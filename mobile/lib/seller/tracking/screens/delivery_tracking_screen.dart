@@ -125,7 +125,7 @@ class _DeliveryTrackingScreenState extends State<DeliveryTrackingScreen> {
   Future<void> _fetchDeliveryInfo() async {
     try {
       final response = await _dio.get(
-        '/pemilik/deliveries/${widget.pesananId}',
+        '/penjual/deliveries/${widget.pesananId}',
         options: await _authOptions(),
       );
       if (response.statusCode == 200 && response.data != null) {
@@ -283,7 +283,7 @@ class _DeliveryTrackingScreenState extends State<DeliveryTrackingScreen> {
 
     try {
       final response = await _dio.post(
-        '/pemilik/deliveries/${widget.pesananId}/confirm',
+        '/penjual/deliveries/${widget.pesananId}/confirm',
         data: {'qr_token': qrToken},
         options: await _authOptions(),
       );
