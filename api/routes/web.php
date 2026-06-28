@@ -4,7 +4,7 @@ use App\Http\Controllers\Admin\CanteenController;
 use App\Http\Controllers\Admin\BuyerApprovalController;
 use App\Http\Controllers\Admin\BuyerController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\SellerController;
+use App\Http\Controllers\Api\Seller\SellerController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\DashboardController;
@@ -103,7 +103,7 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->name('admin.')->grou
     // ==========================================
     // MANAJEMEN AKUN ADMIN
     // ==========================================
-    Route::put('/password', [\App\Http\Controllers\AdminController::class, 'updatePassword'])
+    Route::put('/password', [\App\Http\Controllers\Admin\AdminController::class, 'updatePassword'])
         ->name('password.update');
 
 });
