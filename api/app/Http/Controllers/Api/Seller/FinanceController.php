@@ -99,7 +99,7 @@ class FinanceController extends Controller
                 return response()->json(['success' => false, 'message' => 'Anda tidak terdaftar di kantin manapun.'], 403);
             }
 
-            $query = Pesanan::with(['payment', 'mahasiswa'])
+            $query = Pesanan::with(['payment', 'mahasiswa', 'ulasan', 'details.menu'])
                 ->where('kantin_id', $kantinId)
                 ->where('status_pesanan', 'selesai');
 

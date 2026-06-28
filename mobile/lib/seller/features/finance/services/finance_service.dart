@@ -10,7 +10,7 @@ class FinanceService {
 
   Future<Map<String, dynamic>> getFinanceSummary() async {
     final prefs = EncryptedSharedPreferences();
-    final token = await prefs.getString('token');
+    final token = await prefs.getString('auth_token');
 
     final response = await http.get(
       Uri.parse('$baseUrl/pemilik/finance/summary'),
@@ -32,7 +32,7 @@ class FinanceService {
 
   Future<List<dynamic>> getFinanceHistory() async {
     final prefs = EncryptedSharedPreferences();
-    final token = await prefs.getString('token');
+    final token = await prefs.getString('auth_token');
 
     final response = await http.get(
       Uri.parse('$baseUrl/pemilik/finance/history'),

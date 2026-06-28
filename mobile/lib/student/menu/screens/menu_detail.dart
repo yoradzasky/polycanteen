@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/menu_service.dart';
+import '../../../core/widgets/custom_snackbar.dart';
 
 class MenuDetailScreen extends StatefulWidget {
   final Map<String, dynamic> menuData;
@@ -143,13 +144,63 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
-        );
+        final errorMsg = e.toString().replaceAll('Exception: ', '');
+        if (errorMsg.startsWith('different_kantin|')) {
+          final kantinName = errorMsg.split('|')[1];
+          _showClearCartConfirmDialog(kantinName);
+        } else {
+          CustomSnackBar.show(
+            context,
+            message: errorMsg,
+            isError: true,
+          );
+        }
       }
     } finally {
       if (mounted) setState(() => isAddingToCart = false);
     }
+  }
+
+  void _showClearCartConfirmDialog(String kantinName) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Ganti Kantin?', style: TextStyle(fontWeight: FontWeight.bold)),
+          content: Text(
+            'Keranjang Anda berisi menu dari "$kantinName". '
+            'Apakah Anda ingin mengosongkan keranjang untuk memesan menu dari kantin ini?'
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Batal', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context); // Tutup dialog
+                setState(() => isAddingToCart = true);
+                try {
+                  await _menuService.clearCart(); // Kosongkan keranjang
+                  await _handleAddToCart(); // Panggil tambah keranjang lagi
+                } catch (err) {
+                  if (mounted) {
+                    CustomSnackBar.show(
+                      context,
+                      message: err.toString().replaceAll('Exception: ', ''),
+                      isError: true,
+                    );
+                  }
+                  if (mounted) setState(() => isAddingToCart = false);
+                }
+              },
+              child: const Text('Ya, Kosongkan', style: TextStyle(color: const Color(0xFFF2994A), fontWeight: FontWeight.bold)),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override

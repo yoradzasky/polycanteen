@@ -150,7 +150,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           elevation: 0,
           surfaceTintColor: Colors.transparent,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A2E)),
+            icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF1A1A2E), size: 20),
             onPressed: () => Navigator.pop(context),
           ),
           title: const Text(
@@ -298,7 +298,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF1A1A2E), size: 18),
+          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF1A1A2E), size: 20),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(

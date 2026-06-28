@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../services/canteen_list_services.dart';
 import '../../menu/screens/canteen_menu_screen.dart';
+import '../../menu/services/menu_service.dart';
+import '../../menu/widgets/keranjang.dart';
 
 class CanteenListScreen extends StatefulWidget {
   const CanteenListScreen({super.key});
@@ -14,11 +16,43 @@ class _CanteenListScreenState extends State<CanteenListScreen> {
   bool isLoading = true;
 
   final CanteenListService _canteenService = CanteenListService();
+  final MenuService _menuService = MenuService();
+
+  List<Map<String, dynamic>> cartItems = [];
 
   @override
   void initState() {
     super.initState();
     fetchKantinData();
+    fetchCartData();
+  }
+
+  Future<void> fetchCartData() async {
+    try {
+      final cartData = await _menuService.getCartItems();
+      if (mounted) {
+        setState(() {
+          cartItems = cartData
+              .map((item) {
+                return {
+                  'menu_id': item['menu_id'],
+                  'nama_item': item['menu'] != null
+                      ? item['menu']['nama_item']
+                      : 'Menu',
+                  'harga_dasar': item['menu'] != null
+                      ? double.tryParse(item['menu']['harga'].toString()) ?? 0.0
+                      : 0.0,
+                  'jumlah': item['jumlah'],
+                  'varian_selected': item['varian_selected'],
+                };
+              })
+              .toList()
+              .cast<Map<String, dynamic>>();
+        });
+      }
+    } catch (e) {
+      debugPrint('Gagal memuat keranjang di Menu: $e');
+    }
   }
 
   Future<void> fetchKantinData() async {
@@ -33,6 +67,7 @@ class _CanteenListScreenState extends State<CanteenListScreen> {
         kantinList = data;
         isLoading = false;
       });
+      fetchCartData();
     } catch (e) {
       setState(() {
         isLoading = false;
@@ -67,46 +102,64 @@ class _CanteenListScreenState extends State<CanteenListScreen> {
         ),
         centerTitle: true,
       ),
-      body: RefreshIndicator(
-        onRefresh: fetchKantinData,
-        color: const Color(0xFFF2994A),
-        child: isLoading
-            ? const Center(
-                child: CircularProgressIndicator(color: Color(0xFFF2994A)),
-              )
-            : kantinList.isEmpty
-            ? ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                children: const [
-                  SizedBox(height: 100),
-                  Center(child: Text("Belum ada data kantin")),
-                ],
-              )
-            : ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 10,
-                ),
-                children: [
-                  const Text(
-                    'Silakan pilih kantin yang\nanda inginkan!',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF1B399B),
-                      height: 1.3,
+      body: Stack(
+        children: [
+          RefreshIndicator(
+            onRefresh: fetchKantinData,
+            color: const Color(0xFFF2994A),
+            child: isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(color: Color(0xFFF2994A)),
+                  )
+                : kantinList.isEmpty
+                ? ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: const [
+                      SizedBox(height: 100),
+                      Center(child: Text("Belum ada data kantin")),
+                    ],
+                  )
+                : ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 10,
                     ),
+                    children: [
+                      const Text(
+                        'Silakan pilih kantin yang\nanda inginkan!',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF1B399B),
+                          height: 1.3,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      ...kantinList.map((kantin) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 20),
+                          child: _buildKantinCard(kantin),
+                        );
+                      }),
+                      SizedBox(height: cartItems.isNotEmpty ? 100 : 0),
+                    ],
                   ),
-                  const SizedBox(height: 24),
-                  ...kantinList.map((kantin) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 20),
-                      child: _buildKantinCard(kantin),
-                    );
-                  }),
-                ],
+          ),
+          if (cartItems.isNotEmpty)
+            Positioned(
+              bottom: 20,
+              left: 20,
+              right: 20,
+              child: KeranjangWidget(
+                cartItems: cartItems,
+                onCartCheckedOut: () {
+                  fetchKantinData();
+                  fetchCartData();
+                },
               ),
+            ),
+        ],
       ),
     );
   }
@@ -129,7 +182,7 @@ class _CanteenListScreenState extends State<CanteenListScreen> {
           MaterialPageRoute(
             builder: (context) => CanteenMenuScreen(kantinData: kantin),
           ),
-        );
+        ).then((_) => fetchCartData());
       },
       child: Container(
         height: 160,

@@ -101,6 +101,19 @@ class CartController extends Controller
                 ], 403);
             }
 
+            // Cek apakah keranjang memiliki item dari kantin yang berbeda
+            $firstCartItem = Keranjang::where('mahasiswa_id', $mahasiswaId)->with('menu.kantin')->first();
+            if ($firstCartItem && $firstCartItem->menu) {
+                $newMenu = \App\Models\Menu::find($validated['menu_id']);
+                if ($newMenu && $firstCartItem->menu->kantin_id !== $newMenu->kantin_id) {
+                    $existingKantinName = $firstCartItem->menu->kantin->nama_kantin ?? 'Kantin Lain';
+                    return response()->json([
+                        'success' => false,
+                        'message' => "different_kantin|{$existingKantinName}",
+                    ], 400);
+                }
+            }
+
             // AMBIL SEMUA ITEM KERANJANG DENGAN MENU_ID YANG SAMA
             $existingItems = Keranjang::where('mahasiswa_id', $mahasiswaId)
                 ->where('menu_id', $validated['menu_id'])
