@@ -75,8 +75,9 @@ class AuthService {
       // Abaikan jika terjadi error dari server (misal tidak ada koneksi internet).
       // Yang terpenting proses di blok finally tetap berjalan.
     } finally {
-      // Selalu pastikan token dihapus dari HP, apa pun balasan dari server
+      // Selalu pastikan token dan role dihapus dari HP, apa pun balasan dari server
       await _prefs.remove('auth_token');
+      await _prefs.remove('user_role');
     }
   }
 }

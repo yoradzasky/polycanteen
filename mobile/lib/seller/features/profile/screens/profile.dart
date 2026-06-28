@@ -93,6 +93,20 @@ class _ProfileTokoScreenState extends State<ProfileTokoScreen> {
                     onPressed: _loadProfileData,
                     child: const Text('Coba Lagi'),
                   ),
+                  if ((snapshot.data?['error'] ?? '').toString().contains('Unauthenticated')) ...[
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      onPressed: _handleLogout,
+                      icon: const Icon(Icons.logout, color: Color(0xFFDC2626)),
+                      label: const Text(
+                        'Login Ulang',
+                        style: TextStyle(color: Color(0xFFDC2626)),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Color(0xFFDC2626)),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             );

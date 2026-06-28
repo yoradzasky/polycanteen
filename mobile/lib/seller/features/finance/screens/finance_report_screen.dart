@@ -253,12 +253,15 @@ class _FinanceReportScreenState extends State<FinanceReportScreen> {
                                       children: const [
                                         Icon(Icons.account_balance_wallet, color: Color(0xFFF2994A), size: 16),
                                         SizedBox(width: 6),
-                                        Text(
-                                          'Total Pendapatan',
-                                          style: TextStyle(
-                                            color: Colors.grey,
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w600,
+                                        Flexible(
+                                          child: Text(
+                                            'Total Pendapatan',
+                                            style: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
                                       ],
