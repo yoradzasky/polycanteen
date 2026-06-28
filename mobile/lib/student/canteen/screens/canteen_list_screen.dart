@@ -3,6 +3,7 @@ import '../services/canteen_list_services.dart';
 import '../../menu/screens/canteen_menu_screen.dart';
 import '../../menu/services/menu_service.dart';
 import '../../menu/widgets/keranjang.dart';
+import 'package:mobile/core/widgets/app_loading_animation.dart';
 
 class CanteenListScreen extends StatefulWidget {
   const CanteenListScreen({super.key});
@@ -108,9 +109,7 @@ class _CanteenListScreenState extends State<CanteenListScreen> {
             onRefresh: fetchKantinData,
             color: const Color(0xFFF2994A),
             child: isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(color: Color(0xFFF2994A)),
-                  )
+                ? const Center(child: AppLoadingAnimation())
                 : kantinList.isEmpty
                 ? ListView(
                     physics: const AlwaysScrollableScrollPhysics(),

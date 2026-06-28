@@ -7,6 +7,7 @@ import '../../order/screens/order_detail_screen.dart';
 import '../../menu/services/menu_service.dart';
 import '../../payment/screens/payment_screen.dart';
 import '../../menu/widgets/keranjang.dart';
+import 'package:mobile/core/widgets/app_loading_animation.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -126,11 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(
-          color: Color(0xFFF2994A),
-        ),
-      ),
+      builder: (context) => const Center(child: AppLoadingAnimation()),
     );
 
     try {
@@ -276,9 +273,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (isLoading) {
       return const Scaffold(
         backgroundColor: Color(0xFFFFF6ED),
-        body: Center(
-          child: CircularProgressIndicator(color: Color(0xFFF2994A)),
-        ),
+        body: const Center(child: AppLoadingAnimation()),
       );
     }
 

@@ -9,6 +9,7 @@ import '../widgets/delivery_tracking_card.dart';
 import '../../../tracking/widgets/location_permission_sheet.dart';
 import '../../scanner/screens/qr_scanner_screen.dart';
 import 'order_detail_screen.dart';
+import 'package:mobile/core/widgets/app_loading_animation.dart';
 
 // ==========================================
 // ORDER LIST SCREEN (TERHUBUNG API)
@@ -131,7 +132,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) =>
-          Center(child: CircularProgressIndicator(color: _primaryColor)),
+          const Center(child: AppLoadingAnimation()),
     );
 
     try {
@@ -159,7 +160,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) =>
-          Center(child: CircularProgressIndicator(color: _primaryColor)),
+          const Center(child: AppLoadingAnimation()),
     );
 
     try {
@@ -490,9 +491,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                   children: [
                     SizedBox(
                       height: MediaQuery.of(context).size.height * 0.5,
-                      child: Center(
-                        child: CircularProgressIndicator(color: _primaryColor),
-                      ),
+                      child: const Center(child: AppLoadingAnimation()),
                     ),
                   ],
                 )

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../services/finance_service.dart';
+import 'package:mobile/core/widgets/app_loading_animation.dart';
 
 class SellerOrderHistoryScreen extends StatelessWidget {
   const SellerOrderHistoryScreen({Key? key}) : super(key: key);
@@ -35,11 +36,7 @@ class SellerOrderHistoryScreen extends StatelessWidget {
         ),
       ),
       body: provider.isLoading
-          ? const Center(
-              child: CircularProgressIndicator(
-                color: Color(0xFF3F51B5),
-              ),
-            )
+          ? const Center(child: AppLoadingAnimation())
           : history.isEmpty
               ? Center(
                   child: Column(

@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import '../widgets/profile_header_curve.dart';
 import '../services/profile_service.dart';
 import '../models/kantin_profile.dart';
+import 'package:mobile/core/widgets/app_loading_animation.dart';
 
 class EditProfileKantinScreen extends StatefulWidget {
   const EditProfileKantinScreen({super.key});
@@ -169,7 +170,7 @@ class _EditProfileKantinScreenState extends State<EditProfileKantinScreen> {
     if (_isLoading) {
       return Scaffold(
         backgroundColor: const Color(0xFFF9FAFB),
-        body: const Center(child: CircularProgressIndicator()),
+        body: const Center(child: AppLoadingAnimation()),
       );
     }
 

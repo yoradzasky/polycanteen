@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:mobile/core/widgets/app_loading_animation.dart';
 
 
 class OrderDetailScreen extends StatefulWidget {
@@ -136,9 +137,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     if (_isLoading) {
       return const Scaffold(
         backgroundColor: Color(0xFFF5F6FA),
-        body: Center(
-          child: CircularProgressIndicator(color: Color(0xFF2D3A8C)),
-        ),
+        body: const Center(child: AppLoadingAnimation()),
       );
     }
 

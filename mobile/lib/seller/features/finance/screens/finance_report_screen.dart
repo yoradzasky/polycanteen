@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../services/finance_service.dart';
 import 'seller_order_history_screen.dart';
+import 'package:mobile/core/widgets/app_loading_animation.dart';
 
 class FinanceReportScreen extends StatefulWidget {
   const FinanceReportScreen({Key? key}) : super(key: key);
@@ -138,11 +139,7 @@ class _FinanceReportScreenState extends State<FinanceReportScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6FB),
       body: provider.isLoading
-          ? const Center(
-              child: CircularProgressIndicator(
-                color: Color(0xFF3F51B5),
-              ),
-            )
+          ? const Center(child: AppLoadingAnimation())
           : RefreshIndicator(
               onRefresh: () => provider.fetchFinanceData(),
               color: const Color(0xFF3F51B5),

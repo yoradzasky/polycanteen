@@ -5,6 +5,7 @@ import '../widgets/keranjang.dart';
 import '../services/menu_service.dart';
 import 'menu_detail.dart';
 import '../../../core/widgets/custom_snackbar.dart';
+import 'package:mobile/core/widgets/app_loading_animation.dart';
 
 class CanteenMenuScreen extends StatefulWidget {
   final Map<String, dynamic> kantinData;
@@ -547,7 +548,7 @@ class _CanteenMenuScreenState extends State<CanteenMenuScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
                 sliver: isLoading
                     ? const SliverToBoxAdapter(
-                        child: Center(child: CircularProgressIndicator()),
+                        child: const Center(child: AppLoadingAnimation()),
                       )
                     : filteredMenus.isEmpty
                     ? SliverToBoxAdapter(
