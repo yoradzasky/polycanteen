@@ -7,6 +7,7 @@ import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 import '../services/menu_service.dart';
 import 'add_menu_screen.dart';
 import 'edit_menu_screen.dart';
+import 'package:mobile/core/widgets/app_loading_animation.dart';
 
 // ──────────────────────────────────────────────
 // Warna utama
@@ -231,7 +232,7 @@ class _MenuListScreenState extends State<MenuListScreen> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return Center(child: CircularProgressIndicator(color: _primaryColor));
+      return const Center(child: AppLoadingAnimation());
     }
 
     if (_error != null) {

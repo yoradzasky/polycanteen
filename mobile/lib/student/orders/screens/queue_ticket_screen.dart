@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/order_service.dart';
 import '../../order/screens/order_screen.dart';
+import 'package:mobile/core/widgets/app_loading_animation.dart';
 
 class QueueTicketScreen extends StatefulWidget {
   final int pesananId;
@@ -58,7 +59,7 @@ class _QueueTicketScreenState extends State<QueueTicketScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator(color: Color(0xFFF08D38))),
+        body: const Center(child: AppLoadingAnimation()),
       );
     }
 

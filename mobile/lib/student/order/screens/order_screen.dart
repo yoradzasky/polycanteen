@@ -9,6 +9,7 @@ import '../../../student/tracking/screens/live_tracking_screen.dart';
 import 'order_detail_screen.dart';
 import '../widgets/review_popup.dart';
 import '../../payment/screens/payment_screen.dart';
+import 'package:mobile/core/widgets/app_loading_animation.dart';
 
 class OrderScreen extends StatefulWidget {
   const OrderScreen({super.key});
@@ -257,9 +258,7 @@ class _OrderScreenState extends State<OrderScreen>
         ),
       ),
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFF2D3A8C)),
-            )
+          ? const Center(child: AppLoadingAnimation())
           : TabBarView(
               controller: _tabController,
               children: [_buildDalamProsesTab(), _buildRiwayatTab()],

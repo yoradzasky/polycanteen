@@ -9,6 +9,7 @@ import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 import 'package:firebase_database/firebase_database.dart';
 import '../widgets/location_permission_sheet.dart';
 import '../../features/scanner/screens/qr_scanner_screen.dart';
+import 'package:mobile/core/widgets/app_loading_animation.dart';
 
 class FirebaseTrackingService {
   static Future<void> updateLocation(String pesananId, double lat, double lng) async {
@@ -277,7 +278,7 @@ class _DeliveryTrackingScreenState extends State<DeliveryTrackingScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (c) => const Center(child: CircularProgressIndicator()),
+      builder: (c) => const Center(child: AppLoadingAnimation()),
     );
 
     try {
@@ -336,7 +337,7 @@ class _DeliveryTrackingScreenState extends State<DeliveryTrackingScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator(color: Color(0xFFF5A623))),
+        body: const Center(child: AppLoadingAnimation()),
       );
     }
 

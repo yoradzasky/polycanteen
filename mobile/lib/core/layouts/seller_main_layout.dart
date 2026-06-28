@@ -9,6 +9,7 @@ import '../../seller/features/profile/screens/profile.dart';
 import '../../seller/features/finance/screens/finance_report_screen.dart';
 import '../../seller/features/finance/services/finance_service.dart';
 import 'package:provider/provider.dart';
+import 'package:mobile/core/widgets/app_loading_animation.dart';
 
 class SellerMainLayout extends StatefulWidget {
   const SellerMainLayout({super.key});
@@ -59,7 +60,7 @@ class _SellerMainLayoutState extends State<SellerMainLayout> {
   Widget build(BuildContext context) {
     if (_isLoadingRole) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        body: const Center(child: AppLoadingAnimation()),
       );
     }
 

@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import '../widgets/profile_header_curve.dart';
 import '../models/user_profile.dart';
 import '../services/profile_service.dart';
+import 'package:mobile/core/widgets/app_loading_animation.dart';
 
 
 class EditProfileUserScreen extends StatefulWidget {
@@ -190,9 +191,7 @@ class _EditProfileUserScreenState extends State<EditProfileUserScreen> {
     if (_isLoading) {
       return Scaffold(
         backgroundColor: const Color(0xFFF9FAFB),
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        body: const Center(child: AppLoadingAnimation()),
       );
     }
 
