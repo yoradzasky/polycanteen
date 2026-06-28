@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 // 1. Import file login screen kamu (bisa pakai relative path seperti ini)
 import 'core/auth/screens/login_screen.dart';
-import 'core/screens/splash_screen.dart';
+import 'core/auth/screens/splash_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
