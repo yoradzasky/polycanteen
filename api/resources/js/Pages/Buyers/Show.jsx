@@ -12,15 +12,15 @@ export default function Show({ buyer }) {
 
     // 1. Breadcrumb dikembalikan ke posisi rapat (hapus margin kiri tambahan)
     const renderBreadcrumb = (
-        <div className="flex items-center text-sm text-gray-500 gap-2">
+        <div className="flex items-center gap-2 text-sm font-medium">
             <Link
                 href="/admin/buyers"
-                className="text-[#3949AB] hover:underline font-medium"
+                className="text-[#3852b4] hover:underline"
             >
                 Daftar Mahasiswa
             </Link>
-            <span>/</span>
-            <span className="text-gray-400">Detail</span>
+            <span className="text-gray-400">›</span>
+            <span className="text-gray-500">Detail</span>
         </div>
     );
 
@@ -28,7 +28,7 @@ export default function Show({ buyer }) {
     const renderBackButton = (
         <Link
             href="/admin/buyers"
-            className="text-gray-400 hover:text-[#3949AB] transition-colors p-1 -ml-1"
+            className="text-gray-400 hover:text-[#3852b4] transition-colors p-1 -ml-1"
             title="Kembali"
         >
             <svg
@@ -55,7 +55,7 @@ export default function Show({ buyer }) {
         >
             <Head title={`Detail Mahasiswa - ${data.name || "Loading..."}`} />
 
-            <div className="p-6 lg:p-8 font-sans pb-20">
+            <div className="p-6 lg:p-8 font-sans pb-20 w-full">
                 {data.id ? (
                     <>
                         {/* Card 1: Profil User */}
@@ -73,7 +73,7 @@ export default function Show({ buyer }) {
                                         className="w-20 h-20 rounded-xl object-cover"
                                     />
                                 ) : (
-                                    <div className="w-20 h-20 rounded-xl bg-[#3949AB] text-white flex items-center justify-center text-3xl font-bold">
+                                    <div className="w-20 h-20 rounded-xl bg-[#3852b4] text-white flex items-center justify-center text-3xl font-bold">
                                         {data.name
                                             ? data.name
                                                   .split(" ")

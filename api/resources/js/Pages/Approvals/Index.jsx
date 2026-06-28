@@ -62,7 +62,7 @@ export default function Index({ applications, filters }) {
         >
             <Head title="Persetujuan Akun" />
 
-            <div className="p-6 lg:p-8 font-sans pb-20">
+            <div className="p-6 lg:p-8 font-sans pb-20 w-full">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div className="p-6 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-gray-100">
                         <div>
@@ -97,7 +97,7 @@ export default function Index({ applications, filters }) {
 
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left text-gray-600">
-                            <thead className="text-xs text-gray-400 uppercase bg-white border-b border-gray-100">
+                            <thead className="text-xs text-gray-400 uppercase bg-white border-b-2 border-gray-200">
                                 <tr>
                                     <th scope="col" className="px-6 py-4 font-semibold tracking-wider">
                                         Mahasiswa
@@ -121,7 +121,7 @@ export default function Index({ applications, filters }) {
                                     dataToRender.map((app, index) => (
                                         <tr
                                             key={index}
-                                            className="bg-white border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                                            className="bg-white border-b-2 border-gray-200 hover:bg-gray-50/50 transition-colors"
                                         >
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex items-center gap-3">

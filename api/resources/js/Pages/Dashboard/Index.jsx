@@ -49,7 +49,8 @@ export default function Index({ totalTransaksi = 0, totalPembeli = 0, totalKanti
 
   return (
     <AdminLayout>
-      <section className="flex flex-wrap items-center gap-[42px] px-8 py-7 w-full">
+      <div className="p-6 lg:p-8 font-sans pb-20 w-full space-y-6">
+        <section className="flex flex-wrap items-center gap-[42px] w-full">
         {summaryCards.map((card) => (
           <StatCard 
             key={card.title} 
@@ -62,7 +63,8 @@ export default function Index({ totalTransaksi = 0, totalPembeli = 0, totalKanti
         ))}
       </section>
       
-      <ActivityTable aktivitas={aktivitas} />
+        <ActivityTable aktivitas={aktivitas} />
+      </div>
     </AdminLayout>
   );
 }

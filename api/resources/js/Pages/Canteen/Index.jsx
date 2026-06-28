@@ -225,7 +225,7 @@ export default function Index({ canteens, filters }) {
                     {/* Add Button */}
                     <Link
                         href={route('admin.canteens.create')}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow-md transition-all"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#3852b4] hover:bg-[#2c4190] text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow-md transition-all"
                     >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -237,9 +237,9 @@ export default function Index({ canteens, filters }) {
         >
             <Head title="Daftar Kantin" />
 
-            <div className="px-8 py-7">
+            <div className="p-6 lg:p-8 font-sans pb-20 w-full">
                 {/* ── Table Card ── */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     {/* Card Header */}
                     <div className="px-6 py-5 border-b border-gray-200">
                         <h2 className="text-base font-bold text-gray-900">Daftar Semua Kantin</h2>
@@ -252,7 +252,7 @@ export default function Index({ canteens, filters }) {
                     <div className="overflow-x-auto">
                         <table className="w-full min-w-[900px]">
                             <thead>
-                                <tr className="border-b border-gray-300">
+                                <tr className="border-b-2 border-gray-300">
                                     <th className="text-left px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama Kantin</th>
                                     <th className="text-left px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Pemilik</th>
                                     <th className="text-left px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Lokasi</th>
@@ -263,7 +263,7 @@ export default function Index({ canteens, filters }) {
                                     <th className="text-center px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-200">
+                            <tbody className="divide-y-2 divide-gray-200">
                                 {canteens.data && canteens.data.length > 0 ? (
                                     canteens.data.map((kantin) => (
                                         <tr key={kantin.id} className="hover:bg-[#f9fafd] transition-colors">

@@ -1,4 +1,4 @@
- import AdminLayout from '@/Layouts/AdminLayout';
+import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, Link, useForm, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import MapPickerModal from '@/Components/Modals/MapPickerModal';
@@ -83,21 +83,21 @@ export default function Create() {
         <AdminLayout
             title="Tambah Kantin"
             description={
-                <span className="flex items-center space-x-1.5">
-                    <Link href={route('admin.canteens.index')} className="text-blue-600 hover:underline font-medium">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                    <Link href={route('admin.canteens.index')} className="text-[#3852b4] hover:underline">
                         Daftar Kantin
                     </Link>
-                    <span className="text-gray-300">›</span>
+                    <span className="text-gray-400">›</span>
                     <span className="text-gray-500">Tambah Kantin</span>
-                </span>
+                </div>
             }
             rightContent={null}
         >
             <Head title="Tambah Kantin" />
 
-            <div className="min-h-screen bg-[#f8fafc] py-8 px-4 sm:px-6 lg:px-8 font-sans">
+            <div className="p-6 lg:p-8 font-sans pb-20 w-full">
                 {/* Form Container */}
-                <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="max-w-5xl mx-auto w-full bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     {/* Banner Flash Message */}
                     {flash.success && (
                         <div className="bg-green-50 border-b border-green-200 p-4">
@@ -128,7 +128,7 @@ export default function Create() {
                     <div className="p-6 md:p-8 space-y-12">
                         {/* SECTION 1: Informasi Kantin */}
                         <div className="space-y-6">
-                            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+                            <div className="flex items-center justify-between pb-4 border-b-2 border-gray-100">
                                 <div className="flex items-center space-x-3">
                                     <div className="bg-blue-100 p-2 rounded-lg text-blue-600">
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
@@ -147,7 +147,7 @@ export default function Create() {
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                                         </div>
-                                        <input type="text" className={`w-full pl-10 border rounded-md py-2 px-3 text-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors ${errors.nama_kantin ? 'border-red-500' : 'border-gray-300'}`} placeholder="Kantin Mbok Jum" value={data.nama_kantin} onChange={e => setData('nama_kantin', e.target.value)} />
+                                        <input type="text" className={`w-full pl-10 border-2 rounded-md py-2 px-3 text-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors ${errors.nama_kantin ? 'border-red-500' : 'border-gray-300'}`} placeholder="Kantin Mbok Jum" value={data.nama_kantin} onChange={e => setData('nama_kantin', e.target.value)} />
                                     </div>
                                 </FormField>
 
@@ -169,7 +169,7 @@ export default function Create() {
                                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m3-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
                                             </div>
-                                            <input type="text" className={`w-full pl-10 border rounded-lg py-2.5 px-3 text-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors ${errors.lokasi_lengkap ? 'border-red-500' : 'border-gray-300'}`} placeholder="Gedung A, Lantai 2" value={data.lokasi_lengkap} onChange={e => setData('lokasi_lengkap', e.target.value)} />
+                                            <input type="text" className={`w-full pl-10 border-2 rounded-lg py-2.5 px-3 text-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors ${errors.lokasi_lengkap ? 'border-red-500' : 'border-gray-300'}`} placeholder="Gedung A, Lantai 2" value={data.lokasi_lengkap} onChange={e => setData('lokasi_lengkap', e.target.value)} />
                                         </div>
                                     </FormField>
                                 </div>
@@ -194,7 +194,7 @@ export default function Create() {
 
                         {/* SECTION 2: Data Pemilik */}
                         <div className="space-y-6">
-                            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+                            <div className="flex items-center justify-between pb-4 border-b-2 border-gray-100">
                                 <div className="flex items-center space-x-3">
                                     <div className="bg-orange-100 p-2 rounded-lg text-orange-600">
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
@@ -214,7 +214,7 @@ export default function Create() {
                                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                                             </div>
-                                            <input type="text" className={`w-full pl-10 border rounded-md py-2 px-3 text-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors ${errors.nama_pemilik ? 'border-red-500' : 'border-gray-300'}`} placeholder="Nama lengkap pemilik" value={data.nama_pemilik} onChange={e => setData('nama_pemilik', e.target.value)} />
+                                            <input type="text" className={`w-full pl-10 border-2 rounded-md py-2 px-3 text-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors ${errors.nama_pemilik ? 'border-red-500' : 'border-gray-300'}`} placeholder="Nama lengkap pemilik" value={data.nama_pemilik} onChange={e => setData('nama_pemilik', e.target.value)} />
                                         </div>
                                     </FormField>
 
@@ -228,7 +228,7 @@ export default function Create() {
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                                         </div>
-                                        <input type="email" className={`w-full pl-10 border rounded-md py-2 px-3 text-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors ${errors.email ? 'border-red-500' : 'border-gray-300'}`} placeholder="email@contoh.com" value={data.email} onChange={e => setData('email', e.target.value)} />
+                                        <input type="email" className={`w-full pl-10 border-2 rounded-md py-2 px-3 text-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors ${errors.email ? 'border-red-500' : 'border-gray-300'}`} placeholder="email@contoh.com" value={data.email} onChange={e => setData('email', e.target.value)} />
                                     </div>
                                 </FormField>
                             </div>
@@ -236,7 +236,7 @@ export default function Create() {
 
                         {/* SECTION 3: Data Karyawan */}
                         <div className="space-y-6">
-                            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+                            <div className="flex items-center justify-between pb-4 border-b-2 border-gray-100">
                                 <div className="flex items-center space-x-3">
                                     <div className="bg-green-100 p-2 rounded-lg text-green-600">
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
@@ -261,7 +261,7 @@ export default function Create() {
 
                             <div className="space-y-4">
                                 {data.karyawan.map((item, index) => (
-                                    <div key={index} className="p-5 border border-gray-200 rounded-lg relative bg-white shadow-sm">
+                                    <div key={index} className="p-5 border-2 border-gray-200 rounded-lg relative bg-white shadow-sm">
                                         <button type="button" onClick={() => hapusKaryawan(index)} className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors bg-gray-50 hover:bg-red-50 p-1.5 rounded-md" title="Hapus Karyawan">
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                         </button>
@@ -278,7 +278,7 @@ export default function Create() {
                                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                                                         </div>
-                                                        <input type="text" className={`w-full pl-10 border rounded-md py-2 px-3 text-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors ${errors[`karyawan.${index}.nama_karyawan`] ? 'border-red-500' : 'border-gray-300'}`} placeholder="Nama lengkap karyawan" value={item.nama_karyawan} onChange={e => updateKaryawan(index, 'nama_karyawan', e.target.value)} />
+                                                        <input type="text" className={`w-full pl-10 border-2 rounded-md py-2 px-3 text-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors ${errors[`karyawan.${index}.nama_karyawan`] ? 'border-red-500' : 'border-gray-300'}`} placeholder="Nama lengkap karyawan" value={item.nama_karyawan} onChange={e => updateKaryawan(index, 'nama_karyawan', e.target.value)} />
                                                     </div>
                                                 </FormField>
 
@@ -292,7 +292,7 @@ export default function Create() {
                                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                                                     </div>
-                                                    <input type="email" className={`w-full pl-10 border rounded-md py-2 px-3 text-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors ${errors[`karyawan.${index}.email`] ? 'border-red-500' : 'border-gray-300'}`} placeholder="email@contoh.com" value={item.email} onChange={e => updateKaryawan(index, 'email', e.target.value)} />
+                                                    <input type="email" className={`w-full pl-10 border-2 rounded-md py-2 px-3 text-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors ${errors[`karyawan.${index}.email`] ? 'border-red-500' : 'border-gray-300'}`} placeholder="email@contoh.com" value={item.email} onChange={e => updateKaryawan(index, 'email', e.target.value)} />
                                                 </div>
                                             </FormField>
                                         </div>
@@ -317,9 +317,9 @@ export default function Create() {
                             <Link href={route('admin.canteens.index')} className="flex-1 sm:flex-none flex justify-center items-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm">
                                 × Batal
                             </Link>
-                            <button type="button" onClick={handleSubmit} disabled={processing} className="flex-1 sm:flex-none flex justify-center items-center space-x-2 px-5 py-2.5 text-sm font-medium text-white bg-orange-500 border border-transparent rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 transition-colors shadow-sm">
+                            <button type="button" onClick={handleSubmit} disabled={processing} className="flex-1 sm:flex-none flex justify-center items-center space-x-2 px-5 py-2.5 text-sm font-medium text-white bg-[#3852b4] border border-transparent rounded-lg hover:bg-[#2c4190] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3852b4] disabled:opacity-50 transition-colors shadow-sm">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                                <span>{processing ? 'Menyimpan...' : 'Buat Kantin →'}</span>
+                                <span>{processing ? 'Menyimpan...' : 'Buat Kantin'}</span>
                             </button>
                         </div>
                     </div>

@@ -100,6 +100,12 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->name('admin.')->grou
     Route::post('/approvals/{application}/reject', [BuyerApprovalController::class, 'reject'])
         ->name('approvals.reject');
 
+    // ==========================================
+    // MANAJEMEN AKUN ADMIN
+    // ==========================================
+    Route::put('/password', [\App\Http\Controllers\AdminController::class, 'updatePassword'])
+        ->name('password.update');
+
 });
 
 Route::middleware('auth')->group(function () {

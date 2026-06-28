@@ -36,19 +36,19 @@ export default function Show({ application }) {
     ]), [data]);
 
     const breadcrumb = (
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-            <Link href="/admin/approvals" className="font-medium text-[#3949AB] hover:underline">
+        <div className="flex items-center gap-2 text-sm font-medium">
+            <Link href="/admin/approvals" className="text-[#3852b4] hover:underline">
                 Persetujuan Akun
             </Link>
-            <span>/</span>
-            <span className="text-gray-400">Detail Pengajuan</span>
+            <span className="text-gray-400">›</span>
+            <span className="text-gray-500">Detail Pengajuan</span>
         </div>
     );
 
     const backButton = (
         <Link
             href="/admin/approvals"
-            className="-ml-1 rounded-lg p-1 text-gray-400 transition hover:bg-white hover:text-[#3949AB]"
+            className="-ml-1 rounded-lg p-1 text-gray-400 transition hover:bg-white hover:text-[#3852b4]"
             title="Kembali"
         >
             <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -61,9 +61,9 @@ export default function Show({ application }) {
         <AdminLayout leftContent={backButton} title="Detail Pengajuan" description={breadcrumb}>
             <Head title={`Detail Pengajuan - ${data.name || 'Mahasiswa'}`} />
 
-            <div className="p-6 lg:p-8">
+            <div className="p-6 lg:p-8 font-sans pb-20 w-full">
                 <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
-                    <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+                    <section className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
                         <div className="mb-6 flex flex-col gap-3 border-b border-gray-100 pb-5 sm:flex-row sm:items-start sm:justify-between">
                             <div>
                                 <h2 className="text-xl font-bold text-gray-900">{data.name}</h2>
