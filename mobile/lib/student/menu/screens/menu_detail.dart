@@ -651,7 +651,7 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                     // TOMBOL TAMBAH KE KERANJANG
                     Expanded(
                       child: SizedBox(
-                        height: 50, // Paksa tinggi tombol tetap 50
+                        height: 56, // Cukup untuk 2 baris teks
                         child: ElevatedButton(
                           onPressed: isAddingToCart ? null : _handleAddToCart,
                           style: ElevatedButton.styleFrom(
