@@ -209,19 +209,22 @@ class _ProfileHeaderAndInfo extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            userName,
+            kantinName,
+            textAlign: TextAlign.center,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 24,
+              fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            kantinName,
+            "${isPemilik ? 'Pemilik' : 'Pegawai'}: $userName",
+            textAlign: TextAlign.center,
             style: const TextStyle(
               color: Colors.white70,
               fontSize: 14,
+              fontWeight: FontWeight.w500,
             ),
           ),
           const SizedBox(height: 12),

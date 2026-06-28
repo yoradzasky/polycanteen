@@ -55,11 +55,11 @@ class MidtransWebhookController extends Controller
             DB::transaction(function () use ($pesanan, $transactionStatus, $request) {
                 // Update Tabel Pesanan
                 if ($transactionStatus == 'capture' || $transactionStatus == 'settlement') {
-                    $pesanan->status_pesanan = 'dibayar';
+                    $pesanan->status_pesanan = 'dimasak';
                 } elseif ($transactionStatus == 'cancel' || $transactionStatus == 'deny' || $transactionStatus == 'expire') {
                     $pesanan->status_pesanan = 'gagal';
                 } elseif ($transactionStatus == 'pending') {
-                    $pesanan->status_pesanan = 'pending';
+                    $pesanan->status_pesanan = 'menunggu_pembayaran';
                 }
                 $pesanan->save();
 

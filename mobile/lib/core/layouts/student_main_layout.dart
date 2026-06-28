@@ -7,10 +7,12 @@ import '../widgets/student_navbar.dart';
 
 class StudentMainLayout extends StatefulWidget {
   final String userRole; // 1. Tambahkan variabel untuk menyimpan role
+  final int initialIndex;
 
   const StudentMainLayout({
     super.key,
     required this.userRole, // 2. Jadikan role sebagai parameter wajib
+    this.initialIndex = 0,
   });
 
   @override
@@ -18,7 +20,13 @@ class StudentMainLayout extends StatefulWidget {
 }
 
 class _StudentMainLayoutState extends State<StudentMainLayout> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialIndex;
+  }
 
   final List<Widget> _screens = [
     const HomeScreen(),

@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../payment/screens/payment_screen.dart';
 import '../services/menu_service.dart';
+import '../../../core/widgets/custom_snackbar.dart';
 
 class KeranjangWidget extends StatelessWidget {
   final List<Map<String, dynamic>> cartItems;
+  final VoidCallback? onCartCheckedOut;
 
-  const KeranjangWidget({super.key, required this.cartItems});
+  const KeranjangWidget({super.key, required this.cartItems, this.onCartCheckedOut});
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +50,7 @@ class KeranjangWidget extends StatelessWidget {
           // Lakukan checkout keranjang untuk mendapatkan pesanan baru secara dinamis
           final orderData = await MenuService().checkout();
           if (context.mounted) {
-            Navigator.push(
+            await Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => PaymentScreen(
@@ -57,14 +59,16 @@ class KeranjangWidget extends StatelessWidget {
                 ),
               ),
             );
+            if (onCartCheckedOut != null) {
+              onCartCheckedOut!();
+            }
           }
         } catch (e) {
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Gagal memproses checkout: ${e.toString().replaceAll('Exception: ', '')}'),
-                backgroundColor: Colors.red,
-              ),
+            CustomSnackBar.show(
+              context,
+              message: 'Gagal memproses checkout: ${e.toString().replaceAll('Exception: ', '')}',
+              isError: true,
             );
           }
         }

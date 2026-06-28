@@ -4,6 +4,7 @@ import '../widgets/variant_bottom_sheet.dart';
 import '../widgets/keranjang.dart';
 import '../services/menu_service.dart';
 import 'menu_detail.dart';
+import '../../../core/widgets/custom_snackbar.dart';
 
 class CanteenMenuScreen extends StatefulWidget {
   final Map<String, dynamic> kantinData;
@@ -179,19 +180,61 @@ class _CanteenMenuScreenState extends State<CanteenMenuScreen> {
       // 2. GANTI logika manual tadi dengan menarik ulang data keranjang
       // yang sudah dikalkulasi dengan benar oleh backend Laravel
       await fetchCartData();
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Berhasil ditambahkan ke keranjang')),
-        );
-      }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
-        );
+        final errorMsg = e.toString().replaceAll('Exception: ', '');
+        if (errorMsg.startsWith('different_kantin|')) {
+          final kantinName = errorMsg.split('|')[1];
+          _showClearCartConfirmDialog(kantinName, menu, qty, varian);
+        } else {
+          CustomSnackBar.show(
+            context,
+            message: errorMsg,
+            isError: true,
+          );
+        }
       }
     }
+  }
+
+  void _showClearCartConfirmDialog(String kantinName, Map menu, int qty, Map? varian) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Ganti Kantin?', style: TextStyle(fontWeight: FontWeight.bold)),
+          content: Text(
+            'Keranjang Anda berisi menu dari "$kantinName". '
+            'Apakah Anda ingin mengosongkan keranjang untuk memesan menu dari kantin ini?'
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Batal', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context); // Tutup dialog
+                try {
+                  await _menuService.clearCart(); // Kosongkan keranjang
+                  await _prosesTambahKeranjang(menu, qty, varian); // Panggil tambah keranjang lagi
+                } catch (err) {
+                  if (mounted) {
+                    CustomSnackBar.show(
+                      context,
+                      message: err.toString().replaceAll('Exception: ', ''),
+                      isError: true,
+                    );
+                  }
+                }
+              },
+              child: const Text('Ya, Kosongkan', style: TextStyle(color: const Color(0xFFF2994A), fontWeight: FontWeight.bold)),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   // ✨ SUDAH DIBERSIHKAN DARI LOGIKA TOPPING
@@ -805,7 +848,10 @@ class _CanteenMenuScreenState extends State<CanteenMenuScreen> {
               bottom: 20,
               left: 20,
               right: 20,
-              child: KeranjangWidget(cartItems: cartItems),
+              child: KeranjangWidget(
+                cartItems: cartItems,
+                onCartCheckedOut: fetchCartData,
+              ),
             ),
         ],
       ),

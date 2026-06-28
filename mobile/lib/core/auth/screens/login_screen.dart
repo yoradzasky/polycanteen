@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 import '../../layouts/student_main_layout.dart';
 import '../../layouts/seller_main_layout.dart';
@@ -9,6 +11,7 @@ import '../../../student/payment/screens/payment_screen.dart';
 import '../../../student/orders/services/order_service.dart';
 import '../../../student/home/screens/home_screen.dart';
 import '../../services/notification_service.dart';
+import '../../widgets/custom_snackbar.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -32,10 +35,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
     // Validasi kosong di sisi Flutter
     if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Email dan Kata Sandi tidak boleh kosong'),
-        ),
+      CustomSnackBar.show(
+        context,
+        message: 'Email dan Kata Sandi tidak boleh kosong',
+        isError: true,
       );
       return;
     }
@@ -76,11 +79,10 @@ class _LoginScreenState extends State<LoginScreen> {
         // Cek apakah role adalah admin - jika iya, tolak login
         if (userRole == 'admin') {
           if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Admin tidak dapat login melalui aplikasi mobile'),
-              backgroundColor: Colors.red,
-            ),
+          CustomSnackBar.show(
+            context,
+            message: 'Admin tidak dapat login melalui aplikasi mobile',
+            isError: true,
           );
           setState(() {
             _isLoading = false;
@@ -117,8 +119,10 @@ class _LoginScreenState extends State<LoginScreen> {
           errorMessage = responseData['errors'].values.first[0];
         }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+        CustomSnackBar.show(
+          context,
+          message: errorMessage,
+          isError: true,
         );
       }
     } catch (e) {
@@ -127,11 +131,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
       debugPrint('ERROR LOGIN: $e');
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Gagal terhubung ke server. Pastikan API menyala!'),
-          backgroundColor: Colors.red,
-        ),
+      CustomSnackBar.show(
+        context,
+        message: 'Gagal terhubung ke server. Pastikan API menyala!',
+        isError: true,
       );
     } finally {
       if (mounted) {
@@ -172,27 +175,34 @@ class _LoginScreenState extends State<LoginScreen> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       const SizedBox(height: 8),
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF2D50EE),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: const Icon(
-                          Icons.restaurant,
-                          color: Colors.white,
-                          size: 36,
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.asset(
+                          'assets/logo.jpg',
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.cover,
                         ),
                       ),
                       const SizedBox(height: 24),
-                      const Text(
-                        'PolyCanteen',
+                      RichText(
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Color(0xFF1A1A1A),
-                          fontSize: 28,
-                          fontWeight: FontWeight.w700,
+                        text: const TextSpan(
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.5,
+                          ),
+                          children: [
+                            TextSpan(
+                              text: 'Poly',
+                              style: TextStyle(color: Color(0xFF1E232C)),
+                            ),
+                            TextSpan(
+                              text: 'Canteen',
+                              style: TextStyle(color: Color(0xFFF2994A)),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -310,6 +320,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   bool _isFormValid = false;
   bool _isRegistering = false;
+  XFile? _ktmImage;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -341,7 +353,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _phoneController.text.trim().isNotEmpty &&
         _passwordController.text.isNotEmpty &&
         _confirmPasswordController.text.isNotEmpty &&
-        _passwordController.text == _confirmPasswordController.text;
+        _passwordController.text == _confirmPasswordController.text &&
+        _ktmImage != null;
 
     if (isValid != _isFormValid) {
       setState(() {
@@ -366,21 +379,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
           dotenv.env['BASE_URL'] ?? 'http://192.168.1.14:8000/api';
       final Uri url = Uri.parse('$baseUrl/register');
 
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: jsonEncode({
-          'name': name,
-          'email': email,
-          'nim': nim,
-          'phone': phone,
-          'password': password,
-        }),
-      ).timeout(const Duration(seconds: 10));
+      final request = http.MultipartRequest('POST', url);
+      request.headers.addAll({
+        'Accept': 'application/json',
+      });
+      request.fields['name'] = name;
+      request.fields['email'] = email;
+      request.fields['nim'] = nim;
+      request.fields['phone'] = phone;
+      request.fields['password'] = password;
 
+      if (_ktmImage != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'foto_ktm',
+            _ktmImage!.path,
+          ),
+        );
+      }
+
+      final streamedResponse = await request.send().timeout(const Duration(seconds: 15));
+      final response = await http.Response.fromStream(streamedResponse);
       final responseData = jsonDecode(response.body);
 
       if (response.statusCode == 201 && responseData['success'] == true) {
@@ -414,6 +433,193 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
+  Future<void> _pickKtmImage(ImageSource source) async {
+    try {
+      final XFile? pickedFile = await _picker.pickImage(
+        source: source,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+      if (pickedFile != null) {
+        setState(() {
+          _ktmImage = pickedFile;
+        });
+        _updateFormValid();
+      }
+    } catch (e) {
+      debugPrint("Error picking image: $e");
+    }
+  }
+
+  void _showImageSourceDialog() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library, color: Color(0xFF2D50EE)),
+                title: const Text('Pilih dari Galeri'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _pickKtmImage(ImageSource.gallery);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt, color: Color(0xFF2D50EE)),
+                title: const Text('Ambil Foto Kamera'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _pickKtmImage(ImageSource.camera);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildKtmUploadBox() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Foto KTM (Kartu Tanda Mahasiswa)',
+          style: TextStyle(
+            color: Color(0xFF1A1A1A),
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        GestureDetector(
+          onTap: _showImageSourceDialog,
+          child: Container(
+            width: double.infinity,
+            height: 180,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF9FAFB),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFFE5E7EB),
+                width: 1.5,
+              ),
+            ),
+            child: _ktmImage != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(15),
+                    child: Stack(
+                      children: [
+                        Image.file(
+                          File(_ktmImage!.path),
+                          width: double.infinity,
+                          height: 180,
+                          fit: BoxFit.cover,
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black.withOpacity(0.1),
+                                Colors.black.withOpacity(0.6),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 12,
+                          left: 16,
+                          right: 16,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Row(
+                                children: [
+                                  Icon(Icons.check_circle, color: Colors.greenAccent, size: 20),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'KTM Terpilih',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: Colors.white.withOpacity(0.5)),
+                                ),
+                                child: const Row(
+                                  children: [
+                                    Icon(Icons.sync, color: Colors.white, size: 14),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      'Ubah',
+                                      style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2D50EE).withOpacity(0.08),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.add_photo_alternate_outlined,
+                          color: Color(0xFF2D50EE),
+                          size: 32,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Unggah Foto KTM',
+                        style: TextStyle(
+                          color: Color(0xFF1A1A1A),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Format JPG/PNG, Maks. 2MB',
+                        style: TextStyle(
+                          color: Color(0xFF757575),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -425,7 +631,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         title: const Text('Daftar Sebagai Pembeli'),
         centerTitle: false,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -485,6 +691,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       const SizedBox(height: 16),
                       _PhoneField(controller: _phoneController),
+                      const SizedBox(height: 16),
+                      _buildKtmUploadBox(),
                       const SizedBox(height: 16),
                       _RegisterField(
                         controller: _passwordController,

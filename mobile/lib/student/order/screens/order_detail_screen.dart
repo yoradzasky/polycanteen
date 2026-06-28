@@ -3,8 +3,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 import 'package:intl/intl.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
-import '../../../student/tracking/screens/live_tracking_screen.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   final int pesananId;
@@ -119,6 +119,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   bool _isActiveStatus(String status) {
     return [
       'pending',
+      'menunggu_persetujuan',
+      'menunggu_pembayaran',
       'dibayar',
       'dikonfirmasi',
       'diproses',
@@ -148,7 +150,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           elevation: 0,
           surfaceTintColor: Colors.transparent,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A2E)),
+            icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF1A1A2E), size: 20),
             onPressed: () => Navigator.pop(context),
           ),
           title: const Text(
@@ -199,7 +201,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     final tipePesanan = _order!['tipe_pesanan'] ?? 'dine_in';
     final catatan = _order!['catatan_pesanan'];
     final totalHarga = _order!['total_harga'];
-    final qrToken = _order!['qr_token'];
 
     final dynamic rawDetails = _order!['details'];
     final List<dynamic> details = rawDetails is List
@@ -216,7 +217,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     final baseUrl = _getBaseUrl();
 
     // Progress step
-    int activeStep = 0;
+    int activeStep = -1;
     if (status == 'dibayar') activeStep = 0;
     if (status == 'dikonfirmasi' || status == 'diproses') activeStep = 1;
     if (status == 'dimasak') activeStep = 2;
@@ -235,6 +236,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       case 'pending':
         statusColor = const Color(0xFFF2994A);
         statusLabel = 'Pending';
+        break;
+      case 'menunggu_persetujuan':
+        statusColor = const Color(0xFFF2994A);
+        statusLabel = 'Menunggu Persetujuan';
+        break;
+      case 'menunggu_pembayaran':
+        statusColor = const Color(0xFFF2994A);
+        statusLabel = 'Belum Bayar';
         break;
       case 'dibayar':
         statusColor = const Color(0xFF2196F3);
@@ -273,27 +282,32 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         statusColor = const Color(0xFF9E9E9E);
         statusLabel = 'Dibatalkan';
         break;
+      case 'gagal':
+        statusColor = const Color(0xFFE53935);
+        statusLabel = 'Gagal';
+        break;
       default:
         statusColor = Colors.grey;
         statusLabel = status;
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
+      backgroundColor: const Color(0xFFFFF6ED),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFFFF6ED),
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A2E)),
+          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF1A1A2E), size: 20),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Detail Pesanan',
           style: TextStyle(
             color: Color(0xFF1A1A2E),
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontWeight: FontWeight.w900,
+            fontSize: 20,
+            letterSpacing: -0.5,
           ),
         ),
         centerTitle: true,
@@ -301,6 +315,69 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
+            // ── QR Code Section (At the very top) ──
+            if (payment != null &&
+                ['sudah_bayar', 'sukses', 'berhasil'].contains(payment['status_bayar']) &&
+                _isActiveStatus(status)) ...[
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFFFE0C2), width: 1),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFF08D39).withValues(alpha: 0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    const Text(
+                      'Konfirmasi Pesanan',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF1A1A2E),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      width: 160,
+                      height: 160,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: Center(
+                        child: QrImageView(
+                          data: 'ORD-${widget.pesananId}',
+                          version: QrVersions.auto,
+                          size: 140.0,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      tipePesanan == 'delivery'
+                          ? 'Tunjukkan QR ini kepada kurir untuk mengonfirmasi pesanan telah diterima'
+                          : 'Tunjukkan QR ini kepada penjual untuk mengonfirmasi pesanan telah diterima',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade500,
+                        height: 1.4,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ],
             // ── HEADER SECTION ──
             Container(
               width: double.infinity,
@@ -309,11 +386,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFFFE0C2), width: 1),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+                    color: const Color(0xFFF08D39).withValues(alpha: 0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
@@ -321,6 +399,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 children: [
                   // Kantin info + Status badge
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Kantin logo
                       ClipRRect(
@@ -353,7 +432,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             Text(
                               (status == 'ditolak' || status == 'dibatalkan')
                                   ? 'Nomor Antrean'
-                                  : 'Antrian: $nomorAntrian',
+                                  : (nomorAntrian == '-' || status == 'menunggu_persetujuan' || status == 'menunggu_pembayaran')
+                                      ? 'Antrean: Belum Tersedia'
+                                      : 'Antrean: $nomorAntrian',
                               style: TextStyle(
                                 fontSize: 13,
                                 color: Colors.grey.shade600,
@@ -363,10 +444,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           ],
                         ),
                       ),
+                      const SizedBox(width: 8),
                       // Status badge
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
+                          horizontal: 10,
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
@@ -377,7 +459,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           statusLabel,
                           style: TextStyle(
                             color: statusColor,
-                            fontSize: 12,
+                            fontSize: 11,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -386,7 +468,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   ),
 
                   // Progress tracker for active orders
-                  if (isActive) ...[
+                  if (isActive && activeStep >= 0) ...[
                     const SizedBox(height: 20),
                     _buildProgressTracker(activeStep, tipePesanan),
                   ],
@@ -437,11 +519,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFFFE0C2), width: 1),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+                    color: const Color(0xFFF08D39).withValues(alpha: 0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
@@ -470,11 +553,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFFFE0C2), width: 1),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+                    color: const Color(0xFFF08D39).withValues(alpha: 0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
@@ -537,11 +621,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFFFE0C2), width: 1),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+                    color: const Color(0xFFF08D39).withValues(alpha: 0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
@@ -568,86 +653,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   const SizedBox(height: 8),
                   _buildInfoRow('Waktu Pesan', _formatDate(createdAt)),
 
-                  // QR Code section
-                  if (qrToken != null &&
-                      payment != null &&
-                      payment['status_bayar'] == 'sudah_bayar') ...[
-                    const SizedBox(height: 16),
-                    Divider(color: Colors.grey.shade200),
-                    const SizedBox(height: 16),
-                    const Center(
-                      child: Text(
-                        'QR Code Pesanan',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF1A1A2E),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Center(
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade50,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey.shade200),
-                        ),
-                        child: Column(
-                          children: [
-                            // QR placeholder — displays token as text since qr_flutter isn't in deps
-                            Container(
-                              width: 160,
-                              height: 160,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: Colors.grey.shade300),
-                              ),
-                              child: Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.qr_code_2,
-                                      size: 80,
-                                      color: Colors.grey.shade700,
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                      ),
-                                      child: Text(
-                                        qrToken,
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          color: Colors.grey.shade500,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Tunjukkan QR Code ini ke kasir',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey.shade500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+
                 ],
               ),
             ),
@@ -663,11 +669,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFFFE0C2), width: 1),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
+                      color: const Color(0xFFF08D39).withValues(alpha: 0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),

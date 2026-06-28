@@ -4,6 +4,9 @@ import 'package:intl/intl.dart';
 import '../widgets/filter_menu.dart';
 import '../../menu/screens/menu_detail.dart';
 import '../../order/screens/order_detail_screen.dart';
+import '../../menu/services/menu_service.dart';
+import '../../payment/screens/payment_screen.dart';
+import '../../menu/widgets/keranjang.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -33,14 +36,46 @@ class _HomeScreenState extends State<HomeScreen> {
   String? activeTimeSort;
 
   final HomeService _homeService = HomeService();
+  final MenuService _menuService = MenuService();
   final NumberFormat _currencyFormat = NumberFormat('#,###', 'id_ID');
 
   final TextEditingController _searchController = TextEditingController();
+
+  List<Map<String, dynamic>> cartItems = [];
 
   @override
   void initState() {
     super.initState();
     fetchHomeData();
+    fetchCartData();
+  }
+
+  Future<void> fetchCartData() async {
+    try {
+      final cartData = await _menuService.getCartItems();
+      if (mounted) {
+        setState(() {
+          cartItems = cartData
+              .map((item) {
+                return {
+                  'menu_id': item['menu_id'],
+                  'nama_item': item['menu'] != null
+                      ? item['menu']['nama_item']
+                      : 'Menu',
+                  'harga_dasar': item['menu'] != null
+                      ? double.tryParse(item['menu']['harga'].toString()) ?? 0.0
+                      : 0.0,
+                  'jumlah': item['jumlah'],
+                  'varian_selected': item['varian_selected'],
+                };
+              })
+              .toList()
+              .cast<Map<String, dynamic>>();
+        });
+      }
+    } catch (e) {
+      debugPrint('Gagal memuat keranjang di Beranda: $e');
+    }
   }
 
   @override
@@ -77,11 +112,78 @@ class _HomeScreenState extends State<HomeScreen> {
         _applySearchAndFilter();
         isLoading = false;
       });
+      fetchCartData();
     } catch (e) {
       setState(() {
         errorMessage = e.toString().replaceAll('Exception: ', '');
         isLoading = false;
       });
+    }
+  }
+
+  Future<void> _handleQuickReorder(Map<String, dynamic> pastOrder) async {
+    // Show loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(
+          color: Color(0xFFF2994A),
+        ),
+      ),
+    );
+
+    try {
+      final menuService = MenuService();
+      
+      // 1. Clear current cart
+      await menuService.clearCart();
+      
+      // 2. Add each item from the past order to the cart
+      final details = pastOrder['details'] as List<dynamic>;
+      for (var detail in details) {
+        final menuId = detail['menu_id'] as int;
+        final qty = int.tryParse(detail['jumlah_pesanan']?.toString() ?? '1') ?? 1;
+        final varianSelected = detail['varian_snapshot'];
+        
+        await menuService.addToCart(
+          menuId: menuId,
+          jumlah: qty,
+          varianSelected: varianSelected,
+        );
+      }
+      
+      // 3. Perform checkout
+      final orderData = await menuService.checkout();
+      
+      // Dismiss loading dialog
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
+      // 4. Navigate to PaymentScreen
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PaymentScreen(
+              pesananId: orderData['id'],
+              totalHarga: double.parse(orderData['total_harga'].toString()),
+            ),
+          ),
+        ).then((_) => fetchHomeData());
+      }
+    } catch (e) {
+      // Dismiss loading dialog if error
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal melakukan pesan ulang: ${e.toString().replaceAll('Exception: ', '')}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -108,6 +210,7 @@ class _HomeScreenState extends State<HomeScreen> {
       filtered.sort((a, b) {
         int result = 0;
 
+
         if (activePriceSort != null) {
           double priceA = double.tryParse(a['harga'].toString()) ?? 0;
           double priceB = double.tryParse(b['harga'].toString()) ?? 0;
@@ -116,6 +219,7 @@ class _HomeScreenState extends State<HomeScreen> {
               : priceB.compareTo(priceA);
         }
 
+
         if (result == 0 && activeTimeSort != null) {
           int timeA = a['estimasi_waktu'] ?? 999;
           int timeB = b['estimasi_waktu'] ?? 999;
@@ -123,6 +227,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ? timeA.compareTo(timeB)
               : timeB.compareTo(timeA);
         }
+
 
         return result;
       });
@@ -212,12 +317,14 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFFFF6ED),
       body: SafeArea(
-        child: RefreshIndicator(
-          color: const Color(0xFFF2994A),
-          onRefresh: fetchHomeData,
-          child: CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: [
+        child: Stack(
+          children: [
+            RefreshIndicator(
+              color: const Color(0xFFF2994A),
+              onRefresh: fetchHomeData,
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
               // --- HEADER & ACTIVE ORDER ---
               SliverToBoxAdapter(
                 child: Column(
@@ -230,55 +337,50 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Row(
                         children: [
                           CircleAvatar(
-                            radius: 20,
+                            radius: 24,
                             backgroundImage: NetworkImage(
                               _buildPhotoUrl(fotoProfil),
                             ),
                             onBackgroundImageError: (_, __) {},
                           ),
-                          const SizedBox(width: 12),
-                          // ✨ DITAMBAHKAN: Expanded agar teks nama tidak mendorong icon notifikasi keluar layar
+                          const SizedBox(width: 14),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  "Halo,",
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 13,
-                                  ),
+                                Row(
+                                  children: [
+                                    const Text(
+                                      " Halo, ",
+                                      style: TextStyle(
+                                        color: Color(0xFF828282),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    Text(
+                                      _getGreetingTime(),
+                                      style: const TextStyle(
+                                        color: Color(0xFFF2994A),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
                                 ),
+                                const SizedBox(height: 2),
                                 Text(
                                   namaMahasiswa,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w800,
-                                    fontSize: 16,
+                                    fontSize: 18,
+                                    color: Color(0xFF1E293B),
+                                    letterSpacing: -0.3,
                                   ),
-                                  // ✨ DITAMBAHKAN: Agar nama panjang jadi ...
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ],
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.05),
-                                  blurRadius: 5,
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.notifications_rounded,
-                              color: Color(0xFF5A6675),
-                              size: 20,
                             ),
                           ),
                         ],
@@ -362,10 +464,31 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (quickReorder.isNotEmpty) ...[
                       _buildSectionHeader(
                         "Pesan Ulang Cepat",
-                        trailing: const Icon(
-                          Icons.watch_later,
-                          size: 20,
-                          color: Colors.black,
+                        trailing: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF2994A).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.history_rounded,
+                                size: 14,
+                                color: Color(0xFFF2994A),
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                "Riwayat",
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFF2994A),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                       _buildQuickReorderList(),
@@ -375,18 +498,32 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (expressMenus.isNotEmpty) ...[
                       _buildSectionHeader(
                         "Menu Ekspres",
-                        trailing: const Row(
-                          children: [
-                            Icon(Icons.bolt, size: 16, color: Colors.black87),
-                            Text(
-                              "Siap < 5 menit",
-                              style: TextStyle(
-                                color: Colors.black87,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
+                        trailing: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF2C94C).withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.bolt_rounded,
+                                size: 16,
+                                color: Color(0xFFE2B93B),
                               ),
-                            ),
-                          ],
+                              SizedBox(width: 4),
+                              Text(
+                                "Siap < 5 mnt",
+                                style: TextStyle(
+                                  color: Color(0xFFE2B93B),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                       _buildExpressMenuList(),
@@ -441,14 +578,29 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   _buildAllMenuList(),
-                  const SizedBox(height: 30),
+                  SizedBox(height: cartItems.isNotEmpty ? 100 : 30),
                 ]),
               ),
             ],
           ),
         ),
-      ),
-    );
+        if (cartItems.isNotEmpty)
+          Positioned(
+            bottom: 20,
+            left: 20,
+            right: 20,
+            child: KeranjangWidget(
+              cartItems: cartItems,
+              onCartCheckedOut: () {
+                fetchHomeData();
+                fetchCartData();
+              },
+            ),
+          ),
+      ],
+    ),
+  ),
+);
   }
 
   // --- WIDGET HELPER ---
@@ -487,7 +639,7 @@ class _HomeScreenState extends State<HomeScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF4A65ED), width: 1.5),
+        border: Border.all(color: const Color(0xFFF2994A).withOpacity(0.25), width: 1.5),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -698,6 +850,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  String _getGreetingTime() {
+    final hour = DateTime.now().hour;
+    if (hour < 11) return 'Pagi';
+    if (hour < 15) return 'Siang';
+    if (hour < 18) return 'Sore';
+    return 'Malam';
+  }
+
   Widget _buildSectionHeader(String title, {Widget? trailing}) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
@@ -818,7 +978,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    onPressed: () {},
+                    onPressed: () => _handleQuickReorder(item),
                     icon: const Icon(Icons.bolt, color: Colors.white, size: 18),
                     label: const Text(
                       "Pesan 1 Klik",
@@ -860,7 +1020,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 MaterialPageRoute(
                   builder: (context) => MenuDetailScreen(menuData: menu),
                 ),
-              );
+              ).then((_) => fetchCartData());
             },
             child: Container(
               width: 130,
@@ -997,7 +1157,7 @@ class _HomeScreenState extends State<HomeScreen> {
               MaterialPageRoute(
                 builder: (context) => MenuDetailScreen(menuData: menu),
               ),
-            );
+            ).then((_) => fetchCartData());
           },
           child: Container(
             margin: const EdgeInsets.only(bottom: 12),

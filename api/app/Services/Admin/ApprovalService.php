@@ -58,6 +58,7 @@ class ApprovalService
                 'role' => 'mahasiswa',
                 'status_akun' => 'aktif',
                 'foto_profile' => $application->foto_ktm_path,
+                'fcm_token' => $application->fcm_token,
             ]);
 
             // Simpan detail domain mahasiswa pada tabel profil mahasiswa.
@@ -77,6 +78,14 @@ class ApprovalService
                 'reviewed_by' => $reviewedBy,
                 'approved_at' => now(),
             ])->save();
+
+            // Kirim notifikasi FCM
+            try {
+                $fcmService = app(\App\Services\FcmNotificationService::class);
+                $fcmService->sendToBuyerApplication($application, 'Pendaftaran Disetujui', 'Selamat, akun pendaftaran PolyCanteen Anda telah disetujui!');
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('FCM Approval Error: ' . $e->getMessage());
+            }
 
             return [
                 'user' => $user,
@@ -111,6 +120,14 @@ class ApprovalService
                 'reviewed_by' => $reviewedBy,
                 'rejected_at' => now(),
             ])->save();
+
+            // Kirim notifikasi FCM
+            try {
+                $fcmService = app(\App\Services\FcmNotificationService::class);
+                $fcmService->sendToBuyerApplication($application, 'Pendaftaran Ditolak', 'Maaf, pendaftaran akun PolyCanteen Anda ditolak: ' . $reason);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('FCM Rejection Error: ' . $e->getMessage());
+            }
         });
     }
 }

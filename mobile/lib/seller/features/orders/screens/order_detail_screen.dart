@@ -97,6 +97,29 @@ class OrderDetailScreen extends StatelessWidget {
       waktuPesan = '${DateFormat('HH:mm').format(dt)} WIB';
     }
 
+    final String status = order['status_pesanan'] ?? 'pending';
+    String statusText = 'Pesanan Masuk';
+    IconData statusIcon = Icons.notifications_active;
+    Color statusIconColor = primaryColor;
+    Color statusBgColor = const Color(0xFFE8EAF6);
+
+    if (status == 'selesai') {
+      statusText = 'Selesai';
+      statusIcon = Icons.check_circle;
+      statusIconColor = const Color(0xFF4CAF50);
+      statusBgColor = const Color(0xFFE8F5E9);
+    } else if (status == 'ditolak') {
+      statusText = 'Ditolak';
+      statusIcon = Icons.cancel;
+      statusIconColor = const Color(0xFFE53935);
+      statusBgColor = const Color(0xFFFFEBEE);
+    } else if (status == 'dibatalkan') {
+      statusText = 'Dibatalkan';
+      statusIcon = Icons.remove_circle;
+      statusIconColor = const Color(0xFF9E9E9E);
+      statusBgColor = const Color(0xFFF5F5F5);
+    }
+
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 12, 20, 20),
       padding: const EdgeInsets.all(20),
@@ -116,21 +139,21 @@ class OrderDetailScreen extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE8EAF6),
+                  color: statusBgColor,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
                   children: [
                     Icon(
-                      Icons.notifications_active,
-                      color: primaryColor,
+                      statusIcon,
+                      color: statusIconColor,
                       size: 14,
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      'Pesanan Masuk',
+                      statusText,
                       style: TextStyle(
-                        color: primaryColor,
+                        color: statusIconColor,
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
                       ),

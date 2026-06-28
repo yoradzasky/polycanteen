@@ -526,10 +526,29 @@ class _QrScannerScreenState extends State<QrScannerScreen>
     final pesananId = data['pesanan_id'];
     final nomorAntrian = data['nomor_antrian'] ?? '-';
     final namaPembeli = data['nama_pembeli'] ?? '-';
-    final jumlahItem = data['jumlah_item'] ?? 0;
     final totalHarga =
         (double.tryParse(data['total_harga'].toString()) ?? 0).toInt();
     final statusPesanan = data['status_pesanan'] ?? '-';
+    final tipePesanan = data['tipe_pesanan'] ?? '-';
+    final catatan = data['catatan_pesanan'] ?? '';
+    final details = data['details'] as List<dynamic>? ?? [];
+
+    // Map order type colors
+    Color typeColor = Colors.grey;
+    Color typeBgColor = Colors.grey.shade100;
+    if (tipePesanan.toLowerCase().contains('dine in') ||
+        tipePesanan.toLowerCase().contains('makan di tempat')) {
+      typeColor = const Color(0xFF27AE60);
+      typeBgColor = const Color(0xFFE8F5E9);
+    } else if (tipePesanan.toLowerCase().contains('take away') ||
+        tipePesanan.toLowerCase().contains('bungkus')) {
+      typeColor = const Color(0xFFF2994A);
+      typeBgColor = const Color(0xFFFFF3F0);
+    } else if (tipePesanan.toLowerCase().contains('delivery') ||
+        tipePesanan.toLowerCase().contains('pengantaran')) {
+      typeColor = const Color(0xFF2F80ED);
+      typeBgColor = const Color(0xFFE3F2FD);
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -582,16 +601,49 @@ class _QrScannerScreenState extends State<QrScannerScreen>
           child: Text(
             'Antrian: $nomorAntrian',
             style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
               color: Colors.grey.shade600,
             ),
           ),
         ),
 
-        const SizedBox(height: 20),
-        Divider(color: Colors.grey.shade200, thickness: 1),
         const SizedBox(height: 16),
+        Divider(color: Colors.grey.shade200, thickness: 1),
+        const SizedBox(height: 12),
+
+        // ── Tipe Pesanan row ──
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Tipe Pesanan',
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: typeBgColor,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                tipePesanan.toUpperCase(),
+                style: TextStyle(
+                  color: typeColor,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 12),
 
         // ── Pembeli row ──
         _buildInfoRow(
@@ -602,25 +654,15 @@ class _QrScannerScreenState extends State<QrScannerScreen>
 
         const SizedBox(height: 16),
 
-        // ── Item row ──
-        _buildInfoRow(
-          icon: Icons.restaurant_rounded,
-          label: 'Item Pesanan',
-          value:
-              '$jumlahItem item · Rp ${NumberFormat('#,###', 'id_ID').format(totalHarga)}',
-        ),
-
-        const SizedBox(height: 16),
-
         // ── Status row ──
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Status',
+              'Status Pesanan',
               style: TextStyle(
                 color: Colors.grey.shade600,
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -645,6 +687,143 @@ class _QrScannerScreenState extends State<QrScannerScreen>
                     ),
                   ),
                 ],
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 16),
+        Divider(color: Colors.grey.shade200, thickness: 1),
+        const SizedBox(height: 16),
+
+        // ── Item Pesanan (Rincian) ──
+        const Text(
+          'Rincian Menu',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1A1A2E),
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // List item details
+        ...List.generate(details.length, (idx) {
+          final item = details[idx];
+          final namaMenu = item['menu']?['nama_item'] ?? 'Item';
+          final qty = int.tryParse(item['jumlah_pesanan']?.toString() ?? '1') ?? 1;
+          final hargaSatuan = (double.tryParse(item['harga_saat_beli']?.toString() ?? '0') ?? 0).toInt();
+          final hasVarian = item['varian_snapshot'] != null;
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: _kBackgroundLight,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    '${qty}x',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 12,
+                      color: _kPrimaryIndigo,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        namaMenu,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          color: Color(0xFF1A1A2E),
+                        ),
+                      ),
+                      if (hasVarian) ...[
+                        const SizedBox(height: 2),
+                        const Text(
+                          '• Memiliki varian',
+                          style: TextStyle(color: Colors.grey, fontSize: 11),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                Text(
+                  'Rp ${NumberFormat('#,###', 'id_ID').format(hargaSatuan * qty)}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: Color(0xFF1A1A2E),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+
+        // ── Catatan Pembeli ──
+        if (catatan.toString().isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF3F0),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFF2994A).withValues(alpha: 0.15)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.chat_bubble_outline, color: Color(0xFFF2994A), size: 16),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Catatan: "$catatan"',
+                    style: const TextStyle(
+                      color: Color(0xFFF2994A),
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+
+        const SizedBox(height: 16),
+        Divider(color: Colors.grey.shade200, thickness: 1),
+        const SizedBox(height: 16),
+
+        // ── Total Pembayaran ──
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Total Pembayaran',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF828282),
+                fontSize: 13,
+              ),
+            ),
+            Text(
+              'Rp ${NumberFormat('#,###', 'id_ID').format(totalHarga)}',
+              style: const TextStyle(
+                color: _kPrimaryIndigo,
+                fontWeight: FontWeight.w900,
+                fontSize: 18,
               ),
             ),
           ],
@@ -702,6 +881,14 @@ class _QrScannerScreenState extends State<QrScannerScreen>
         return 'Menunggu Konfirmasi';
       case 'diproses':
         return 'Sedang Diproses';
+      case 'dimasak':
+        return 'Sedang Dimasak';
+      case 'siap_diambil':
+        return 'Siap Diambil';
+      case 'menunggu_dikirim':
+        return 'Menunggu Dikirim';
+      case 'dalam_perjalanan':
+        return 'Dalam Perjalanan';
       case 'selesai':
         return 'Selesai';
       case 'ditolak':
@@ -714,7 +901,15 @@ class _QrScannerScreenState extends State<QrScannerScreen>
   // ── Action Buttons ──
   Widget _buildActionButtons() {
     final status = _orderData?['status_pesanan'] ?? '';
-    final canConfirm = status == 'dibayar';
+    final canConfirm = [
+      'dibayar',
+      'dikonfirmasi',
+      'diproses',
+      'dimasak',
+      'siap_diambil',
+      'dalam_perjalanan',
+      'menunggu_dikirim'
+    ].contains(status);
 
     return Column(
       children: [
