@@ -30,6 +30,7 @@ export default function Show({ application }) {
     const detailItems = useMemo(() => ([
         { label: 'Nama', value: data.name },
         { label: 'NIM', value: data.nim },
+        { label: 'Jurusan', value: data.jurusan || '-' },
         { label: 'No. Telepon', value: data.phone || '-' },
         { label: 'Email', value: data.email },
         { label: 'Masa Berlaku Akun', value: formatDate(data.account_expires_at) },

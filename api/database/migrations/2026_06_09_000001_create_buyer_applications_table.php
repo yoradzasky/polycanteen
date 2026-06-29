@@ -14,6 +14,7 @@ return new class extends Migration
             $table->foreignId('reviewed_by')->nullable()->constrained('users')->nullOnDelete();
             $table->string('name');
             $table->string('nim')->unique();
+            $table->string('jurusan')->nullable();
             $table->string('phone')->nullable();
             $table->string('email')->unique();
             $table->date('account_expires_at')->nullable();

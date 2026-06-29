@@ -5,7 +5,7 @@ import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import InputError from '@/Components/InputError';
 import PrimaryButton from '@/Components/PrimaryButton';
-
+import logo from './logo.jpg';
 export default function Sidebar() {
   const { url, props } = usePage();
   const isDashboardActive = url.startsWith('/admin/dashboard');
@@ -90,11 +90,8 @@ export default function Sidebar() {
       aria-label="Sidebar admin"
     >
       <div className="flex items-center gap-3 p-6 relative self-stretch w-full flex-[0_0_auto] border-b [border-bottom-style:solid] border-[#ffffff1a]">
-        <div className="flex w-9 h-9 items-center justify-center relative bg-[#f08d39] rounded-xl shadow-sm">
-          {/* Ikon Sendok Garpu untuk Logo Utama */}
-          <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z" />
-          </svg>
+        <div className="flex w-10 h-10 items-center justify-center relative rounded-xl shadow-sm overflow-hidden bg-white">
+          <img src={logo} alt="Logo Kantin" className="w-full h-full object-cover" />
         </div>
         <div className="inline-flex flex-col items-start relative flex-[0_0_auto]">
           <div className="flex flex-col items-start relative self-stretch w-full flex-[0_0_auto]">
