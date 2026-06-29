@@ -409,7 +409,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ],
                           ),
                         ),
-                        if (activeOrder != null) _buildActiveOrderCard(),
+                        if (activeOrder != null && activeOrder!['status_pesanan'] != 'selesai' && activeOrder!['status_pesanan'] != 'dibatalkan') _buildActiveOrderCard(),
                       ],
                     ),
                   ),
