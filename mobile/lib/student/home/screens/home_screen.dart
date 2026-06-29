@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mobile/student/home/widgets/custom_snackbar.dart';
 import '../services/home_service.dart';
 import 'package:intl/intl.dart';
+import '../../../core/auth/services/auth_service.dart';
+import '../../../core/auth/screens/login_screen.dart';
 import '../widgets/filter_menu.dart';
 import '../../menu/screens/menu_detail.dart';
 import '../../order/screens/order_detail_screen.dart';
@@ -124,8 +126,25 @@ class _HomeScreenState extends State<HomeScreen> {
       });
       fetchCartData();
     } catch (e) {
+      final errorMsg = e.toString().replaceAll('Exception: ', '');
+      if (errorMsg.contains('Unauthenticated') || errorMsg.toLowerCase().contains('dinonaktifkan')) {
+        await AuthService.logout();
+        if (mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+            (route) => false,
+          );
+          CustomSnackBar.show(
+            context,
+            message: 'Sesi berakhir atau akun dinonaktifkan. Silakan login kembali.',
+            isError: true,
+          );
+        }
+        return;
+      }
+
       setState(() {
-        errorMessage = e.toString().replaceAll('Exception: ', '');
+        errorMessage = errorMsg;
         isLoading = false;
       });
     }

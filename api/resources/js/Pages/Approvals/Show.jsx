@@ -3,6 +3,7 @@ import { Head, Link } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import ApprovalModal from '@/Components/Modals/ApprovalModal';
 import RejectionModal from '@/Components/Modals/RejectionModal';
+import StatusBadge from '@/Components/UI/StatusBadge';
 
 const statusStyles = {
     pending: 'bg-amber-50 text-amber-700 ring-amber-200',
@@ -70,9 +71,7 @@ export default function Show({ application }) {
                                 <h2 className="text-xl font-bold text-gray-900">{data.name}</h2>
                                 <p className="mt-1 text-sm text-gray-500">Pengajuan akun pembeli mahasiswa.</p>
                             </div>
-                            <span className={`inline-flex w-fit items-center rounded-full px-3 py-1 text-xs font-semibold capitalize ring-1 ${statusStyles[data.status] || statusStyles.pending}`}>
-                                {data.status || 'pending'}
-                            </span>
+                            <StatusBadge status={data.status} />
                         </div>
 
                         <div className="grid gap-4 sm:grid-cols-2">
