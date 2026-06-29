@@ -69,6 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       : 0.0,
                   'jumlah': item['jumlah'],
                   'varian_selected': item['varian_selected'],
+                  'foto_menu': item['menu'] != null ? item['menu']['foto_menu'] : null,
                 };
               })
               .toList()
@@ -102,9 +103,16 @@ class _HomeScreenState extends State<HomeScreen> {
             "https://via.placeholder.com/150";
         activeOrder = data['pesanan_aktif'];
         quickReorder = data['pesan_ulang'] ?? [];
-        expressMenus = data['menu_ekspres'] ?? [];
+        
+        bool isMenuAvailable(dynamic menu) {
+          final dynamic rawStok = menu['status_stok'];
+          final bool isHabis = rawStok == false || rawStok == 0 || rawStok == '0';
+          final bool isBuka = menu['kantin']?['status_toko']?.toString().toLowerCase() == 'buka';
+          return !isHabis && isBuka;
+        }
 
-        allMenus = data['semua_menu'] ?? [];
+        expressMenus = (data['menu_ekspres'] as List? ?? []).where(isMenuAvailable).toList();
+        allMenus = (data['semua_menu'] as List? ?? []).where(isMenuAvailable).toList();
 
         availableCategories = allMenus
             .map((m) => m['kategori'].toString())
@@ -619,9 +627,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
     bool isDimasak =
         (status == 'dimasak' ||
+        status == 'siap_diambil' ||
+        status == 'menunggu_dikirim' ||
         status == 'dalam_perjalanan' ||
         status == 'selesai');
-    bool isSelesai = (status == 'selesai' || status == 'dalam_perjalanan');
+    bool isSelesai =
+        (status == 'siap_diambil' ||
+        status == 'menunggu_dikirim' ||
+        status == 'dalam_perjalanan' ||
+        status == 'selesai');
 
     String label3 = (tipe == 'take_away') ? "Sedang Diantar" : "Siap Diambil";
 

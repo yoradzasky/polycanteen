@@ -30,6 +30,14 @@ class AuthController extends Controller
             ], 401); // 401 = Unauthorized
         }
 
+        // Cek apakah akun nonaktif
+        if ($user->status_akun === 'nonaktif') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akun Anda sedang dinonaktifkan. Silakan hubungi admin.'
+            ], 403);
+        }
+
         // Hapus token lama agar tidak menumpuk (Opsional)
         $user->tokens()->delete();
 
