@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use Carbon\Carbon;
 
 class BuyerService
 {
@@ -18,6 +19,21 @@ class BuyerService
             $user->mahasiswa->masa_aktif = $newDate;
             $user->mahasiswa->save();
         }
+
+        // Sesuaikan status_akun berdasarkan tanggal
+        if (empty($newDate)) {
+            $user->status_akun = 'aktif';
+        } else {
+            $parsedDate = Carbon::parse($newDate)->startOfDay();
+            $today = Carbon::now()->startOfDay();
+            
+            if ($parsedDate->lessThanOrEqualTo($today)) {
+                $user->status_akun = 'nonaktif';
+            } else {
+                $user->status_akun = 'aktif';
+            }
+        }
+        $user->save();
 
         return $user;
     }

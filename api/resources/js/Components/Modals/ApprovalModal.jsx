@@ -1,9 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from '@inertiajs/react';
 import Modal from '@/Components/Modal';
 
 export default function ApprovalModal({ isOpen, onClose, application }) {
-    const { post, processing } = useForm();
+    const { data, setData, post, processing, reset } = useForm({
+        account_expires_at: '',
+    });
+
+    useEffect(() => {
+        if (isOpen) {
+            setData('account_expires_at', application?.account_expires_at ? application.account_expires_at.split('T')[0] : '');
+        }
+    }, [isOpen, application]);
 
     const handleApprove = (event) => {
         event.preventDefault();
@@ -11,7 +19,10 @@ export default function ApprovalModal({ isOpen, onClose, application }) {
         // Request diarahkan ke controller; transaksi pembuatan akun ditangani oleh ApprovalService.
         post(`/admin/approvals/${application.id}/approve`, {
             preserveScroll: true,
-            onSuccess: onClose,
+            onSuccess: () => {
+                reset();
+                onClose();
+            },
         });
     };
 
@@ -43,6 +54,19 @@ export default function ApprovalModal({ isOpen, onClose, application }) {
                                         <dd className="mt-1 break-words font-semibold text-gray-900">{application?.email || '-'}</dd>
                                     </div>
                                 </dl>
+                                
+                                <div className="mt-4 border-t border-gray-200 pt-4">
+                                    <label className="block text-xs font-semibold uppercase tracking-wide text-gray-400">
+                                        Masa Berlaku Akun
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={data.account_expires_at}
+                                        onChange={(e) => setData('account_expires_at', e.target.value)}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
+                                    />
+                                    <p className="mt-1 text-xs text-gray-500">Tanggal akun akan kadaluarsa. Kosongkan untuk masa berlaku permanen atau ikuti default.</p>
+                                </div>
                             </div>
                         </div>
                     </div>

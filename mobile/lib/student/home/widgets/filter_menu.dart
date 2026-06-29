@@ -126,7 +126,7 @@ class _FilterMenuState extends State<FilterMenu> {
                     _selectedPriceSort = _selectedPriceSort == 'asc'
                         ? null
                         : 'asc';
-                    // PERBAIKAN: Tidak lagi me-reset _selectedTimeSort
+                    if (_selectedPriceSort != null) _selectedTimeSort = null;
                   }),
                 ),
               ),
@@ -140,7 +140,7 @@ class _FilterMenuState extends State<FilterMenu> {
                     _selectedPriceSort = _selectedPriceSort == 'desc'
                         ? null
                         : 'desc';
-                    // PERBAIKAN: Tidak lagi me-reset _selectedTimeSort
+                    if (_selectedPriceSort != null) _selectedTimeSort = null;
                   }),
                 ),
               ),
@@ -165,7 +165,7 @@ class _FilterMenuState extends State<FilterMenu> {
                     _selectedTimeSort = _selectedTimeSort == 'asc'
                         ? null
                         : 'asc';
-                    // PERBAIKAN: Tidak lagi me-reset _selectedPriceSort
+                    if (_selectedTimeSort != null) _selectedPriceSort = null;
                   }),
                 ),
               ),
@@ -179,7 +179,7 @@ class _FilterMenuState extends State<FilterMenu> {
                     _selectedTimeSort = _selectedTimeSort == 'desc'
                         ? null
                         : 'desc';
-                    // PERBAIKAN: Tidak lagi me-reset _selectedPriceSort
+                    if (_selectedTimeSort != null) _selectedPriceSort = null;
                   }),
                 ),
               ),

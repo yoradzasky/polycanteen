@@ -39,7 +39,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 
 // Satu grup besar untuk semua yang butuh Login (Token Sanctum)
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'check.status'])->group(function () {
 
     // FCM Token Management
     Route::post('/fcm-token', [FcmTokenController::class, 'update']);

@@ -24,9 +24,9 @@ class ApprovalService
      *
      * Satu transaksi memastikan status pengajuan, data user, dan profil mahasiswa selalu konsisten.
      */
-    public function approve(int $applicationId, ?int $reviewedBy = null): array
+    public function approve(int $applicationId, ?int $reviewedBy = null, $expiresAt = false): array
     {
-        return DB::transaction(function () use ($applicationId, $reviewedBy) {
+        return DB::transaction(function () use ($applicationId, $reviewedBy, $expiresAt) {
             // Kunci baris pengajuan agar dua admin tidak bisa memproses data yang sama bersamaan.
             $application = BuyerApplication::query()
                 ->whereKey($applicationId)
@@ -50,16 +50,33 @@ class ApprovalService
 
             $defaultPassword = self::DEFAULT_PASSWORD;
 
+            $statusAkun = 'aktif';
+            
+            // Tentukan expiration date final
+            $finalExpiresAt = $expiresAt !== false ? $expiresAt : $application->account_expires_at;
+            
+            if (!empty($finalExpiresAt)) {
+                $parsedDate = \Carbon\Carbon::parse($finalExpiresAt)->startOfDay();
+                $today = \Carbon\Carbon::now()->startOfDay();
+                if ($parsedDate->lessThanOrEqualTo($today)) {
+                    $statusAkun = 'nonaktif';
+                }
+            }
+
             // Buat akun login utama di tabel users MySQL.
             $user = User::create([
                 'nama_lengkap' => $application->name,
                 'email' => $application->email,
                 'password' => $application->password ?? Hash::make($defaultPassword),
                 'role' => 'mahasiswa',
-                'status_akun' => 'aktif',
-                'foto_profile' => $application->foto_ktm_path,
+                'status_akun' => $statusAkun,
+                'foto_profile' => null,
                 'fcm_token' => $application->fcm_token,
             ]);
+
+            if ($expiresAt !== false) {
+                $application->account_expires_at = $expiresAt;
+            }
 
             // Simpan detail domain mahasiswa pada tabel profil mahasiswa.
             Mahasiswa::create([
@@ -69,7 +86,7 @@ class ApprovalService
                 'jurusan' => $application->jurusan,
                 'no_telp' => $application->phone,
                 'masa_aktif' => $application->account_expires_at,
-                'foto_profil_path' => $application->foto_ktm_path,
+                'foto_profil_path' => null,
             ]);
 
             // Tandai pengajuan sebagai selesai agar riwayat approval tetap tercatat.
@@ -77,6 +94,7 @@ class ApprovalService
                 'status' => 'approved',
                 'user_id' => $user->id,
                 'reviewed_by' => $reviewedBy,
+                'account_expires_at' => $application->account_expires_at,
                 'approved_at' => now(),
             ])->save();
 
