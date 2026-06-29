@@ -67,7 +67,7 @@ class _FinanceReportScreenState extends State<FinanceReportScreen> {
     // 3. Menu Paling Laris
     final Map<String, Map<String, dynamic>> menuMap = {};
     int totalQtySold = 0;
-    for (var order in filteredOrders) {
+    for (var order in history) {
       final List<dynamic> details = order['details'] ?? [];
       for (var detail in details) {
         final menu = detail['menu'];
