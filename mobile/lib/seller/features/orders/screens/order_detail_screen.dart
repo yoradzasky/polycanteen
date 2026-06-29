@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'payment_proof_screen.dart';
-// Note: order_list_screen.dart sudah tidak di-import lagi karena DummyOrder sudah kita buang!
 
 class OrderDetailScreen extends StatelessWidget {
-  // Sekarang menerima data asli dari API
   final Map<String, dynamic> order;
   final Color primaryColor;
 
@@ -17,23 +15,25 @@ class OrderDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FB),
+      backgroundColor: const Color(0xFFFFF6ED),
       appBar: AppBar(
-        backgroundColor: primaryColor,
+        backgroundColor: const Color(0xFFFFF6ED),
         elevation: 0,
+        surfaceTintColor: Colors.transparent,
         title: const Text(
           'Detail Pesanan',
           style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
+            color: Color(0xFF1A1A2E),
+            fontWeight: FontWeight.w900,
+            fontSize: 20,
+            letterSpacing: -0.5,
           ),
         ),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new,
-            color: Colors.white,
+            color: Color(0xFF1A1A2E),
             size: 20,
           ),
           onPressed: () => Navigator.pop(context),
@@ -50,16 +50,15 @@ class OrderDetailScreen extends StatelessWidget {
                 order['catatan_pesanan'].toString().isNotEmpty)
               _buildNotes(),
             _buildPriceSummary(),
-            const SizedBox(height: 20),
+            const SizedBox(height: 32),
           ],
         ),
       ),
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(20),
-        color: const Color(0xFFF4F6FB),
+        color: const Color(0xFFFFF6ED),
         child: ElevatedButton(
           onPressed: () {
-            // NAVIGASI KE HALAMAN BUKTI PEMBAYARAN
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -71,11 +70,11 @@ class OrderDetailScreen extends StatelessWidget {
             );
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFF2994A),
+            backgroundColor: const Color(0xFFF08D39),
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
             ),
             elevation: 0,
           ),
@@ -88,9 +87,22 @@ class OrderDetailScreen extends StatelessWidget {
     );
   }
 
-  // --- 1. HEADER (ANTRIAN & TIPE) ---
+  BoxDecoration _cardDecoration() {
+    return BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: const Color(0xFFFFE0C2), width: 1),
+      boxShadow: [
+        BoxShadow(
+          color: const Color(0xFFF08D39).withValues(alpha: 0.04),
+          blurRadius: 10,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    );
+  }
+
   Widget _buildOrderHeader() {
-    // Format waktu pesan dari created_at
     String waktuPesan = '-';
     if (order['created_at'] != null) {
       DateTime dt = DateTime.parse(order['created_at']).toLocal();
@@ -99,34 +111,47 @@ class OrderDetailScreen extends StatelessWidget {
 
     final String status = order['status_pesanan'] ?? 'pending';
     String statusText = 'Pesanan Masuk';
-    IconData statusIcon = Icons.notifications_active;
-    Color statusIconColor = primaryColor;
-    Color statusBgColor = const Color(0xFFE8EAF6);
+    Color statusColor = const Color(0xFF2196F3);
 
-    if (status == 'selesai') {
-      statusText = 'Selesai';
-      statusIcon = Icons.check_circle;
-      statusIconColor = const Color(0xFF4CAF50);
-      statusBgColor = const Color(0xFFE8F5E9);
-    } else if (status == 'ditolak') {
-      statusText = 'Ditolak';
-      statusIcon = Icons.cancel;
-      statusIconColor = const Color(0xFFE53935);
-      statusBgColor = const Color(0xFFFFEBEE);
-    } else if (status == 'dibatalkan') {
-      statusText = 'Dibatalkan';
-      statusIcon = Icons.remove_circle;
-      statusIconColor = const Color(0xFF9E9E9E);
-      statusBgColor = const Color(0xFFF5F5F5);
+    switch (status) {
+      case 'pending':
+      case 'menunggu_persetujuan':
+      case 'menunggu_pembayaran':
+      case 'diproses':
+      case 'dimasak':
+        statusColor = const Color(0xFFF2994A);
+        statusText = status.replaceAll('_', ' ').toUpperCase();
+        break;
+      case 'dibayar':
+      case 'dikonfirmasi':
+      case 'menunggu_dikirim':
+      case 'dalam_perjalanan':
+        statusColor = const Color(0xFF2196F3);
+        statusText = status.replaceAll('_', ' ').toUpperCase();
+        break;
+      case 'siap_diambil':
+      case 'selesai':
+        statusColor = const Color(0xFF4CAF50);
+        statusText = status.replaceAll('_', ' ').toUpperCase();
+        break;
+      case 'ditolak':
+      case 'gagal':
+        statusColor = const Color(0xFFE53935);
+        statusText = status.replaceAll('_', ' ').toUpperCase();
+        break;
+      case 'dibatalkan':
+        statusColor = const Color(0xFF9E9E9E);
+        statusText = status.replaceAll('_', ' ').toUpperCase();
+        break;
+      default:
+        statusColor = Colors.grey;
+        statusText = status.toUpperCase();
     }
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: _cardDecoration(),
       child: Column(
         children: [
           Row(
@@ -139,22 +164,16 @@ class OrderDetailScreen extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: statusBgColor,
+                  color: statusColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Row(
-                  children: [
-                    Icon(statusIcon, color: statusIconColor, size: 14),
-                    const SizedBox(width: 6),
-                    Text(
-                      statusText,
-                      style: TextStyle(
-                        color: statusIconColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  statusText,
+                  style: TextStyle(
+                    color: statusColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
                 ),
               ),
               Column(
@@ -169,21 +188,23 @@ class OrderDetailScreen extends StatelessWidget {
                     waktuPesan,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Color(0xFF1A1A1A),
+                      fontSize: 15,
+                      color: Color(0xFF1A1A2E),
                     ),
                   ),
                 ],
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
+          Divider(color: Colors.grey.shade100),
+          const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
                     'Nomor Antrian',
@@ -195,7 +216,7 @@ class OrderDetailScreen extends StatelessWidget {
                     style: const TextStyle(
                       fontWeight: FontWeight.w900,
                       fontSize: 16,
-                      color: Color(0xFF1A1A1A),
+                      color: Color(0xFF1A1A2E),
                     ),
                   ),
                 ],
@@ -209,11 +230,11 @@ class OrderDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    order['tipe_pesanan'] ?? '-',
+                    (order['tipe_pesanan'] ?? '-').toString().replaceAll('_', ' ').toUpperCase(),
                     style: const TextStyle(
                       fontWeight: FontWeight.w800,
-                      fontSize: 16,
-                      color: Color(0xFF1A1A1A),
+                      fontSize: 15,
+                      color: Color(0xFF1A1A2E),
                     ),
                   ),
                 ],
@@ -225,20 +246,12 @@ class OrderDetailScreen extends StatelessWidget {
     );
   }
 
-  // --- 2. METODE PEMBAYARAN ---
   Widget _buildPaymentMethod() {
-    // Ambil relasi payment dari API
     final payment = order['payment'] ?? {};
-
-    // Ambil metode bayar, jika ada ubah jadi huruf kapital (contoh: qris -> QRIS)
-    final metodeBayar =
-        payment['metode_bayar']?.toString().toUpperCase() ?? '-';
-
-    // Ambil status bayar dari database
+    final metodeBayar = payment['metode_bayar']?.toString().toUpperCase() ?? '-';
     String rawStatus = payment['status_bayar']?.toString().toLowerCase() ?? '';
-    String statusBayar = 'LUNAS'; // Fallback default
+    String statusBayar = 'LUNAS';
 
-    // Kondisi: Jika di database "sukses" atau "berhasil", tampilkan "LUNAS".
     if (rawStatus == 'sukses' || rawStatus == 'berhasil') {
       statusBayar = 'LUNAS';
     } else if (rawStatus.isNotEmpty) {
@@ -246,21 +259,18 @@ class OrderDetailScreen extends StatelessWidget {
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
+      decoration: _cardDecoration(),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFFF4F6FB),
-              borderRadius: BorderRadius.circular(8),
+              color: const Color(0xFFFFF6ED),
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(Icons.qr_code_2, color: primaryColor, size: 24),
+            child: const Icon(Icons.qr_code_2, color: Color(0xFFF08D39), size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -271,26 +281,28 @@ class OrderDetailScreen extends StatelessWidget {
                   'Metode Pembayaran',
                   style: TextStyle(color: Colors.grey, fontSize: 11),
                 ),
+                const SizedBox(height: 2),
                 Text(
                   metodeBayar,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
+                    color: Color(0xFF1A1A2E),
                   ),
                 ),
               ],
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFFE3F2FD),
-              borderRadius: BorderRadius.circular(6),
+              color: const Color(0xFFE8F5E9),
+              borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
               statusBayar,
               style: const TextStyle(
-                color: Color(0xFF2196F3),
+                color: Color(0xFF2E7D32),
                 fontWeight: FontWeight.bold,
                 fontSize: 12,
               ),
@@ -301,188 +313,169 @@ class OrderDetailScreen extends StatelessWidget {
     );
   }
 
-  // --- 3. LIST ITEM PESANAN ---
   Widget _buildOrderItems() {
     List<dynamic> details = order['details'] ?? [];
 
     return Container(
-      margin: const EdgeInsets.all(20),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: _cardDecoration(),
       child: Column(
-        children: List.generate(details.length, (index) {
-          final item = details[index];
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Detail Item',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF1A1A2E),
+            ),
+          ),
+          const SizedBox(height: 16),
+          ...List.generate(details.length, (index) {
+            final item = details[index];
+            final namaMenu = item['menu']?['nama_item'] ?? 'Item';
+            final qty = int.tryParse(item['jumlah_pesanan'].toString()) ?? 1;
+            final hargaSatuan = (double.tryParse(item['harga_saat_beli'].toString()) ?? 0).toInt();
 
-          // 1. UBAH DI SINI: Sesuaikan dengan nama kolom 'nama_item'
-          final namaMenu = item['menu']?['nama_item'] ?? 'Item';
+            final dynamic rawVarian = item['varian_snapshot'];
+            final List<Map<String, String>> parsedVariants = [];
 
-          final qty = int.tryParse(item['jumlah_pesanan'].toString()) ?? 1;
-
-          // 2. UBAH DI SINI: Gunakan double.tryParse untuk membaca desimal harga_saat_beli
-          final hargaSatuan =
-              (double.tryParse(item['harga_saat_beli'].toString()) ?? 0)
-                  .toInt();
-
-          // Parse varian_snapshot untuk mendapatkan detail varian
-          final dynamic rawVarian = item['varian_snapshot'];
-          final List<Map<String, String>> parsedVariants = [];
-
-          if (rawVarian != null) {
-            if (rawVarian is Map) {
-              // Format: { "Ukuran": {"nama": "Besar", "harga": 5000}, ... }
-              rawVarian.forEach((key, value) {
-                final category = key.toString();
-                if (value is Map) {
-                  final nama = value['nama'] ?? value['name'] ?? '-';
-                  parsedVariants.add({
-                    'category': category,
-                    'name': nama.toString(),
-                  });
-                } else if (value is List) {
-                  for (var v in value) {
-                    if (v is Map) {
-                      final nama = v['nama'] ?? v['name'] ?? '-';
-                      parsedVariants.add({
-                        'category': category,
-                        'name': nama.toString(),
-                      });
-                    } else {
-                      parsedVariants.add({
-                        'category': category,
-                        'name': v.toString(),
-                      });
+            if (rawVarian != null) {
+              if (rawVarian is Map) {
+                rawVarian.forEach((key, value) {
+                  final category = key.toString();
+                  if (value is Map) {
+                    final nama = value['nama'] ?? value['name'] ?? '-';
+                    parsedVariants.add({'category': category, 'name': nama.toString()});
+                  } else if (value is List) {
+                    for (var v in value) {
+                      if (v is Map) {
+                        final nama = v['nama'] ?? v['name'] ?? '-';
+                        parsedVariants.add({'category': category, 'name': nama.toString()});
+                      } else {
+                        parsedVariants.add({'category': category, 'name': v.toString()});
+                      }
                     }
+                  } else {
+                    parsedVariants.add({'category': category, 'name': value.toString()});
                   }
-                } else {
-                  parsedVariants.add({
-                    'category': category,
-                    'name': value.toString(),
-                  });
-                }
-              });
-            } else if (rawVarian is List) {
-              for (var v in rawVarian) {
-                if (v is Map) {
-                  final nama = v['nama'] ?? v['name'] ?? v.toString();
-                  parsedVariants.add({
-                    'category': 'Varian',
-                    'name': nama.toString(),
-                  });
-                } else {
-                  parsedVariants.add({
-                    'category': 'Varian',
-                    'name': v.toString(),
-                  });
+                });
+              } else if (rawVarian is List) {
+                for (var v in rawVarian) {
+                  if (v is Map) {
+                    final nama = v['nama'] ?? v['name'] ?? v.toString();
+                    parsedVariants.add({'category': 'Varian', 'name': nama.toString()});
+                  } else {
+                    parsedVariants.add({'category': 'Varian', 'name': v.toString()});
+                  }
                 }
               }
             }
-          }
 
-          return Column(
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE8EAF6),
-                      borderRadius: BorderRadius.circular(8),
+            return Column(
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF6ED),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.restaurant,
+                        color: Color(0xFFF08D39),
+                        size: 20,
+                      ),
                     ),
-                    child: Icon(
-                      Icons.restaurant,
-                      color: primaryColor,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                namaMenu,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                  color: Color(0xFF1A1A1A),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  namaMenu,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                    color: Color(0xFF1A1A2E),
+                                  ),
                                 ),
                               ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  'x$qty',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                ),
                               ),
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade100,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                'x$qty',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13,
+                            ],
+                          ),
+                          if (parsedVariants.isNotEmpty) ...[
+                            const SizedBox(height: 6),
+                            ...parsedVariants.map(
+                              (v) => Text(
+                                '• ${v['category']}: ${v['name']}',
+                                style: TextStyle(
+                                  color: Colors.grey.shade600,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ),
                           ],
-                        ),
-                        if (parsedVariants.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          ...parsedVariants.map(
-                            (v) => Text(
-                              '• ${v['category']}: ${v['name']}',
+                          const SizedBox(height: 12),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              'Rp ${NumberFormat('#,###', 'id_ID').format(hargaSatuan)}',
                               style: const TextStyle(
-                                color: Colors.grey,
-                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF1A1A2E),
+                                fontSize: 14,
                               ),
                             ),
                           ),
                         ],
-                        const SizedBox(height: 12),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: Text(
-                            'Rp ${NumberFormat('#,###', 'id_ID').format(hargaSatuan)}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF1A1A1A),
-                              fontSize: 15,
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
+                    ),
+                  ],
+                ),
+                if (index < details.length - 1)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Divider(
+                      color: Colors.grey.shade100,
+                      thickness: 1,
+                      height: 1,
                     ),
                   ),
-                ],
-              ),
-              if (index < details.length - 1)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: Divider(
-                    color: Colors.grey.shade200,
-                    thickness: 1,
-                    height: 1,
-                  ),
-                ),
-            ],
-          );
-        }),
+              ],
+            );
+          }),
+        ],
       ),
     );
   }
 
-  // --- 4. CATATAN ---
   Widget _buildNotes() {
     String cleanNote = order['catatan_pesanan'].toString();
     final noteRegExp = RegExp(r'^catatan:\s*', caseSensitive: false);
@@ -491,29 +484,43 @@ class OrderDetailScreen extends StatelessWidget {
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF3F0),
-        borderRadius: BorderRadius.circular(12),
+        color: const Color(0xFFFFF6ED),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFFF2994A).withValues(alpha: 0.2),
+          color: const Color(0xFFFFE0C2),
         ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.error, color: Color(0xFFF2994A), size: 20),
+          const Icon(Icons.sticky_note_2_outlined, color: Color(0xFFF08D39), size: 20),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              'Catatan: $cleanNote',
-              style: const TextStyle(
-                color: Color(0xFFF2994A),
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                height: 1.4,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Catatan',
+                  style: TextStyle(
+                    color: Color(0xFF1A1A2E),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  cleanNote,
+                  style: TextStyle(
+                    color: Colors.grey.shade700,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    height: 1.4,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -521,39 +528,38 @@ class OrderDetailScreen extends StatelessWidget {
     );
   }
 
-  // --- 5. SUMMARY HARGA ---
   Widget _buildPriceSummary() {
-    // 3. UBAH DI SINI: Gunakan double.tryParse untuk total_harga
-    final int totalHarga =
-        (double.tryParse(order['total_harga'].toString()) ?? 0).toInt();
-
-    // Hitung subtotal dinamis dari detail menu
+    final int totalHarga = (double.tryParse(order['total_harga'].toString()) ?? 0).toInt();
     List<dynamic> details = order['details'] ?? [];
     int subtotal = 0;
     for (var item in details) {
-      // 4. UBAH DI SINI: Gunakan double.tryParse untuk kolom subtotal
       subtotal += (double.tryParse(item['subtotal'].toString()) ?? 0).toInt();
     }
-
-    // Jika total harga lebih besar dari subtotal menu, berarti ada biaya tambahan (misal: ongkir/layanan)
     int biayaTambahan = totalHarga - subtotal;
 
     return Container(
-      margin: const EdgeInsets.all(20),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: _cardDecoration(),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const Text(
+            'Ringkasan Pembayaran',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF1A1A2E),
+            ),
+          ),
+          const SizedBox(height: 16),
           _summaryRow('Subtotal Menu', subtotal),
           if (biayaTambahan > 0) ...[
             const SizedBox(height: 12),
             _summaryRow('Ongkos / Layanan', biayaTambahan),
           ],
           const SizedBox(height: 16),
-          Divider(color: Colors.grey.shade200, thickness: 1),
+          Divider(color: Colors.grey.shade100, thickness: 1),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -562,16 +568,16 @@ class OrderDetailScreen extends StatelessWidget {
                 'Total Pembayaran',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: Color(0xFF1A1A1A),
+                  fontSize: 15,
+                  color: Color(0xFF1A1A2E),
                 ),
               ),
               Text(
                 'Rp ${NumberFormat('#,###', 'id_ID').format(totalHarga)}',
-                style: TextStyle(
-                  color: primaryColor,
+                style: const TextStyle(
+                  color: Color(0xFF2D3A8C),
                   fontWeight: FontWeight.w900,
-                  fontSize: 20,
+                  fontSize: 18,
                 ),
               ),
             ],
@@ -587,14 +593,14 @@ class OrderDetailScreen extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(color: Color(0xFF4F4F4F), fontSize: 14),
+          style: TextStyle(color: Colors.grey.shade600, fontSize: 14, fontWeight: FontWeight.w500),
         ),
         Text(
           'Rp ${NumberFormat('#,###', 'id_ID').format(price)}',
           style: const TextStyle(
-            fontWeight: FontWeight.w500,
-            fontSize: 15,
-            color: Color(0xFF1A1A1A),
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+            color: Color(0xFF1A1A2E),
           ),
         ),
       ],

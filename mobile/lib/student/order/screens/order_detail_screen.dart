@@ -6,7 +6,6 @@ import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:mobile/core/widgets/app_loading_animation.dart';
 
-
 class OrderDetailScreen extends StatefulWidget {
   final int pesananId;
 
@@ -149,7 +148,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           elevation: 0,
           surfaceTintColor: Colors.transparent,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF1A1A2E), size: 20),
+            icon: const Icon(
+              Icons.arrow_back_ios_new,
+              color: Color(0xFF1A1A2E),
+              size: 20,
+            ),
             onPressed: () => Navigator.pop(context),
           ),
           title: const Text(
@@ -297,7 +300,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF1A1A2E), size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Color(0xFF1A1A2E),
+            size: 20,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
@@ -316,7 +323,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           children: [
             // ── QR Code Section (At the very top) ──
             if (payment != null &&
-                ['sudah_bayar', 'sukses', 'berhasil'].contains(payment['status_bayar']) &&
+                [
+                  'sudah_bayar',
+                  'sukses',
+                  'berhasil',
+                ].contains(payment['status_bayar']) &&
                 _isActiveStatus(status)) ...[
               Container(
                 width: double.infinity,
@@ -325,12 +336,15 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFFFE0C2), width: 1),
+                  border: Border.all(
+                    color: const Color(0xFFFFE0C2),
+                    width: 1.5,
+                  ),
                   boxShadow: [
                     BoxShadow(
                       color: const Color(0xFFF08D39).withValues(alpha: 0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+                      blurRadius: 15,
+                      offset: const Offset(0, 6),
                     ),
                   ],
                 ),
@@ -385,12 +399,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFFFE0C2), width: 1),
+                border: Border.all(color: const Color(0xFFFFE0C2), width: 1.5),
                 boxShadow: [
                   BoxShadow(
                     color: const Color(0xFFF08D39).withValues(alpha: 0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+                    blurRadius: 15,
+                    offset: const Offset(0, 6),
                   ),
                 ],
               ),
@@ -431,9 +445,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             Text(
                               (status == 'ditolak' || status == 'dibatalkan')
                                   ? 'Nomor Antrean'
-                                  : (nomorAntrian == '-' || status == 'menunggu_persetujuan' || status == 'menunggu_pembayaran')
-                                      ? 'Antrean: Belum Tersedia'
-                                      : 'Antrean: $nomorAntrian',
+                                  : (nomorAntrian == '-' ||
+                                        status == 'menunggu_persetujuan' ||
+                                        status == 'menunggu_pembayaran')
+                                  ? 'Antrean: Belum Tersedia'
+                                  : 'Antrean: $nomorAntrian',
                               style: TextStyle(
                                 fontSize: 13,
                                 color: Colors.grey.shade600,
@@ -518,12 +534,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFFFE0C2), width: 1),
+                border: Border.all(color: const Color(0xFFFFE0C2), width: 1.5),
                 boxShadow: [
                   BoxShadow(
                     color: const Color(0xFFF08D39).withValues(alpha: 0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+                    blurRadius: 15,
+                    offset: const Offset(0, 6),
                   ),
                 ],
               ),
@@ -552,12 +568,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFFFE0C2), width: 1),
+                border: Border.all(color: const Color(0xFFFFE0C2), width: 1.5),
                 boxShadow: [
                   BoxShadow(
                     color: const Color(0xFFF08D39).withValues(alpha: 0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+                    blurRadius: 15,
+                    offset: const Offset(0, 6),
                   ),
                 ],
               ),
@@ -620,12 +636,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFFFE0C2), width: 1),
+                border: Border.all(color: const Color(0xFFFFE0C2), width: 1.5),
                 boxShadow: [
                   BoxShadow(
                     color: const Color(0xFFF08D39).withValues(alpha: 0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+                    blurRadius: 15,
+                    offset: const Offset(0, 6),
                   ),
                 ],
               ),
@@ -651,8 +667,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   ],
                   const SizedBox(height: 8),
                   _buildInfoRow('Waktu Pesan', _formatDate(createdAt)),
-
-
                 ],
               ),
             ),
@@ -668,12 +682,15 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFFFE0C2), width: 1),
+                  border: Border.all(
+                    color: const Color(0xFFFFE0C2),
+                    width: 1.5,
+                  ),
                   boxShadow: [
                     BoxShadow(
                       color: const Color(0xFFF08D39).withValues(alpha: 0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+                      blurRadius: 15,
+                      offset: const Offset(0, 6),
                     ),
                   ],
                 ),
@@ -700,7 +717,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         );
                       }),
                     ),
-                    if (ulasan['komentar'] != null && ulasan['komentar'].toString().trim().isNotEmpty) ...[
+                    if (ulasan['komentar'] != null &&
+                        ulasan['komentar'].toString().trim().isNotEmpty) ...[
                       const SizedBox(height: 8),
                       Text(
                         ulasan['komentar'].toString().trim(),

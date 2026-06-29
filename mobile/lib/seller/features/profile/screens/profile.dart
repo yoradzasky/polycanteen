@@ -43,7 +43,6 @@ class _ProfileTokoScreenState extends State<ProfileTokoScreen> {
           kantinData = await ProfileService.getKantinProfile();
         } catch (e) {
           developer.log('Error loading kantin data: $e');
-          // Bisa ditangani lebih lanjut jika perlu, tapi biarkan null jika gagal
         }
       }
 
@@ -61,24 +60,78 @@ class _ProfileTokoScreenState extends State<ProfileTokoScreen> {
     }
   }
 
-  Future<void> _handleLogout() async {
-    try {
-      await AuthService.logout();
-    } catch (e) {
-      // Lanjutkan paksa logout meskipun gagal di servis
-    }
-    
-    if (mounted) {
-      Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-        (route) => false,
-      );
-    }
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          backgroundColor: Colors.white,
+          title: const Text(
+            "Konfirmasi Keluar",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1E232C),
+            ),
+          ),
+          content: const Text(
+            "Apakah Anda yakin ingin keluar dari akun ini?",
+            style: TextStyle(color: Color(0xFF5A6675)),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text(
+                "Batal",
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFEB4335),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
+              ),
+              onPressed: () async {
+                Navigator.pop(dialogContext);
+                try {
+                  await AuthService.logout();
+                } catch (e) {
+                  // Lanjutkan paksa logout meskipun gagal di servis
+                }
+                
+                if (mounted) {
+                  Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                    (route) => false,
+                  );
+                }
+              },
+              child: const Text(
+                "Keluar",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFFFF6ED),
       body: FutureBuilder<Map<String, dynamic>>(
         future: _profileData,
         builder: (context, snapshot) {
@@ -102,7 +155,7 @@ class _ProfileTokoScreenState extends State<ProfileTokoScreen> {
                   if ((snapshot.data?['error'] ?? '').toString().contains('Unauthenticated')) ...[
                     const SizedBox(height: 12),
                     OutlinedButton.icon(
-                      onPressed: _handleLogout,
+                      onPressed: () => _showLogoutDialog(context),
                       icon: const Icon(Icons.logout, color: Color(0xFFDC2626)),
                       label: const Text(
                         'Login Ulang',
@@ -122,334 +175,272 @@ class _ProfileTokoScreenState extends State<ProfileTokoScreen> {
           final KantinProfile? kantinData = snapshot.data!['kantin'];
           final bool isPemilik = userData.role == 'pemilik';
 
-          return SingleChildScrollView(
-            child: Column(
-              children: [
-                _ProfileHeaderAndInfo(
-                  userName: userData.namaPemilik ?? userData.username,
-                  kantinName: kantinData?.namaKantin ?? 'Pegawai',
-                  rating: kantinData?.rating ?? 0.0,
-                  fotoProfile: userData.fotoProfil,
-                  isPemilik: isPemilik,
-                  onRefresh: _loadProfileData,
-                ),
-                const SizedBox(height: 32),
-                _MenuSection(
-                  onRefresh: _loadProfileData,
-                  onLogout: _handleLogout,
-                  isPemilik: isPemilik,
-                ),
-                const SizedBox(height: 32),
-              ],
+          return SafeArea(
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 10),
+                  
+                  // Custom Screen Title
+                  const Text(
+                    "Profil Saya",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF1E232C),
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // --- HEADER CARD PROFIL ---
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: const Color(0xFFFFE0C2), width: 1.5),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFF08D39).withValues(alpha: 0.04),
+                          blurRadius: 15,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: const Color(0xFFFFE0C2),
+                              width: 3,
+                            ),
+                          ),
+                          child: CircleAvatar(
+                            radius: 50,
+                            backgroundImage: userData.fotoProfil != null ? NetworkImage(userData.fotoProfil!) : null,
+                            backgroundColor: Colors.grey.shade200,
+                            onBackgroundImageError: (_, __) {},
+                            child: userData.fotoProfil == null ? Icon(Icons.person, size: 48, color: Colors.grey[600]) : null,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Nama
+                        Text(
+                          userData.namaPemilik ?? userData.username,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1E232C),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+
+                        // Role & Kantin
+                        Text(
+                          "${isPemilik ? 'Pemilik' : 'Pegawai'} - ${kantinData?.namaKantin ?? 'Kantin'}",
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF8391A1),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        if (isPemilik) ...[
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFF6ED),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.star, color: Colors.orange, size: 14),
+                                const SizedBox(width: 4),
+                                Text(
+                                  (kantinData?.rating ?? 0.0).toStringAsFixed(1),
+                                  style: const TextStyle(
+                                    color: Color(0xFFF08D39),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  // --- SECTION AKUN ---
+                  const Text(
+                    "Pengaturan Akun",
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF8391A1),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // --- MENU EDIT PROFIL USER ---
+                  _buildMenuItem(
+                    icon: Icons.person_outline_rounded,
+                    label: "Edit Profil User",
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const EditProfileUserScreen()),
+                      ).then((_) => _loadProfileData());
+                    },
+                  ),
+                  const SizedBox(height: 12),
+
+                  // --- MENU KEAMANAN / UBAH PASSWORD ---
+                  _buildMenuItem(
+                    icon: Icons.security_outlined,
+                    label: "Keamanan Akun / Ubah Password",
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const ChangePasswordScreen()),
+                      ).then((_) => _loadProfileData());
+                    },
+                  ),
+                  
+                  if (isPemilik) ...[
+                    const SizedBox(height: 30),
+                    // --- SECTION KANTIN ---
+                    const Text(
+                      "Pengaturan Kantin",
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF8391A1),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // --- MENU EDIT PROFIL KANTIN ---
+                    _buildMenuItem(
+                      icon: Icons.storefront_outlined,
+                      label: "Ubah Profil Kantin",
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const EditProfileKantinScreen()),
+                        ).then((_) => _loadProfileData());
+                      },
+                    ),
+                  ],
+
+                  const SizedBox(height: 48),
+
+                  // --- TOMBOL KELUAR ---
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _showLogoutDialog(context),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(
+                          color: Color(0xFFEB4335),
+                          width: 1.5,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        backgroundColor: const Color(0xFFFFF5F5),
+                      ),
+                      icon: const Icon(
+                        Icons.logout_rounded,
+                        color: Color(0xFFEB4335),
+                      ),
+                      label: const Text(
+                        "Keluar Akun",
+                        style: TextStyle(
+                          color: Color(0xFFEB4335),
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
           );
         },
       ),
     );
   }
-}
 
-class _ProfileHeaderAndInfo extends StatelessWidget {
-  final String userName;
-  final String kantinName;
-  final double rating;
-  final String? fotoProfile;
-  final bool isPemilik;
-  final VoidCallback onRefresh;
-
-  const _ProfileHeaderAndInfo({
-    required this.userName,
-    required this.kantinName,
-    required this.rating,
-    this.fotoProfile,
-    required this.isPemilik,
-    required this.onRefresh,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final double statusBarHeight = MediaQuery.of(context).padding.top;
-
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.only(
-        top: statusBarHeight + 24,
-        bottom: 32,
-        left: 24,
-        right: 24,
-      ),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF3852B4), Color(0xFF2A3D87)],
-        ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(32),
-          bottomRight: Radius.circular(32),
-        ),
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-            ),
-            child: ClipOval(
-              child: fotoProfile != null
-                  ? Image.network(
-                      fotoProfile!,
-                      width: 88,
-                      height: 88,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        width: 88,
-                        height: 88,
-                        color: Colors.grey[300],
-                        child: Icon(
-                          Icons.person,
-                          size: 48,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    )
-                  : Container(
-                      width: 88,
-                      height: 88,
-                      color: Colors.grey[300],
-                      child: Icon(
-                        Icons.person,
-                        size: 48,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            kantinName,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            "${isPemilik ? 'Pemilik' : 'Pegawai'}: $userName",
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 12),
-          if (isPemilik)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.star, color: Colors.orange, size: 16),
-                  const SizedBox(width: 4),
-                  Text(
-                    rating.toStringAsFixed(1),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          if (isPemilik) const SizedBox(height: 24) else const SizedBox(height: 12),
-          SizedBox(
-            width: 160,
-            height: 40,
-            child: OutlinedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const EditProfileUserScreen()),
-                ).then((_) => onRefresh());
-              },
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Colors.white, width: 1.5),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                'Edit Profil',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MenuSection extends StatelessWidget {
-  final VoidCallback onRefresh;
-  final VoidCallback onLogout;
-  final bool isPemilik;
-
-  const _MenuSection({
-    required this.onRefresh, 
-    required this.onLogout,
-    required this.isPemilik,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Akun',
-            style: TextStyle(
-              color: Color(0xFF9CA3AF),
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 12),
-          _CustomListTile(
-            icon: Icons.security_outlined,
-            iconBgColor: const Color(0xFFF3F4F6),
-            iconColor: const Color(0xFF4B5563),
-            title: 'Keamanan Akun / Ubah Password',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ChangePasswordScreen()),
-              ).then((_) => onRefresh());
-            },
-          ),
-          if (isPemilik) ...[
-            const SizedBox(height: 24),
-            const Text(
-              'Kantin',
-              style: TextStyle(
-                color: Color(0xFF9CA3AF),
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 12),
-            _CustomListTile(
-              icon: Icons.edit_note_outlined,
-              iconBgColor: const Color(0xFFDBEAFE),
-              iconColor: const Color(0xFF2563EB),
-              title: 'Ubah Profil Kantin',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const EditProfileKantinScreen()),
-                ).then((_) => onRefresh());
-              },
+  Widget _buildMenuItem({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFFFE0C2), width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFF08D39).withValues(alpha: 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
-          const SizedBox(height: 32),
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: OutlinedButton(
-              onPressed: onLogout,
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Color(0xFFDC2626), width: 2),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF6ED),
+                borderRadius: BorderRadius.circular(10),
               ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.logout, color: Color(0xFFDC2626), size: 20),
-                  SizedBox(width: 8),
-                  Text(
-                    'Keluar',
-                    style: TextStyle(
-                      color: Color(0xFFDC2626),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
+              child: Icon(
+                icon,
+                color: const Color(0xFFF08D39),
+                size: 20,
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CustomListTile extends StatelessWidget {
-  final IconData icon;
-  final Color iconBgColor;
-  final Color iconColor;
-  final String title;
-  final VoidCallback onTap;
-
-  const _CustomListTile({
-    required this.icon,
-    required this.iconBgColor,
-    required this.iconColor,
-    required this.title,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: iconBgColor,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, color: iconColor, size: 20),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1E232C),
+                ),
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: Colors.grey),
+          ],
         ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF1F2937),
-          ),
-        ),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-        onTap: onTap,
       ),
     );
   }
