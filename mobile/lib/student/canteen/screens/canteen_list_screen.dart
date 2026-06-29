@@ -45,6 +45,7 @@ class _CanteenListScreenState extends State<CanteenListScreen> {
                       : 0.0,
                   'jumlah': item['jumlah'],
                   'varian_selected': item['varian_selected'],
+                  'foto_menu': item['menu'] != null ? item['menu']['foto_menu'] : null,
                 };
               })
               .toList()
