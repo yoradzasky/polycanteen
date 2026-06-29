@@ -997,7 +997,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (expressMenus.isEmpty) return const SizedBox.shrink();
 
     return SizedBox(
-      height: 195,
+      height: 215,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -1007,6 +1007,7 @@ class _HomeScreenState extends State<HomeScreen> {
           String foto = _buildPhotoUrl(menu['foto_menu']);
           double harga = double.parse(menu['harga'].toString());
           int waktu = menu['estimasi_waktu'] ?? 0;
+          String namaKantin = menu['kantin']?['nama_kantin'] ?? 'Kantin';
 
           return GestureDetector(
             onTap: () {
@@ -1059,15 +1060,35 @@ class _HomeScreenState extends State<HomeScreen> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 2),
                         Text(
-                          "$waktu menit",
+                          namaKantin,
                           style: TextStyle(
                             color: Colors.grey.shade500,
                             fontSize: 11,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.schedule,
+                              size: 12,
+                              color: Colors.grey.shade400,
+                            ),
+                            const SizedBox(width: 3),
+                            Text(
+                              "$waktu menit",
+                              style: TextStyle(
+                                color: Colors.grey.shade500,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
                         Text(
                           "Rp ${_currencyFormat.format(harga)}",
                           style: const TextStyle(
