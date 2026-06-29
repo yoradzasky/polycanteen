@@ -430,6 +430,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
+            isExpanded: true,
             value: _selectedJurusan,
             hint: const Text(
               'Pilih Jurusan',
@@ -442,7 +443,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             items: _jurusanList.map((String value) {
               return DropdownMenuItem<String>(
                 value: value,
-                child: Text(value),
+                child: Text(
+                  value,
+                  overflow: TextOverflow.ellipsis,
+                ),
               );
             }).toList(),
             onChanged: (newValue) {
