@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -22,6 +23,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   Map<String, dynamic>? _order;
+  Timer? _refreshTimer;
+
+  /// Terminal statuses that don't need further polling
+  static const _terminalStatuses = {'selesai', 'ditolak', 'dibatalkan', 'gagal'};
 
   @override
   void initState() {
@@ -39,6 +44,45 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     );
 
     _fetchOrderDetail();
+    _startAutoRefresh();
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startAutoRefresh() {
+    _refreshTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+      if (!mounted) return;
+      // Stop polling if the order has reached a terminal status
+      final currentStatus = _order?['status_pesanan'] ?? '';
+      if (_terminalStatuses.contains(currentStatus)) {
+        _refreshTimer?.cancel();
+        return;
+      }
+      _silentRefresh();
+    });
+  }
+
+  /// Refreshes order data without showing loading indicator
+  Future<void> _silentRefresh() async {
+    try {
+      final response = await _dio.get(
+        '/mahasiswa/orders/${widget.pesananId}',
+        options: await _authOptions(),
+      );
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        if (mounted) {
+          setState(() {
+            _order = response.data['data'];
+          });
+        }
+      }
+    } catch (_) {
+      // Silently ignore errors during auto-refresh
+    }
   }
 
   Future<Options> _authOptions() async {
