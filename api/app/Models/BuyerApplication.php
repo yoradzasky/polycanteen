@@ -15,6 +15,7 @@ class BuyerApplication extends Model
         'reviewed_by',
         'name',
         'nim',
+        'jurusan',
         'phone',
         'email',
         'account_expires_at',

@@ -122,6 +122,7 @@ class MahasiswaController extends Controller
         $request->validate([
             'nama_mahasiswa' => 'required|string|max:255',
             'nim'            => 'required|string|max:20',
+            'jurusan'        => 'nullable|string|max:100',
             'no_telp'        => 'required|string|max:30',
             'email'          => 'required|email|unique:users,email,' . $request->user()->id,
             'foto_profile'   => 'nullable|image|mimes:jpeg,png,jpg|max:3072', // Maks 3MB
@@ -154,6 +155,7 @@ class MahasiswaController extends Controller
             // Update data di tabel mahasiswa
             $mahasiswa->nama_mahasiswa = $request->nama_mahasiswa;
             $mahasiswa->nim = $request->nim;
+            $mahasiswa->jurusan = $request->jurusan;
             $mahasiswa->no_telp = $request->no_telp;
 
             // Handle Update Foto Profil jika ada file baru

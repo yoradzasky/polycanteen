@@ -66,6 +66,7 @@ class ApprovalService
                 'user_id' => $user->id,
                 'nama_mahasiswa' => $application->name,
                 'nim' => $application->nim,
+                'jurusan' => $application->jurusan,
                 'no_telp' => $application->phone,
                 'masa_aktif' => $application->account_expires_at,
                 'foto_profil_path' => $application->foto_ktm_path,
