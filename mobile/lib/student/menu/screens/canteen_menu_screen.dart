@@ -238,8 +238,23 @@ class _CanteenMenuScreenState extends State<CanteenMenuScreen> {
     );
   }
 
+  // Helper: cek apakah kantin sedang buka
+  bool get _isKantinBuka {
+    return widget.kantinData['status_toko']?.toString().toLowerCase() == 'buka';
+  }
+
   // ✨ SUDAH DIBERSIHKAN DARI LOGIKA TOPPING
   void _handleAddToCartClick(Map<String, dynamic> menu) {
+    // Blokir jika kantin tutup
+    if (!_isKantinBuka) {
+      CustomSnackBar.show(
+        context,
+        message: 'Kantin sedang tutup. Tidak bisa menambah ke keranjang.',
+        isError: true,
+      );
+      return;
+    }
+
     bool hasVarian =
         menu['varian'] != null && (menu['varian'] as List).isNotEmpty;
 
@@ -373,33 +388,77 @@ class _CanteenMenuScreenState extends State<CanteenMenuScreen> {
                                 ),
                               ),
                               const SizedBox(height: 12),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFE5E9CD),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(
-                                      Icons.star,
-                                      color: Color(0xFFF2C94C),
-                                      size: 16,
+                              // STATUS BUKA / TUTUP
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
                                     ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      '${ratingKantin.toStringAsFixed(1)} (${formatReviewCount(reviewCount)})',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 13,
-                                      ),
+                                    decoration: BoxDecoration(
+                                      color: _isKantinBuka
+                                          ? const Color(0xFFE8F5E9)
+                                          : const Color(0xFFFFEBEE),
+                                      borderRadius: BorderRadius.circular(20),
                                     ),
-                                  ],
-                                ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          _isKantinBuka
+                                              ? Icons.check_circle
+                                              : Icons.cancel,
+                                          color: _isKantinBuka
+                                              ? const Color(0xFF4CAF50)
+                                              : const Color(0xFFE53935),
+                                          size: 14,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          _isKantinBuka ? 'Buka' : 'Tutup',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12,
+                                            color: _isKantinBuka
+                                                ? const Color(0xFF4CAF50)
+                                                : const Color(0xFFE53935),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFE5E9CD),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(
+                                          Icons.star,
+                                          color: Color(0xFFF2C94C),
+                                          size: 16,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          '${ratingKantin.toStringAsFixed(1)} (${formatReviewCount(reviewCount)})',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -593,8 +652,10 @@ class _CanteenMenuScreenState extends State<CanteenMenuScreen> {
                               final result = await Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                      MenuDetailScreen(menuData: menu),
+                                  builder: (context) => MenuDetailScreen(
+                                    menuData: menu,
+                                    isKantinBuka: _isKantinBuka,
+                                  ),
                                 ),
                               );
 
@@ -807,23 +868,36 @@ class _CanteenMenuScreenState extends State<CanteenMenuScreen> {
                                                   const SizedBox(width: 12),
                                                 ],
                                                 GestureDetector(
-                                                  onTap: () =>
-                                                      _handleAddToCartClick(
-                                                        menu,
-                                                      ),
+                                                  onTap: _isKantinBuka
+                                                      ? () =>
+                                                          _handleAddToCartClick(
+                                                            menu,
+                                                          )
+                                                      : () {
+                                                          CustomSnackBar.show(
+                                                            context,
+                                                            message:
+                                                                'Kantin sedang tutup. Tidak bisa menambah ke keranjang.',
+                                                            isError: true,
+                                                          );
+                                                        },
                                                   child: Container(
                                                     padding:
                                                         const EdgeInsets.all(4),
                                                     decoration: BoxDecoration(
                                                       shape: BoxShape.circle,
                                                       border: Border.all(
-                                                        color:
-                                                            Colors.grey[300]!,
+                                                        color: _isKantinBuka
+                                                            ? Colors.grey[300]!
+                                                            : Colors.grey[200]!,
                                                       ),
                                                     ),
-                                                    child: const Icon(
+                                                    child: Icon(
                                                       Icons.add,
                                                       size: 16,
+                                                      color: _isKantinBuka
+                                                          ? Colors.black
+                                                          : Colors.grey[400],
                                                     ),
                                                   ),
                                                 ),
