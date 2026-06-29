@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/student/home/widgets/custom_snackbar.dart';
 import '../services/home_service.dart';
 import 'package:intl/intl.dart';
 import '../widgets/filter_menu.dart';
@@ -132,27 +133,28 @@ class _HomeScreenState extends State<HomeScreen> {
 
     try {
       final menuService = MenuService();
-      
+
       // 1. Clear current cart
       await menuService.clearCart();
-      
+
       // 2. Add each item from the past order to the cart
       final details = pastOrder['details'] as List<dynamic>;
       for (var detail in details) {
         final menuId = detail['menu_id'] as int;
-        final qty = int.tryParse(detail['jumlah_pesanan']?.toString() ?? '1') ?? 1;
+        final qty =
+            int.tryParse(detail['jumlah_pesanan']?.toString() ?? '1') ?? 1;
         final varianSelected = detail['varian_snapshot'];
-        
+
         await menuService.addToCart(
           menuId: menuId,
           jumlah: qty,
           varianSelected: varianSelected,
         );
       }
-      
+
       // 3. Perform checkout
       final orderData = await menuService.checkout();
-      
+
       // Dismiss loading dialog
       if (mounted) {
         Navigator.pop(context);
@@ -176,7 +178,9 @@ class _HomeScreenState extends State<HomeScreen> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Gagal melakukan pesan ulang: ${e.toString().replaceAll('Exception: ', '')}'),
+            content: Text(
+              'Gagal melakukan pesan ulang: ${e.toString().replaceAll('Exception: ', '')}',
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -207,7 +211,6 @@ class _HomeScreenState extends State<HomeScreen> {
       filtered.sort((a, b) {
         int result = 0;
 
-
         if (activePriceSort != null) {
           double priceA = double.tryParse(a['harga'].toString()) ?? 0;
           double priceB = double.tryParse(b['harga'].toString()) ?? 0;
@@ -216,7 +219,6 @@ class _HomeScreenState extends State<HomeScreen> {
               : priceB.compareTo(priceA);
         }
 
-
         if (result == 0 && activeTimeSort != null) {
           int timeA = a['estimasi_waktu'] ?? 999;
           int timeB = b['estimasi_waktu'] ?? 999;
@@ -224,7 +226,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ? timeA.compareTo(timeB)
               : timeB.compareTo(timeA);
         }
-
 
         return result;
       });
@@ -320,282 +321,290 @@ class _HomeScreenState extends State<HomeScreen> {
               child: CustomScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
-              // --- HEADER & ACTIVE ORDER ---
-              SliverToBoxAdapter(
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 15,
-                      ),
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 24,
-                            backgroundImage: NetworkImage(
-                              _buildPhotoUrl(fotoProfil),
-                            ),
-                            onBackgroundImageError: (_, __) {},
+                  // --- HEADER & ACTIVE ORDER ---
+                  SliverToBoxAdapter(
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 15,
                           ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 24,
+                                backgroundImage: NetworkImage(
+                                  _buildPhotoUrl(fotoProfil),
+                                ),
+                                onBackgroundImageError: (_, __) {},
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
-                                      " Halo, ",
-                                      style: TextStyle(
-                                        color: Color(0xFF828282),
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                      ),
+                                    Row(
+                                      children: [
+                                        const Text(
+                                          " Halo, ",
+                                          style: TextStyle(
+                                            color: Color(0xFF828282),
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        Text(
+                                          _getGreetingTime(),
+                                          style: const TextStyle(
+                                            color: Color(0xFFF2994A),
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
                                     ),
+                                    const SizedBox(height: 2),
                                     Text(
-                                      _getGreetingTime(),
+                                      namaMahasiswa,
                                       style: const TextStyle(
-                                        color: Color(0xFFF2994A),
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 18,
+                                        color: Color(0xFF1E293B),
+                                        letterSpacing: -0.3,
                                       ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  namaMahasiswa,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 18,
-                                    color: Color(0xFF1E293B),
-                                    letterSpacing: -0.3,
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (activeOrder != null) _buildActiveOrderCard(),
+                      ],
+                    ),
+                  ),
+
+                  // --- SEARCH BAR ---
+                  SliverAppBar(
+                    pinned: true,
+                    floating: true,
+                    automaticallyImplyLeading: false,
+                    backgroundColor: const Color(0xFFFFF6ED),
+                    elevation: 0,
+                    scrolledUnderElevation: 2,
+                    shadowColor: Colors.black.withOpacity(0.2),
+                    toolbarHeight: 60,
+                    flexibleSpace: FlexibleSpaceBar(
+                      background: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 5,
+                        ),
+                        child: TextField(
+                          controller: _searchController,
+                          onChanged: (value) {
+                            setState(() {
+                              searchKeyword = value;
+                              _applySearchAndFilter();
+                            });
+                          },
+                          decoration: InputDecoration(
+                            hintText: "Cari makanan atau minuman...",
+                            hintStyle: TextStyle(
+                              color: Colors.grey.shade400,
+                              fontSize: 14,
+                            ),
+                            prefixIcon: Icon(
+                              Icons.search,
+                              color: Colors.grey.shade400,
+                            ),
+                            suffixIcon: isSearching
+                                ? IconButton(
+                                    icon: const Icon(
+                                      Icons.clear,
+                                      color: Colors.grey,
+                                    ),
+                                    onPressed: () {
+                                      _searchController.clear();
+                                      setState(() {
+                                        searchKeyword = "";
+                                        _applySearchAndFilter();
+                                      });
+                                      FocusScope.of(context).unfocus();
+                                    },
+                                  )
+                                : null,
+                            filled: true,
+                            fillColor: Colors.white,
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 14,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // --- KONTEN LAINNYA ---
+                  SliverList(
+                    delegate: SliverChildListDelegate([
+                      if (!isSearching) ...[
+                        // --- PESAN ULANG CEPAT ---
+                        if (quickReorder.isNotEmpty) ...[
+                          _buildSectionHeader(
+                            "Pesan Ulang Cepat",
+                            trailing: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF2994A).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.history_rounded,
+                                    size: 14,
+                                    color: Color(0xFFF2994A),
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                                  SizedBox(width: 4),
+                                  Text(
+                                    "Riwayat",
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFFF2994A),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          _buildQuickReorderList(),
+                        ],
+
+                        // --- MENU EKSPRES ---
+                        if (expressMenus.isNotEmpty) ...[
+                          _buildSectionHeader(
+                            "Menu Ekspres",
+                            trailing: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(
+                                  0xFFF2C94C,
+                                ).withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.bolt_rounded,
+                                    size: 16,
+                                    color: Color(0xFFE2B93B),
+                                  ),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    "Siap < 5 mnt",
+                                    style: TextStyle(
+                                      color: Color(0xFFE2B93B),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: 'Poppins',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          _buildExpressMenuList(),
+                        ],
+                      ],
+
+                      // --- SEMUA MENU & TOMBOL FILTER ---
+                      _buildSectionHeader(
+                        isSearching ? "Hasil Pencarian" : "Semua Menu",
+                        trailing: GestureDetector(
+                          onTap: _showFilterBottomSheet,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: hasActiveFilter
+                                  ? const Color(0xFFF2994A).withOpacity(0.1)
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: hasActiveFilter
+                                    ? const Color(0xFFF2994A)
+                                    : Colors.grey.shade300,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.tune,
+                                  size: 16,
+                                  color: hasActiveFilter
+                                      ? const Color(0xFFF2994A)
+                                      : Colors.grey.shade600,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  "Filter",
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: hasActiveFilter
+                                        ? const Color(0xFFD4823A)
+                                        : Colors.grey.shade600,
+                                  ),
                                 ),
                               ],
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                    if (activeOrder != null) _buildActiveOrderCard(),
-                  ],
-                ),
-              ),
-
-              // --- SEARCH BAR ---
-              SliverAppBar(
-                pinned: true,
-                floating: true,
-                automaticallyImplyLeading: false,
-                backgroundColor: const Color(0xFFFFF6ED),
-                elevation: 0,
-                scrolledUnderElevation: 2,
-                shadowColor: Colors.black.withOpacity(0.2),
-                toolbarHeight: 60,
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 5,
-                    ),
-                    child: TextField(
-                      controller: _searchController,
-                      onChanged: (value) {
-                        setState(() {
-                          searchKeyword = value;
-                          _applySearchAndFilter();
-                        });
-                      },
-                      decoration: InputDecoration(
-                        hintText: "Cari makanan atau minuman...",
-                        hintStyle: TextStyle(
-                          color: Colors.grey.shade400,
-                          fontSize: 14,
-                        ),
-                        prefixIcon: Icon(
-                          Icons.search,
-                          color: Colors.grey.shade400,
-                        ),
-                        suffixIcon: isSearching
-                            ? IconButton(
-                                icon: const Icon(
-                                  Icons.clear,
-                                  color: Colors.grey,
-                                ),
-                                onPressed: () {
-                                  _searchController.clear();
-                                  setState(() {
-                                    searchKeyword = "";
-                                    _applySearchAndFilter();
-                                  });
-                                  FocusScope.of(context).unfocus();
-                                },
-                              )
-                            : null,
-                        filled: true,
-                        fillColor: Colors.white,
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 14,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide.none,
                         ),
                       ),
-                    ),
+                      _buildAllMenuList(),
+                      SizedBox(height: cartItems.isNotEmpty ? 100 : 30),
+                    ]),
                   ),
-                ),
+                ],
               ),
-
-              // --- KONTEN LAINNYA ---
-              SliverList(
-                delegate: SliverChildListDelegate([
-                  if (!isSearching) ...[
-                    // --- PESAN ULANG CEPAT ---
-                    if (quickReorder.isNotEmpty) ...[
-                      _buildSectionHeader(
-                        "Pesan Ulang Cepat",
-                        trailing: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF2994A).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.history_rounded,
-                                size: 14,
-                                color: Color(0xFFF2994A),
-                              ),
-                              SizedBox(width: 4),
-                              Text(
-                                "Riwayat",
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFFF2994A),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      _buildQuickReorderList(),
-                    ],
-
-                    // --- MENU EKSPRES ---
-                    if (expressMenus.isNotEmpty) ...[
-                      _buildSectionHeader(
-                        "Menu Ekspres",
-                        trailing: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF2C94C).withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.bolt_rounded,
-                                size: 16,
-                                color: Color(0xFFE2B93B),
-                              ),
-                              SizedBox(width: 4),
-                              Text(
-                                "Siap < 5 mnt",
-                                style: TextStyle(
-                                  color: Color(0xFFE2B93B),
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'Poppins',
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      _buildExpressMenuList(),
-                    ],
-                  ],
-
-                  // --- SEMUA MENU & TOMBOL FILTER ---
-                  _buildSectionHeader(
-                    isSearching ? "Hasil Pencarian" : "Semua Menu",
-                    trailing: GestureDetector(
-                      onTap: _showFilterBottomSheet,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: hasActiveFilter
-                              ? const Color(0xFFF2994A).withOpacity(0.1)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: hasActiveFilter
-                                ? const Color(0xFFF2994A)
-                                : Colors.grey.shade300,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.tune,
-                              size: 16,
-                              color: hasActiveFilter
-                                  ? const Color(0xFFF2994A)
-                                  : Colors.grey.shade600,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              "Filter",
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: hasActiveFilter
-                                    ? const Color(0xFFD4823A)
-                                    : Colors.grey.shade600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  _buildAllMenuList(),
-                  SizedBox(height: cartItems.isNotEmpty ? 100 : 30),
-                ]),
-              ),
-            ],
-          ),
-        ),
-        if (cartItems.isNotEmpty)
-          Positioned(
-            bottom: 20,
-            left: 20,
-            right: 20,
-            child: KeranjangWidget(
-              cartItems: cartItems,
-              onCartCheckedOut: () {
-                fetchHomeData();
-                fetchCartData();
-              },
             ),
-          ),
-      ],
-    ),
-  ),
-);
+            if (cartItems.isNotEmpty)
+              Positioned(
+                bottom: 20,
+                left: 20,
+                right: 20,
+                child: KeranjangWidget(
+                  cartItems: cartItems,
+                  onCartCheckedOut: () {
+                    fetchHomeData();
+                    fetchCartData();
+                  },
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 
   // --- WIDGET HELPER ---
@@ -634,7 +643,10 @@ class _HomeScreenState extends State<HomeScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFF2994A).withOpacity(0.25), width: 1.5),
+        border: Border.all(
+          color: const Color(0xFFF2994A).withOpacity(0.25),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -1004,103 +1016,163 @@ class _HomeScreenState extends State<HomeScreen> {
         itemCount: expressMenus.length,
         itemBuilder: (context, index) {
           final menu = expressMenus[index];
+
+          // ✨ 1. CEK STATUS STOK
+          final dynamic rawStok = menu['status_stok'];
+          final bool isHabis =
+              rawStok == false || rawStok == 0 || rawStok == '0';
+
           String foto = _buildPhotoUrl(menu['foto_menu']);
           double harga = double.parse(menu['harga'].toString());
           int waktu = menu['estimasi_waktu'] ?? 0;
           String namaKantin = menu['kantin']?['nama_kantin'] ?? 'Kantin';
 
           return GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => MenuDetailScreen(menuData: menu),
-                ),
-              ).then((_) => fetchCartData());
-            },
-            child: Container(
-              width: 130,
-              margin: const EdgeInsets.symmetric(horizontal: 5),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(14),
-                    ),
-                    child: Image.network(
-                      foto,
-                      height: 100,
-                      width: 130,
-                      fit: BoxFit.cover,
-                      errorBuilder: (c, e, s) => Container(
-                        width: double.infinity,
-                        height: 100,
-                        color: Colors.grey[200],
-                        child: const Icon(Icons.fastfood, color: Colors.grey),
+            // ✨ 2. KUNCI KLIK JIKA HABIS
+            onTap: isHabis
+                ? () {
+                    CustomSnackBar.show(
+                      context,
+                      message: 'Menu ini sedang habis.',
+                      isError: true,
+                    );
+                  }
+                : () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MenuDetailScreen(menuData: menu),
                       ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          menu['nama_item'] ?? 'Menu',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                            color: Color(0xFF2C3138),
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          namaKantin,
-                          style: TextStyle(
-                            color: Colors.grey.shade500,
-                            fontSize: 11,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.schedule,
-                              size: 12,
-                              color: Colors.grey.shade400,
-                            ),
-                            const SizedBox(width: 3),
-                            Text(
-                              "$waktu menit",
-                              style: TextStyle(
-                                color: Colors.grey.shade500,
-                                fontSize: 11,
+                    ).then((_) => fetchCartData());
+                  },
+            child: Opacity(
+              // ✨ Samakan opacity dengan daftar Semua Menu agar konsisten
+              opacity: isHabis ? 0.85 : 1.0,
+              child: Container(
+                width: 130,
+                margin: const EdgeInsets.symmetric(horizontal: 5),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(14),
+                      ),
+                      // ✨ 3. BUNGKUS GAMBAR DENGAN STACK UNTUK FILTER & OVERLAY
+                      child: Stack(
+                        children: [
+                          ColorFiltered(
+                            colorFilter: isHabis
+                                ? const ColorFilter.mode(
+                                    Colors.grey,
+                                    BlendMode.saturation,
+                                  )
+                                : const ColorFilter.mode(
+                                    Colors.transparent,
+                                    BlendMode.multiply,
+                                  ),
+                            child: Image.network(
+                              foto,
+                              height: 100,
+                              width: 130,
+                              fit: BoxFit.cover,
+                              errorBuilder: (c, e, s) => Container(
+                                width: double.infinity,
+                                height: 100,
+                                color: Colors.grey[200],
+                                child: const Icon(
+                                  Icons.fastfood,
+                                  color: Colors.grey,
+                                ),
                               ),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          "Rp ${_currencyFormat.format(harga)}",
-                          style: const TextStyle(
-                            color: Color(0xFF27AE60),
-                            fontWeight: FontWeight.w800,
-                            fontSize: 13,
                           ),
-                        ),
-                      ],
+                          if (isHabis)
+                            Container(
+                              height: 100,
+                              width: 130,
+                              color: Colors.black.withOpacity(0.5),
+                              alignment: Alignment.center,
+                              child: const Text(
+                                'HABIS',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 12,
+                                  letterSpacing: 1.5,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                    Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            menu['nama_item'] ?? 'Menu',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              // ✨ Warna teks jadi abu-abu jika habis
+                              color: isHabis
+                                  ? Colors.grey
+                                  : const Color(0xFF2C3138),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            namaKantin,
+                            style: TextStyle(
+                              color: Colors.grey.shade500,
+                              fontSize: 11,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.schedule,
+                                size: 12,
+                                color: Colors.grey.shade400,
+                              ),
+                              const SizedBox(width: 3),
+                              Text(
+                                "$waktu menit",
+                                style: TextStyle(
+                                  color: Colors.grey.shade500,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "Rp ${_currencyFormat.format(harga)}",
+                            style: TextStyle(
+                              // ✨ Warna harga jadi abu-abu jika habis
+                              color: isHabis
+                                  ? Colors.grey
+                                  : const Color(0xFF27AE60),
+                              fontWeight: FontWeight.w800,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           );
@@ -1156,7 +1228,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
         // Cek status stok - handle boolean dan int/string
         final dynamic rawStok = menu['status_stok'];
-        final bool isAvailable = rawStok == true || rawStok == 1 || rawStok == '1';
+        final bool isAvailable =
+            rawStok == true || rawStok == 1 || rawStok == '1';
 
         final bool isGreen = waktu < 10;
         final Color badgeBg = isGreen
@@ -1208,10 +1281,26 @@ class _HomeScreenState extends State<HomeScreen> {
                                     BlendMode.multiply,
                                   )
                                 : const ColorFilter.matrix(<double>[
-                                    0.2126, 0.7152, 0.0722, 0, 0,
-                                    0.2126, 0.7152, 0.0722, 0, 0,
-                                    0.2126, 0.7152, 0.0722, 0, 0,
-                                    0,      0,      0,      1, 0,
+                                    0.2126,
+                                    0.7152,
+                                    0.0722,
+                                    0,
+                                    0,
+                                    0.2126,
+                                    0.7152,
+                                    0.0722,
+                                    0,
+                                    0,
+                                    0.2126,
+                                    0.7152,
+                                    0.0722,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    1,
+                                    0,
                                   ]),
                             child: Image.network(
                               foto,
@@ -1222,7 +1311,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                 width: 80,
                                 height: 80,
                                 color: Colors.grey[200],
-                                child: const Icon(Icons.fastfood, color: Colors.grey),
+                                child: const Icon(
+                                  Icons.fastfood,
+                                  color: Colors.grey,
+                                ),
                               ),
                             ),
                           ),
@@ -1296,7 +1388,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: isAvailable ? badgeBg : Colors.grey.shade200,
+                                color: isAvailable
+                                    ? badgeBg
+                                    : Colors.grey.shade200,
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
