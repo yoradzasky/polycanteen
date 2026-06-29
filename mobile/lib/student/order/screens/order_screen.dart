@@ -9,6 +9,8 @@ import '../../../student/tracking/screens/live_tracking_screen.dart';
 import 'order_detail_screen.dart';
 import '../widgets/review_popup.dart';
 import '../../payment/screens/payment_screen.dart';
+import '../../payment/screens/qris_payment_screen.dart';
+import '../../payment/services/payment_service.dart';
 import 'package:mobile/core/widgets/app_loading_animation.dart';
 
 class OrderScreen extends StatefulWidget {
@@ -144,7 +146,57 @@ class _OrderScreenState extends State<OrderScreen>
         );
       }
     } finally {
-      _fetchOrders(showLoading: true);
+      if (mounted) {
+        setState(() => _isLoading = false);
+        _fetchOrders();
+      }
+    }
+  }
+
+  Future<void> _processPayment(int orderId, double totalHarga) async {
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(child: AppLoadingAnimation()),
+      );
+
+      final result = await PaymentService().createPayment(orderId, paymentType: 'qris');
+      
+      if (!mounted) return;
+      Navigator.pop(context); // close loading
+
+      final data = result['data'];
+      final paymentType = data['payment_type'];
+
+      if (paymentType == 'qris') {
+        final qrString = data['qr_string'];
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => QrisPaymentScreen(
+              qrUrl: qrString,
+              pesananId: orderId,
+              totalAmount: NumberFormat.currency(locale: 'id_ID', symbol: 'Rp', decimalDigits: 0).format(totalHarga),
+            ),
+          ),
+        ).then((_) => _fetchOrders());
+      } else {
+        final paymentUrl = data['payment_url'];
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => SnapWebViewScreen(
+              url: paymentUrl,
+              onFinished: () => _fetchOrders(),
+            ),
+          ),
+        ).then((_) => _fetchOrders());
+      }
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal memproses pembayaran: $e')));
     }
   }
 
@@ -611,39 +663,7 @@ class _OrderScreenState extends State<OrderScreen>
                   ),
                   const SizedBox(height: 8),
                 ] else if (status == 'menunggu_persetujuan') ...[
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => PaymentScreen(
-                              pesananId: orderId,
-                              totalHarga: double.tryParse(totalHarga.toString()) ?? 0.0,
-                            ),
-                          ),
-                        ).then((_) => _fetchOrders());
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2D3A8C),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'Pantau Persetujuan',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
+
                   SizedBox(
                     width: double.infinity,
                     height: 48,
@@ -671,17 +691,10 @@ class _OrderScreenState extends State<OrderScreen>
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => PaymentScreen(
-                              pesananId: orderId,
-                              totalHarga: double.tryParse(totalHarga.toString()) ?? 0.0,
-                            ),
-                          ),
-                        ).then((_) => _fetchOrders());
-                      },
+                      onPressed: () => _processPayment(
+                        orderId,
+                        double.tryParse(totalHarga.toString()) ?? 0.0,
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF4CAF50),
                         foregroundColor: Colors.white,
