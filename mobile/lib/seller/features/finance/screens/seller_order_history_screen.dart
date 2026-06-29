@@ -4,8 +4,28 @@ import 'package:provider/provider.dart';
 import '../services/finance_service.dart';
 import 'package:mobile/core/widgets/app_loading_animation.dart';
 
-class SellerOrderHistoryScreen extends StatelessWidget {
-  const SellerOrderHistoryScreen({Key? key}) : super(key: key);
+class SellerOrderHistoryScreen extends StatefulWidget {
+  final String userRole;
+  final bool isFromTab;
+
+  const SellerOrderHistoryScreen({
+    Key? key,
+    this.userRole = 'pemilik',
+    this.isFromTab = false,
+  }) : super(key: key);
+
+  @override
+  State<SellerOrderHistoryScreen> createState() => _SellerOrderHistoryScreenState();
+}
+
+class _SellerOrderHistoryScreenState extends State<SellerOrderHistoryScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<FinanceProvider>().fetchFinanceData();
+    });
+  }
 
   String formatCurrency(double amount) {
     return NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(amount);
@@ -16,6 +36,10 @@ class SellerOrderHistoryScreen extends StatelessWidget {
     // Gunakan FinanceProvider yang sudah ada di context
     final provider = context.watch<FinanceProvider>();
     final history = provider.history;
+
+    final primaryColor = widget.userRole == 'pegawai'
+        ? const Color(0xFF5E7AC4)
+        : const Color(0xFF3F51B5);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6FB),
@@ -28,12 +52,15 @@ class SellerOrderHistoryScreen extends StatelessWidget {
             fontSize: 20,
           ),
         ),
-        backgroundColor: const Color(0xFF3F51B5),
+        backgroundColor: primaryColor,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
+        automaticallyImplyLeading: !widget.isFromTab,
+        leading: widget.isFromTab
+            ? null
+            : IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
+                onPressed: () => Navigator.pop(context),
+              ),
       ),
       body: provider.isLoading
           ? const Center(child: AppLoadingAnimation())
@@ -310,10 +337,10 @@ class SellerOrderHistoryScreen extends StatelessWidget {
                               ),
                               Text(
                                 formatCurrency(double.parse(order['total_harga'].toString())),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w800,
-                                  color: Color(0xFF3F51B5),
+                                  color: primaryColor,
                                 ),
                               ),
                             ],
@@ -326,3 +353,4 @@ class SellerOrderHistoryScreen extends StatelessWidget {
     );
   }
 }
+
