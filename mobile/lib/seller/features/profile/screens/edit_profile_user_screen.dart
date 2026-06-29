@@ -94,7 +94,7 @@ class _EditProfileUserScreenState extends State<EditProfileUserScreen> {
       setState(() => _isSaving = true);
 
       await ProfileService.updateProfile(
-        username: _profile?.username ?? '', // Keep existing username
+        namaLengkap: _profile?.namaLengkap ?? '', // Keep existing namaLengkap
         email: _emailController.text,
         namaPemilik: _namaController.text,
         noTelp: _phoneController.text.isEmpty ? null : _phoneController.text,

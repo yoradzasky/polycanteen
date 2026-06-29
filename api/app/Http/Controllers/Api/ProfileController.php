@@ -43,7 +43,7 @@ class ProfileController extends Controller
                 'success' => true,
                 'data' => [
                     'id' => $user->id,
-                    'username' => $user->username,
+                    'nama_lengkap' => $user->nama_lengkap,
                     'email' => $user->email,
                     'role' => $user->role,
                     'nama' => $nama,
@@ -59,7 +59,7 @@ class ProfileController extends Controller
             'success' => true,
             'data' => [
                 'id' => $user->id,
-                'username' => $user->username,
+                'nama_lengkap' => $user->nama_lengkap,
                 'email' => $user->email,
                 'role' => $user->role,
                 'nama' => $nama,
@@ -77,7 +77,7 @@ class ProfileController extends Controller
         $photoField = $request->hasFile('foto_profil') ? 'foto_profil' : 'foto_profile';
 
         $validated = $request->validate([
-            'username' => 'sometimes|string|max:255|unique:users,username,' . $user->id,
+            'nama_lengkap' => 'sometimes|string|max:255|unique:users,nama_lengkap,' . $user->id,
             'email' => 'sometimes|email|unique:users,email,' . $user->id,
             'nama_pemilik' => 'sometimes|string|max:255',
             'no_telp' => 'sometimes|string|max:20',
@@ -85,8 +85,8 @@ class ProfileController extends Controller
         ]);
 
         // Update user data
-        if (isset($validated['username'])) {
-            $user->username = $validated['username'];
+        if (isset($validated['nama_lengkap'])) {
+            $user->nama_lengkap = $validated['nama_lengkap'];
         }
         if (isset($validated['email'])) {
             $user->email = $validated['email'];
@@ -147,7 +147,7 @@ class ProfileController extends Controller
             'message' => 'Profil berhasil diperbarui',
             'data' => [
                 'id' => $user->id,
-                'username' => $user->username,
+                'nama_lengkap' => $user->nama_lengkap,
                 'email' => $user->email,
                 'role' => $user->role,
                 'nama' => $user->courier_name,
