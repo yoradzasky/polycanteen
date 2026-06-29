@@ -5,8 +5,13 @@ import '../../home/widgets/custom_snackbar.dart';
 
 class MenuDetailScreen extends StatefulWidget {
   final Map<String, dynamic> menuData;
+  final bool isKantinBuka;
 
-  const MenuDetailScreen({super.key, required this.menuData});
+  const MenuDetailScreen({
+    super.key,
+    required this.menuData,
+    this.isKantinBuka = true,
+  });
 
   @override
   State<MenuDetailScreen> createState() => _MenuDetailScreenState();
@@ -118,6 +123,15 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
 
   // Aksi tombol Tambah ke Keranjang
   Future<void> _handleAddToCart() async {
+    // Blokir jika kantin tutup
+    if (!widget.isKantinBuka) {
+      CustomSnackBar.show(
+        context,
+        message: 'Kantin sedang tutup. Tidak bisa menambah ke keranjang.',
+        isError: true,
+      );
+      return;
+    }
     setState(() => isAddingToCart = true);
 
     try {
@@ -653,13 +667,14 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                       child: SizedBox(
                         height: 56, // Cukup untuk 2 baris teks
                         child: ElevatedButton(
-                          onPressed: isAddingToCart ? null : _handleAddToCart,
+                          onPressed: (!widget.isKantinBuka || isAddingToCart) ? null : _handleAddToCart,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFF2994A),
-                            disabledBackgroundColor: const Color(
-                              0xFFF2994A,
-                            ).withOpacity(0.7), // Warna saat loading
+                            disabledBackgroundColor: !widget.isKantinBuka
+                                ? Colors.grey[400]
+                                : const Color(0xFFF2994A).withOpacity(0.7),
                             foregroundColor: Colors.white,
+                            disabledForegroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
@@ -674,31 +689,39 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                                     strokeWidth: 3,
                                   ),
                                 )
-                              : Column(
-                                  mainAxisAlignment: MainAxisAlignment
-                                      .center, // Pusatkan teks di tengah
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Text(
-                                      'Tambah ke Keranjang',
+                              : !widget.isKantinBuka
+                                  ? const Text(
+                                      'Kantin Tutup',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 13,
+                                        fontSize: 14,
                                       ),
+                                    )
+                                  : Column(
+                                      mainAxisAlignment: MainAxisAlignment
+                                          .center, // Pusatkan teks di tengah
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Text(
+                                          'Tambah ke Keranjang',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                        Text(
+                                          NumberFormat.currency(
+                                            locale: 'id',
+                                            symbol: 'Rp ',
+                                            decimalDigits: 0,
+                                          ).format(_calculateTotalPrice()),
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    Text(
-                                      NumberFormat.currency(
-                                        locale: 'id',
-                                        symbol: 'Rp ',
-                                        decimalDigits: 0,
-                                      ).format(_calculateTotalPrice()),
-                                      style: const TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
                         ),
                       ),
                     ),
