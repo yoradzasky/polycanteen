@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/menu_service.dart';
-import '../../../core/widgets/custom_snackbar.dart';
+import '../../home/widgets/custom_snackbar.dart';
 
 class MenuDetailScreen extends StatefulWidget {
   final Map<String, dynamic> menuData;
@@ -651,7 +651,7 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                     // TOMBOL TAMBAH KE KERANJANG
                     Expanded(
                       child: SizedBox(
-                        height: 50, // Paksa tinggi tombol tetap 50
+                        height: 56, // Cukup untuk 2 baris teks
                         child: ElevatedButton(
                           onPressed: isAddingToCart ? null : _handleAddToCart,
                           style: ElevatedButton.styleFrom(

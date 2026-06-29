@@ -58,11 +58,19 @@ class AuthService {
     try {
       // Ambil token dari storage lokal
       final token = await getToken();
+      final role = await _prefs.getString('user_role');
 
       if (token != null) {
+        String logoutUrl = '/logout';
+        if (role == 'pemilik') {
+          logoutUrl = '/penjual/logout';
+        } else if (role == 'mahasiswa') {
+          logoutUrl = '/mahasiswa/logout';
+        }
+
         // Tembak API logout Laravel
         await _dio.post(
-          '/logout',
+          logoutUrl,
           options: Options(
             headers: {
               'Authorization': 'Bearer $token',
@@ -75,8 +83,9 @@ class AuthService {
       // Abaikan jika terjadi error dari server (misal tidak ada koneksi internet).
       // Yang terpenting proses di blok finally tetap berjalan.
     } finally {
-      // Selalu pastikan token dihapus dari HP, apa pun balasan dari server
+      // Selalu pastikan token dan role dihapus dari HP, apa pun balasan dari server
       await _prefs.remove('auth_token');
+      await _prefs.remove('user_role');
     }
   }
 }

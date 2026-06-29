@@ -98,7 +98,7 @@ class _QrScannerScreenState extends State<QrScannerScreen>
     return Options(headers: {'Authorization': 'Bearer $token'});
   }
 
-  /// Panggil POST /pemilik/scanner/verify
+  /// Panggil POST /penjual/scanner/verify
   Future<void> _verifyQr(String qrData) async {
     setState(() {
       _isLoading = true;
@@ -108,7 +108,7 @@ class _QrScannerScreenState extends State<QrScannerScreen>
 
     try {
       final response = await _dio.post(
-        '/pemilik/scanner/verify',
+        '/penjual/scanner/verify',
         data: {'qr_data': qrData},
         options: await _authOptions(),
       );
@@ -147,7 +147,7 @@ class _QrScannerScreenState extends State<QrScannerScreen>
     }
   }
 
-  /// Panggil POST /pemilik/scanner/confirm
+  /// Panggil POST /penjual/scanner/confirm
   Future<void> _confirmOrder() async {
     if (_orderData == null || _isConfirming) return;
 
@@ -155,7 +155,7 @@ class _QrScannerScreenState extends State<QrScannerScreen>
 
     try {
       final response = await _dio.post(
-        '/pemilik/scanner/confirm',
+        '/penjual/scanner/confirm',
         data: {'pesanan_id': _orderData!['pesanan_id']},
         options: await _authOptions(),
       );

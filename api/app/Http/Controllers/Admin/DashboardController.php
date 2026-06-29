@@ -43,19 +43,19 @@ class DashboardController extends Controller
             ->limit(100) 
             ->get()
             ->map(function ($pesanan) {
-                $fotoProfile = $pesanan->mahasiswa?->user?->foto_profile ?? 'https://ui-avatars.com/api/?name=U&background=gray&color=fff';
+                $nama = $pesanan->mahasiswa?->nama_mahasiswa ?? $pesanan->mahasiswa?->user?->username ?? 'Unknown';
+                $fotoProfile = $pesanan->mahasiswa?->user?->foto_profile ?? 'https://ui-avatars.com/api/?name=' . urlencode($nama) . '&background=random&color=fff';
                 
                 return [
                     'id' => $pesanan->id,
-                    // Pastikan memanggil kolom nama_mahasiswa atau username yang benar
-                    'nama' => $pesanan->mahasiswa?->nama_mahasiswa ?? $pesanan->mahasiswa?->user?->username ?? 'Unknown',
+                    'nama' => $nama,
                     'userId' => $pesanan->mahasiswa?->user_id ?? $pesanan->mahasiswa_id,
                     'fotoProfile' => $fotoProfile,
                     'tipe' => 'Transaksi Pembelian',
                     'kantin' => $pesanan->kantin?->nama_kantin ?? '-',
                     'jumlah' => 'Rp ' . number_format($pesanan->total_harga, 0, ',', '.'),
                     'tanggal' => $pesanan->created_at->format('d M Y, H:i'),
-                    'status' => ucfirst($pesanan->status_pesanan),
+                    'status' => ucwords(str_replace('_', ' ', $pesanan->status_pesanan)),
                     'tipeAktivitas' => 'transaksi',
                     'timestamp_asli' => $pesanan->created_at 
                 ];

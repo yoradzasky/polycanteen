@@ -144,11 +144,7 @@ class OrderDetailScreen extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      statusIcon,
-                      color: statusIconColor,
-                      size: 14,
-                    ),
+                    Icon(statusIcon, color: statusIconColor, size: 14),
                     const SizedBox(width: 6),
                     Text(
                       statusText,
@@ -330,8 +326,60 @@ class OrderDetailScreen extends StatelessWidget {
               (double.tryParse(item['harga_saat_beli'].toString()) ?? 0)
                   .toInt();
 
-          // Cek apakah ada ekstra varian (json array)
-          bool hasVarian = item['varian_snapshot'] != null;
+          // Parse varian_snapshot untuk mendapatkan detail varian
+          final dynamic rawVarian = item['varian_snapshot'];
+          final List<Map<String, String>> parsedVariants = [];
+
+          if (rawVarian != null) {
+            if (rawVarian is Map) {
+              // Format: { "Ukuran": {"nama": "Besar", "harga": 5000}, ... }
+              rawVarian.forEach((key, value) {
+                final category = key.toString();
+                if (value is Map) {
+                  final nama = value['nama'] ?? value['name'] ?? '-';
+                  parsedVariants.add({
+                    'category': category,
+                    'name': nama.toString(),
+                  });
+                } else if (value is List) {
+                  for (var v in value) {
+                    if (v is Map) {
+                      final nama = v['nama'] ?? v['name'] ?? '-';
+                      parsedVariants.add({
+                        'category': category,
+                        'name': nama.toString(),
+                      });
+                    } else {
+                      parsedVariants.add({
+                        'category': category,
+                        'name': v.toString(),
+                      });
+                    }
+                  }
+                } else {
+                  parsedVariants.add({
+                    'category': category,
+                    'name': value.toString(),
+                  });
+                }
+              });
+            } else if (rawVarian is List) {
+              for (var v in rawVarian) {
+                if (v is Map) {
+                  final nama = v['nama'] ?? v['name'] ?? v.toString();
+                  parsedVariants.add({
+                    'category': 'Varian',
+                    'name': nama.toString(),
+                  });
+                } else {
+                  parsedVariants.add({
+                    'category': 'Varian',
+                    'name': v.toString(),
+                  });
+                }
+              }
+            }
+          }
 
           return Column(
             children: [
@@ -389,11 +437,16 @@ class OrderDetailScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                        if (hasVarian) ...[
+                        if (parsedVariants.isNotEmpty) ...[
                           const SizedBox(height: 4),
-                          const Text(
-                            '• Memiliki Varian / Topping',
-                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                          ...parsedVariants.map(
+                            (v) => Text(
+                              '• ${v['category']}: ${v['name']}',
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 12,
+                              ),
+                            ),
                           ),
                         ],
                         const SizedBox(height: 12),

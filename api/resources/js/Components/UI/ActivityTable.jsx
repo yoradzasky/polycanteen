@@ -35,9 +35,15 @@ export default function ActivityTable({ aktivitas = [] }) {
     const statusLower = status?.toLowerCase() || '';
     if (statusLower === 'selesai' || statusLower === 'sukses') {
       return 'bg-emerald-100 text-emerald-700';
-    } else if (statusLower === 'menunggu' || statusLower === 'pending' || statusLower === 'diproses') {
-      return 'bg-amber-100 text-amber-700';
-    } else if (statusLower === 'ditolak' || statusLower === 'cancel') {
+    } else if (statusLower === 'menunggu' || statusLower === 'pending' || statusLower === 'menunggu konfirmasi' || statusLower === 'menunggu pembayaran') {
+      return 'bg-gray-100 text-gray-700';
+    } else if (statusLower === 'dibayar' || statusLower === 'diproses') {
+      return 'bg-blue-100 text-blue-700';
+    } else if (statusLower === 'dimasak') {
+      return 'bg-orange-100 text-orange-700';
+    } else if (statusLower === 'dalam perjalanan' || statusLower === 'diantar') {
+      return 'bg-indigo-100 text-indigo-700';
+    } else if (statusLower === 'ditolak' || statusLower === 'cancel' || statusLower === 'dibatalkan') {
       return 'bg-red-100 text-red-700';
     }
     return 'bg-gray-100 text-gray-700';
@@ -70,7 +76,7 @@ export default function ActivityTable({ aktivitas = [] }) {
   }, [aktivitas]);
 
   return (
-    <section className="px-8 py-7 w-full">
+    <section className="w-full">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-lg font-semibold text-gray-900">Aktivitas Terbaru</h2>
         
@@ -108,7 +114,7 @@ export default function ActivityTable({ aktivitas = [] }) {
       <div className="overflow-x-auto rounded-lg border border-gray-200">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-gray-200 bg-gray-50">
+            <tr className="border-b-2 border-gray-200 bg-gray-50">
               <th className="px-6 py-4 text-left font-medium text-gray-700">NAMA</th>
               <th className="px-6 py-4 text-left font-medium text-gray-700">AKTIVITAS</th>
               <th className="px-6 py-4 text-left font-medium text-gray-700">KANTIN</th>
@@ -120,7 +126,7 @@ export default function ActivityTable({ aktivitas = [] }) {
           <tbody>
             {paginatedAktivitas.length > 0 ? (
               paginatedAktivitas.map((item, index) => (
-                <tr key={item.id || index} className="border-b border-gray-200 hover:bg-gray-50 transition">
+                <tr key={item.id || index} className="border-b-2 border-gray-200 hover:bg-gray-50 transition">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <img 

@@ -1,7 +1,7 @@
 import React, { useId, useState } from "react";
 import { Head, useForm } from "@inertiajs/react"; 
 import heroImage from "../../Components/UI/hero-dashboard.svg";
-import forkIcon from "../../Components/UI/fork.svg";
+import logoImg from "../../Components/UI/logo.jpg";
 import mailIcon from "../../Components/UI/mail.svg";
 import lockIcon from "../../Components/UI/lock.svg";
 
@@ -84,13 +84,9 @@ export default function Login() {
           <div className="flex flex-col items-start gap-2 relative self-stretch w-full flex-[0_0_auto]">
             <div className="flex items-center justify-center gap-3 relative self-stretch w-full flex-[0_0_auto]">
               
-              {/* BAGIAN LOGO FORK.SVG */}
-              <div className="w-10 h-10 items-center justify-center bg-[#3852b4] rounded-[10px] flex relative">
-                <div className="absolute top-[calc(50.00%_-_20px)] left-[calc(50.00%_-_20px)] w-10 h-10 bg-[#ffffff01] rounded-[10px] shadow-[0px_4px_6px_-4px_#3852b44c,0px_10px_15px_-3px_#3852b44c]" />
-                <div className="inline-flex flex-col items-center relative flex-[0_0_auto]">
-                  {/* Memanggil gambar sendok garpu */}
-                  <img src={forkIcon} alt="Logo" className="w-5 h-5 object-contain" />
-                </div>
+              {/* BAGIAN LOGO POLYCANTEEN */}
+              <div className="w-10 h-10 items-center justify-center rounded-[10px] overflow-hidden flex relative">
+                <img src={logoImg} alt="Logo Polycanteen" className="w-full h-full object-cover" />
               </div>
               
               <div className="inline-flex flex-col items-center relative flex-[0_0_auto]">
@@ -124,14 +120,14 @@ export default function Login() {
                 </label>
               </div>
               <div className="flex flex-col items-start relative self-stretch w-full flex-[0_0_auto]">
-                <div className="flex flex-col items-start pl-10 pr-4 py-3.5 relative self-stretch w-full flex-[0_0_auto] bg-[#f9fafb80] rounded-xl overflow-hidden border border-solid shadow-[0px_1px_2px_#0000000d]">
+                <div className="flex flex-col items-start pl-10 pr-4 py-3.5 relative self-stretch w-full flex-[0_0_auto] bg-[#f9fafb80] rounded-xl overflow-hidden border border-solid border-gray-200 shadow-[0px_1px_2px_#0000000d] focus-within:border-[#3852b4] focus-within:ring-1 focus-within:ring-[#3852b4] transition-all">
                   <input
                     id={emailId}
                     name="email"
                     autoComplete="email"
                     inputMode="email"
                     aria-label="Email"
-                    className="relative self-stretch w-full border-[none] [background:none] h-5 mt-[-1.00px] [font-family:'Inter-Regular',Helvetica] font-normal text-gray-700 placeholder:text-gray-400 text-base tracking-[0] leading-[normal] p-0 focus:ring-0"
+                    className="relative self-stretch w-full border-[none] [background:none] h-5 mt-[-1.00px] [font-family:'Inter-Regular',Helvetica] font-normal text-gray-700 placeholder:text-gray-400 text-base tracking-[0] leading-[normal] p-0 focus:ring-0 focus:outline-none outline-none"
                     placeholder="admin@kantin.com"
                     type="email"
                     value={data.email}
@@ -161,13 +157,13 @@ export default function Login() {
                 </label>
               </div>
               <div className="flex flex-col items-start relative self-stretch w-full flex-[0_0_auto]">
-                <div className="flex flex-col items-start px-10 pr-14 py-3.5 self-stretch w-full flex-[0_0_auto] bg-[#f9fafb80] rounded-xl overflow-hidden border shadow-[0px_1px_2px_#0000000d] relative border-solid">
+                <div className="flex flex-col items-start px-10 pr-14 py-3.5 self-stretch w-full flex-[0_0_auto] bg-[#f9fafb80] rounded-xl overflow-hidden border border-gray-200 shadow-[0px_1px_2px_#0000000d] relative border-solid focus-within:border-[#3852b4] focus-within:ring-1 focus-within:ring-[#3852b4] transition-all">
                   <input
                     id={passwordId}
                     name="password"
                     autoComplete="current-password"
                     aria-label="Password"
-                    className="relative self-stretch w-full border-[none] [background:none] h-5 mt-[-1.00px] [font-family:'Inter-Regular',Helvetica] font-normal text-gray-700 placeholder:text-gray-400 text-base tracking-[0] leading-[normal] p-0 focus:ring-0"
+                    className="relative self-stretch w-full border-[none] [background:none] h-5 mt-[-1.00px] [font-family:'Inter-Regular',Helvetica] font-normal text-gray-700 placeholder:text-gray-400 text-base tracking-[0] leading-[normal] p-0 focus:ring-0 focus:outline-none outline-none"
                     placeholder="••••••••"
                     type={showPassword ? "text" : "password"}
                     value={data.password} 
@@ -196,13 +192,15 @@ export default function Login() {
                     xmlns="http://www.w3.org/2000/svg"
                     className="text-gray-500"
                     aria-hidden="true"
+                    stroke="currentColor"
                   >
                     {showPassword ? (
-                      <path d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7Zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" fill="currentColor" />
-                    ) : (
                       <>
-                        <path d="M12 5c-3.26 0-6.28 1.64-8.4 4.2l1.46 1.46C6.75 8.65 9.24 7.5 12 7.5c4.64 0 8.24 3.14 9.27 7.5-.46 1.64-1.28 3.13-2.34 4.32l1.42 1.42C21.17 18.24 22 15.24 22 12c-1.73-3.89-6-7-11-7Zm-9.19-.19L2.81 1.81 22.19 21.19l-1.42 1.42L14.83 16.7C13.53 17.27 12.05 17.5 10.5 17.5 5.86 17.5 2.26 14.36 1.23 10.8c.5-1.78 1.45-3.39 2.73-4.62L2.81 4.81ZM12 15a3 3 0 0 0 2.83-4H6.17a3 3 0 0 0 5.83 4Zm0-6a3 3 0 0 0-2.83 4h5.66A3 3 0 0 0 12 9Z" fill="currentColor" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                       </>
+                    ) : (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
                     )}
                   </svg>
                 </button>

@@ -8,6 +8,7 @@ import 'edit_profile_kantin_screen.dart';
 import '../services/profile_service.dart';
 import '../models/kantin_profile.dart';
 import '../models/user_profile.dart';
+import 'package:mobile/core/widgets/app_loading_animation.dart';
 
 class ProfileTokoScreen extends StatefulWidget {
   const ProfileTokoScreen({super.key});
@@ -77,7 +78,7 @@ class _ProfileTokoScreenState extends State<ProfileTokoScreen> {
         future: _profileData,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: AppLoadingAnimation());
           }
 
           if (snapshot.hasError || snapshot.data?['success'] != true) {
@@ -93,6 +94,20 @@ class _ProfileTokoScreenState extends State<ProfileTokoScreen> {
                     onPressed: _loadProfileData,
                     child: const Text('Coba Lagi'),
                   ),
+                  if ((snapshot.data?['error'] ?? '').toString().contains('Unauthenticated')) ...[
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      onPressed: _handleLogout,
+                      icon: const Icon(Icons.logout, color: Color(0xFFDC2626)),
+                      label: const Text(
+                        'Login Ulang',
+                        style: TextStyle(color: Color(0xFFDC2626)),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Color(0xFFDC2626)),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             );

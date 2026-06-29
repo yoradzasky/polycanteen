@@ -11,7 +11,7 @@ import 'qris_payment_screen.dart';
 import '../../../seller/tracking/widgets/location_permission_sheet.dart';
 import '../../../core/layouts/student_main_layout.dart';
 import 'location_picker_screen.dart';
-import '../../../core/widgets/custom_snackbar.dart';
+import '../../home/widgets/custom_snackbar.dart';
 
 class PaymentScreen extends StatefulWidget {
   final int pesananId;
@@ -533,6 +533,17 @@ class _PaymentScreenState extends State<PaymentScreen> {
       isButtonDisabled = true;
     }
 
+    String appBarTitle = 'Detail Pesanan';
+    if (_orderStatus == 'pending') {
+      appBarTitle = 'Konfirmasi Pesanan';
+    } else if (_orderStatus == 'menunggu_persetujuan') {
+      appBarTitle = 'Pantau Persetujuan';
+    } else if (_orderStatus == 'menunggu_pembayaran') {
+      appBarTitle = 'Pembayaran';
+    } else if (_orderStatus == 'dibayar') {
+      appBarTitle = 'Pembayaran Berhasil';
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFFAF6F2),
       appBar: AppBar(
@@ -549,8 +560,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
             onPressed: () => Navigator.pop(context),
           ),
         ),
-        title: const Text(
-          'Konfirmasi Pesanan',
+        title: Text(
+          appBarTitle,
           style: TextStyle(
             color: Color(0xFF1F2937),
             fontSize: 18,

@@ -284,77 +284,80 @@ class _VariantBottomSheetState extends State<VariantBottomSheet> {
             ),
 
           // Footer (Qty & Submit)
-          Row(
-            children: [
-              // Qty Counter
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(30),
+          SafeArea(
+            top: false,
+            child: Row(
+              children: [
+                // Qty Counter
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.remove, size: 20),
+                        onPressed: quantity > 1
+                            ? () => setState(() => quantity--)
+                            : null,
+                      ),
+                      Text(
+                        '$quantity',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.add, size: 20),
+                        onPressed: () => setState(() => quantity++),
+                      ),
+                    ],
+                  ),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.remove, size: 20),
-                      onPressed: quantity > 1
-                          ? () => setState(() => quantity--)
-                          : null,
-                    ),
-                    Text(
-                      '$quantity',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                const SizedBox(width: 16),
+                // Submit Button
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFF2994A),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.add, size: 20),
-                      onPressed: () => setState(() => quantity++),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 16),
-              // Submit Button
-              Expanded(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFF2994A),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                  onPressed: () {
-                    // Gabungkan semua payload varian
-                    Map<String, dynamic> varianPayload = {};
-                    selectedWajib.forEach(
-                        (key, value) => varianPayload[key] = value);
-                    selectedOpsional.forEach((key, list) {
-                      if (list.isNotEmpty) {
-                        varianPayload[key] = list;
-                      }
-                    });
+                    onPressed: () {
+                      // Gabungkan semua payload varian
+                      Map<String, dynamic> varianPayload = {};
+                      selectedWajib.forEach(
+                          (key, value) => varianPayload[key] = value);
+                      selectedOpsional.forEach((key, list) {
+                        if (list.isNotEmpty) {
+                          varianPayload[key] = list;
+                        }
+                      });
 
-                    widget.onAddToCart(
-                      quantity,
-                      varianPayload.isNotEmpty ? varianPayload : null,
-                    );
-                    Navigator.pop(context);
-                  },
-                  child: const Text(
-                    'Tambah ke\nKeranjang',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      widget.onAddToCart(
+                        quantity,
+                        varianPayload.isNotEmpty ? varianPayload : null,
+                      );
+                      Navigator.pop(context);
+                    },
+                    child: const Text(
+                      'Tambah ke Keranjang',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
-                ),
-              )
-            ],
+                )
+              ],
+            ),
           )
         ],
       ),

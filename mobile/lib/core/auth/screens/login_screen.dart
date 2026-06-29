@@ -11,7 +11,7 @@ import '../../../student/payment/screens/payment_screen.dart';
 import '../../../student/orders/services/order_service.dart';
 import '../../../student/home/screens/home_screen.dart';
 import '../../services/notification_service.dart';
-import '../../widgets/custom_snackbar.dart';
+import '../../../student/home/widgets/custom_snackbar.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
