@@ -766,7 +766,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           );
         } else {
           final stepIndex = index ~/ 2;
-          final isActive = activeStep > stepIndex;
+          final isActive = activeStep >= stepIndex;
           return Column(
             children: [
               AnimatedContainer(
