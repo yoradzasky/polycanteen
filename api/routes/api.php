@@ -121,6 +121,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/orders/{id}', [StudentOrderController::class, 'show']);
         Route::patch('/orders/{id}/submit', [StudentOrderController::class, 'submitOrder']);
         Route::patch('/orders/{id}/cancel', [StudentOrderController::class, 'cancelOrder']);
+        Route::patch('/orders/{id}/items', [StudentOrderController::class, 'updateItemQuantity']);
         
         // Modul Tracking
         Route::get('/deliveries/{pesanan}', [TrackingController::class, 'show']);

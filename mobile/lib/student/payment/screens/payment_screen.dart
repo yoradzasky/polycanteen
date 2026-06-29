@@ -38,10 +38,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
   double? _longitude;
   Timer? _statusTimer;
   bool _isGettingAddress = false;
+  double _totalHarga = 0.0;
 
   @override
   void initState() {
     super.initState();
+    _totalHarga = widget.totalHarga;
     _loadOrderDetails();
   }
 
@@ -53,6 +55,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         _orderItems = details['detail_pesanan'] ?? [];
         _selectedOrderType = _formatOrderType(details['tipe_pesanan'] ?? 'dine_in');
         _orderStatus = details['status_pesanan'] ?? 'pending';
+        _totalHarga = double.tryParse(details['total_harga']?.toString() ?? '0') ?? widget.totalHarga;
         if (details['catatan_pesanan'] != null) {
           _noteController.text = details['catatan_pesanan'];
         }
@@ -102,6 +105,37 @@ class _PaymentScreenState extends State<PaymentScreen> {
   void _stopStatusPolling() {
     _statusTimer?.cancel();
     _statusTimer = null;
+  }
+
+  Future<void> _updateItemQuantity(int detailId, String action) async {
+    if (detailId == 0) return;
+    setState(() => _isLoading = true);
+    try {
+      final updatedData = await _orderService.updateItemQuantity(
+        widget.pesananId,
+        detailId,
+        action,
+      );
+      
+      setState(() {
+        _orderItems = updatedData['details'] ?? [];
+        _totalHarga = double.tryParse(updatedData['total_harga']?.toString() ?? '0') ?? 0.0;
+        _isLoading = false;
+      });
+      
+      CustomSnackBar.show(
+        context,
+        message: 'Pesanan berhasil diubah',
+        isSuccess: true,
+      );
+    } catch (e) {
+      setState(() => _isLoading = false);
+      CustomSnackBar.show(
+        context,
+        message: e.toString().replaceAll('Exception: ', ''),
+        isError: true,
+      );
+    }
   }
 
   void _showRejectionDialog(String alasan) {
@@ -499,7 +533,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final String formattedTotal = _formatCurrency(widget.totalHarga);
+    final String formattedTotal = _formatCurrency(_totalHarga);
 
     // Tentukan teks tombol dan aksi
     String buttonText = 'Bayar Sekarang - $formattedTotal';
@@ -686,12 +720,16 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     final priceVal = double.tryParse(item['harga_saat_beli']?.toString() ?? '0') ?? 0;
                     final qty = int.tryParse(item['jumlah_pesanan']?.toString() ?? '1') ?? 1;
                     final String? image = menu['foto_menu'];
+                    final int detailId = int.tryParse(item['id']?.toString() ?? '0') ?? 0;
                     return OrderItemCard(
                       name: name,
                       price: _formatCurrency(priceVal),
                       qty: qty,
                       imagePath: image,
                       varianSnapshot: item['varian_snapshot'],
+                      showControls: _orderStatus == 'pending',
+                      onIncrement: () => _updateItemQuantity(detailId, 'increase'),
+                      onDecrement: () => _updateItemQuantity(detailId, 'decrease'),
                     );
                   }),
                   const SizedBox(height: 24),
@@ -781,6 +819,10 @@ class OrderItemCard extends StatelessWidget {
   final String? imagePath;
   final int qty;
   final dynamic varianSnapshot;
+  final VoidCallback? onIncrement;
+  final VoidCallback? onDecrement;
+  final bool showControls;
+
   const OrderItemCard({
     super.key,
     required this.name,
@@ -788,6 +830,9 @@ class OrderItemCard extends StatelessWidget {
     required this.qty,
     this.imagePath,
     this.varianSnapshot,
+    this.onIncrement,
+    this.onDecrement,
+    this.showControls = true,
   });
 
   List<Widget> _buildVarianList(dynamic snapshot) {
@@ -951,35 +996,45 @@ class OrderItemCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF3F4F6),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    IconButton(
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                      icon: const Icon(Icons.remove, size: 16, color: Color(0xFF6B7280)),
-                      onPressed: () {},
-                    ),
-                    Text(
-                      '$qty',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1F2937),
+              if (showControls)
+                Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3F4F6),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                        icon: const Icon(Icons.remove, size: 16, color: Color(0xFF6B7280)),
+                        onPressed: onDecrement,
                       ),
-                    ),
-                    IconButton(
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                      icon: const Icon(Icons.add, size: 16, color: Color(0xFF3B5BBD)),
-                      onPressed: () {},
-                    ),
-                  ],
+                      Text(
+                        '$qty',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1F2937),
+                        ),
+                      ),
+                      IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                        icon: const Icon(Icons.add, size: 16, color: Color(0xFF3B5BBD)),
+                        onPressed: onIncrement,
+                      ),
+                    ],
+                  ),
+                )
+              else
+                Text(
+                  'x$qty',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF6B7280),
+                    fontSize: 16,
+                  ),
                 ),
-              )
             ],
           ),
           const SizedBox(height: 12),
