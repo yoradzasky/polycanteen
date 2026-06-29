@@ -110,18 +110,16 @@ class _FinanceReportScreenState extends State<FinanceReportScreen> {
         }
       }
     }
+
+    String formattedAverageTime = '-';
     if (ordersWithDuration > 0) {
       averageMinutes = totalMinutes / ordersWithDuration;
-    } else {
-      averageMinutes = 15.0; // default fallback
-    }
-
-    String formattedAverageTime = '';
-    if (averageMinutes >= 60) {
-      final hours = (averageMinutes / 60).toStringAsFixed(1);
-      formattedAverageTime = '$hours jam';
-    } else {
-      formattedAverageTime = '${averageMinutes.round()} mnt';
+      if (averageMinutes >= 60) {
+        final hours = (averageMinutes / 60).toStringAsFixed(1);
+        formattedAverageTime = '$hours jam';
+      } else {
+        formattedAverageTime = '${averageMinutes.round()} mnt';
+      }
     }
 
     // 5. Rating Rata-rata
@@ -134,7 +132,12 @@ class _FinanceReportScreenState extends State<FinanceReportScreen> {
         ratedOrdersCount++;
       }
     }
-    double averageRating = ratedOrdersCount > 0 ? (totalRating / ratedOrdersCount) : 4.8;
+
+    String formattedAverageRating = '-';
+    if (ratedOrdersCount > 0) {
+      double averageRating = totalRating / ratedOrdersCount;
+      formattedAverageRating = averageRating.toStringAsFixed(1);
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6FB),
@@ -453,7 +456,7 @@ class _FinanceReportScreenState extends State<FinanceReportScreen> {
                                     const Icon(Icons.star, color: Color(0xFFF2C94C), size: 24),
                                     const SizedBox(height: 10),
                                     Text(
-                                      averageRating.toStringAsFixed(1),
+                                      formattedAverageRating,
                                       style: const TextStyle(
                                         color: Color(0xFF1E293B),
                                         fontSize: 16,
@@ -462,7 +465,7 @@ class _FinanceReportScreenState extends State<FinanceReportScreen> {
                                     ),
                                     const SizedBox(height: 4),
                                     const Text(
-                                      'Rating Rata-rata',
+                                      'Rating',
                                       style: TextStyle(
                                         color: Colors.grey,
                                         fontSize: 11,

@@ -376,7 +376,7 @@ class _OrderScreenState extends State<OrderScreen>
     final itemCount = details.length;
 
     // Progress steps
-    int activeStep = 0;
+    int activeStep = -1;
     if (status == 'dibayar') activeStep = 0;
     if (status == 'dikonfirmasi' || status == 'diproses') activeStep = 1;
     if (status == 'dimasak') activeStep = 2;
@@ -811,7 +811,7 @@ class _OrderScreenState extends State<OrderScreen>
         } else {
           // Step circle
           final stepIndex = index ~/ 2;
-          final isActive = activeStep > stepIndex;
+          final isActive = activeStep >= stepIndex;
           return Column(
             children: [
               AnimatedContainer(

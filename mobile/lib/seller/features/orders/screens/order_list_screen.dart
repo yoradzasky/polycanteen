@@ -192,9 +192,10 @@ class _OrderListScreenState extends State<OrderListScreen> {
       
       bool matchesTab = false;
       if (_selectedTabIndex == 0) {
-        matchesTab = status == 'dibayar' || status == 'pending' || status == 'menunggu_persetujuan'; // Baru masuk
+        matchesTab = status == 'pending' || status == 'menunggu_persetujuan'; // Baru masuk
       } else if (_selectedTabIndex == 1) {
-        matchesTab = status == 'dimasak' ||
+        matchesTab = status == 'dibayar' ||
+            status == 'dimasak' ||
             status == 'dalam_perjalanan' ||
             status == 'siap_diambil' ||
             status == 'menunggu_dikirim' ||
@@ -1403,6 +1404,63 @@ class OrderCard extends StatelessWidget {
                       ),
                       child: const Text(
                         'Selesai Masak',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ] else if (tabIndex == 1 &&
+                    order['status_pesanan'] == 'dibayar') ...[
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => OrderDetailScreen(
+                              order: order,
+                              primaryColor: primaryColor,
+                            ),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Lihat Detail Pesanan',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: onTerima,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFF2994A),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Mulai Masak',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
