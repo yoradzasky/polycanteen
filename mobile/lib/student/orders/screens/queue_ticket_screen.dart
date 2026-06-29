@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../services/order_service.dart';
 import '../../order/screens/order_screen.dart';
 import 'package:mobile/core/widgets/app_loading_animation.dart';
+import '../../../core/layouts/student_main_layout.dart';
 
 class QueueTicketScreen extends StatefulWidget {
   final int pesananId;
@@ -135,7 +136,17 @@ class _QueueTicketScreenState extends State<QueueTicketScreen> {
                         label: 'Beranda',
                         icon: Icons.home_outlined,
                         color: const Color(0xFFF08D39),
-                        onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil('/student-main', (route) => false),
+                        onPressed: () {
+                          Navigator.of(context).pushAndRemoveUntil(
+                            MaterialPageRoute(
+                              builder: (context) => const StudentMainLayout(
+                                userRole: 'mahasiswa',
+                                initialIndex: 0,
+                              ),
+                            ),
+                            (route) => false,
+                          );
+                        },
                       ),
                     ),
                     const SizedBox(width: 16),

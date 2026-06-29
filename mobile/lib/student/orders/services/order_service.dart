@@ -98,4 +98,27 @@ class OrderService {
       throw Exception(body['message'] ?? 'Gagal membatalkan pesanan');
     }
   }
+
+  Future<Map<String, dynamic>> updateItemQuantity(int pesananId, int detailId, String action) async {
+    final token = await _prefs.getString('auth_token');
+    final response = await http.patch(
+      Uri.parse('$_baseUrl/mahasiswa/orders/$pesananId/items'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer ${token.isNotEmpty ? token : ''}',
+      },
+      body: jsonEncode({
+        'detail_id': detailId,
+        'action': action,
+      }),
+    );
+
+    final body = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      return body['data'];
+    } else {
+      throw Exception(body['message'] ?? 'Gagal memperbarui jumlah item');
+    }
+  }
 }
