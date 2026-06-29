@@ -34,7 +34,7 @@ class BuyerController extends Controller
         // Cari mahasiswa berdasarkan nama atau nim
         $results = User::where('role', 'mahasiswa')
             ->where(function ($q) use ($search) {
-                $q->where('username', 'like', "%{$search}%")
+                $q->where('nama_lengkap', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
                   ->orWhereHas('mahasiswa', function ($subQ) use ($search) {
                       $subQ->where('nama_mahasiswa', 'like', "%{$search}%")
@@ -47,7 +47,7 @@ class BuyerController extends Controller
             ->map(function($user) {
                 return [
                     'id' => $user->id,
-                    'name' => $user->mahasiswa->nama_mahasiswa ?? $user->username,
+                    'name' => $user->mahasiswa->nama_mahasiswa ?? $user->nama_lengkap,
                     'nim' => $user->mahasiswa->nim ?? '-',
                 ];
             });
@@ -68,7 +68,7 @@ class BuyerController extends Controller
 
         if (!empty($search)) {
             $query->where(function ($q) use ($search) {
-                $q->where('username', 'like', "%{$search}%")
+                $q->where('nama_lengkap', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
                   ->orWhereHas('mahasiswa', function ($subQ) use ($search) {
                       $subQ->where('nama_mahasiswa', 'like', "%{$search}%")
@@ -108,7 +108,7 @@ class BuyerController extends Controller
 
             return [
                 'id' => $user->id,
-                'name' => $mhs->nama_mahasiswa ?? $user->username,
+                'name' => $mhs->nama_mahasiswa ?? $user->nama_lengkap,
                 'nim' => $mhs->nim ?? '-',
                 'user_id' => '#USR-' . str_pad($user->id, 4, '0', STR_PAD_LEFT),
                 'email' => $user->email,
@@ -158,7 +158,7 @@ class BuyerController extends Controller
 
         $buyerData = [
             'id' => $user->id,
-            'name' => $mhs?->nama_mahasiswa ?? $user->username,
+            'name' => $mhs?->nama_mahasiswa ?? $user->nama_lengkap,
             
             // --- TAMBAHAN BARU: Kirimkan NIM ---
             'nim' => $mhs?->nim ?? '-',

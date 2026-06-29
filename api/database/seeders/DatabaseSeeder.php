@@ -58,7 +58,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $testUser = User::create([
-            'username' => 'Bu Mariyam',
+            'nama_lengkap' => 'Bu Mariyam',
             'email' => 'pemilik1@example.com',
             'password' => Hash::make('password123'),
             'role' => 'pemilik',
@@ -76,7 +76,7 @@ class DatabaseSeeder extends Seeder
 
         // === TEST USER PEGAWAI (Pak Budi) ===
         $testUserPegawai = User::create([
-            'username' => 'Pak Budi Pegawai',
+            'nama_lengkap' => 'Pak Budi Pegawai',
             'email' => 'pegawai1@example.com',
             'password' => Hash::make('password123'),
             'role' => 'pegawai',
@@ -109,7 +109,7 @@ class DatabaseSeeder extends Seeder
         // 3 & 4. Pemilik & User Pemilik (10 records)
         foreach ($kantins as $kantin) {
             $user = User::create([
-                'username' => 'pemilik_' . $kantin->id,
+                'nama_lengkap' => 'pemilik_' . $kantin->id,
                 'email' => 'pemilik' . $kantin->id . '@kantin.com',
                 'password' => Hash::make('password123'),
                 'role' => 'pemilik',
@@ -127,7 +127,7 @@ class DatabaseSeeder extends Seeder
         // 5 & 6. Pegawai & User Pegawai (10 records)
         foreach ($kantins as $kantin) {
             $user = User::create([
-                'username' => 'pegawai_' . $kantin->id,
+                'nama_lengkap' => 'pegawai_' . $kantin->id,
                 'email' => 'pegawai' . $kantin->id . '@kantin.com',
                 'password' => Hash::make('password123'),
                 'role' => 'pegawai',
@@ -146,7 +146,7 @@ class DatabaseSeeder extends Seeder
         $mahasiswas = [];
         for ($i = 1; $i <= 10; $i++) {
             $user = User::create([
-                'username' => 'mahasiswa_' . $i,
+                'nama_lengkap' => 'mahasiswa_' . $i,
                 'email' => 'mahasiswa' . $i . '@kantin.com',
                 'password' => Hash::make('password123'),
                 'role' => 'mahasiswa',

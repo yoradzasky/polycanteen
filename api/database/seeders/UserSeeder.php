@@ -12,7 +12,7 @@ class UserSeeder extends Seeder
     {
         // ─── Admin ───────────────────────────────────────────────────────────
         User::create([
-            'username'          => 'admin',
+            'nama_lengkap'      => 'admin',
             'email'             => 'admin@polycanteen.id',
             'email_verified_at' => now(),
             'password'          => Hash::make('password'),
@@ -23,16 +23,16 @@ class UserSeeder extends Seeder
 
         // ─── Mahasiswa (5 akun) ───────────────────────────────────────────
         $mahasiswaList = [
-            ['username' => 'budi_santoso',   'email' => 'budi@student.politeknik.ac.id'],
-            ['username' => 'siti_rahayu',    'email' => 'siti@student.politeknik.ac.id'],
-            ['username' => 'andi_firmansyah','email' => 'andi@student.politeknik.ac.id'],
-            ['username' => 'dewi_lestari',   'email' => 'dewi@student.politeknik.ac.id'],
-            ['username' => 'rizky_pratama',  'email' => 'rizky@student.politeknik.ac.id'],
+            ['nama_lengkap' => 'budi_santoso',   'email' => 'budi@student.politeknik.ac.id'],
+            ['nama_lengkap' => 'siti_rahayu',    'email' => 'siti@student.politeknik.ac.id'],
+            ['nama_lengkap' => 'andi_firmansyah','email' => 'andi@student.politeknik.ac.id'],
+            ['nama_lengkap' => 'dewi_lestari',   'email' => 'dewi@student.politeknik.ac.id'],
+            ['nama_lengkap' => 'rizky_pratama',  'email' => 'rizky@student.politeknik.ac.id'],
         ];
 
         foreach ($mahasiswaList as $mhs) {
             User::create([
-                'username'          => $mhs['username'],
+                'nama_lengkap'      => $mhs['nama_lengkap'],
                 'email'             => $mhs['email'],
                 'email_verified_at' => now(),
                 'password'          => Hash::make('password'),
@@ -44,14 +44,14 @@ class UserSeeder extends Seeder
 
         // ─── Pemilik Kantin (3 akun) ──────────────────────────────────────
         $pemilikList = [
-            ['username' => 'pak_hendra',  'email' => 'hendra@polycanteen.id'],
-            ['username' => 'bu_sri',      'email' => 'sri@polycanteen.id'],
-            ['username' => 'pak_agus',    'email' => 'agus@polycanteen.id'],
+            ['nama_lengkap' => 'pak_hendra',  'email' => 'hendra@polycanteen.id'],
+            ['nama_lengkap' => 'bu_sri',      'email' => 'sri@polycanteen.id'],
+            ['nama_lengkap' => 'pak_agus',    'email' => 'agus@polycanteen.id'],
         ];
 
         foreach ($pemilikList as $pemilik) {
             User::create([
-                'username'          => $pemilik['username'],
+                'nama_lengkap'      => $pemilik['nama_lengkap'],
                 'email'             => $pemilik['email'],
                 'email_verified_at' => now(),
                 'password'          => Hash::make('password'),
@@ -63,15 +63,15 @@ class UserSeeder extends Seeder
 
         // ─── Pegawai (4 akun) ─────────────────────────────────────────────
         $pegawaiList = [
-            ['username' => 'pegawai_kantin1_a', 'email' => 'pgw1a@polycanteen.id'],
-            ['username' => 'pegawai_kantin1_b', 'email' => 'pgw1b@polycanteen.id'],
-            ['username' => 'pegawai_kantin2_a', 'email' => 'pgw2a@polycanteen.id'],
-            ['username' => 'pegawai_kantin3_a', 'email' => 'pgw3a@polycanteen.id'],
+            ['nama_lengkap' => 'pegawai_kantin1_a', 'email' => 'pgw1a@polycanteen.id'],
+            ['nama_lengkap' => 'pegawai_kantin1_b', 'email' => 'pgw1b@polycanteen.id'],
+            ['nama_lengkap' => 'pegawai_kantin2_a', 'email' => 'pgw2a@polycanteen.id'],
+            ['nama_lengkap' => 'pegawai_kantin3_a', 'email' => 'pgw3a@polycanteen.id'],
         ];
 
         foreach ($pegawaiList as $pgw) {
             User::create([
-                'username'          => $pgw['username'],
+                'nama_lengkap'      => $pgw['nama_lengkap'],
                 'email'             => $pgw['email'],
                 'email_verified_at' => now(),
                 'password'          => Hash::make('password'),

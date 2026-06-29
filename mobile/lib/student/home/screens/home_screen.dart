@@ -233,7 +233,7 @@ class _HomeScreenState extends State<HomeScreen> {
           .toList();
     }
 
-    // 3. Urutkan Gabungan (Harga dulu, baru Waktu jika harganya sama / waktu diminta)
+    // 3. Urutkan Gabungan (Harga/Waktu) secara aman
     if (activePriceSort != null || activeTimeSort != null) {
       filtered.sort((a, b) {
         int result = 0;
@@ -247,8 +247,8 @@ class _HomeScreenState extends State<HomeScreen> {
         }
 
         if (result == 0 && activeTimeSort != null) {
-          int timeA = a['estimasi_waktu'] ?? 999;
-          int timeB = b['estimasi_waktu'] ?? 999;
+          int timeA = int.tryParse(a['estimasi_waktu']?.toString() ?? '') ?? 999;
+          int timeB = int.tryParse(b['estimasi_waktu']?.toString() ?? '') ?? 999;
           result = activeTimeSort == 'asc'
               ? timeA.compareTo(timeB)
               : timeB.compareTo(timeA);

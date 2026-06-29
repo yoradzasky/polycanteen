@@ -23,6 +23,9 @@ class _EditProfileKantinScreenState extends State<EditProfileKantinScreen> {
   bool _isLoading = true;
   bool _isSaving = false;
 
+  // Pemilik-only screen, so always use pemilik color
+  final Color _primaryColor = const Color(0xFF3949AB);
+
   @override
   void initState() {
     super.initState();
@@ -88,12 +91,12 @@ class _EditProfileKantinScreenState extends State<EditProfileKantinScreen> {
                 ),
                 const SizedBox(height: 16),
                 ListTile(
-                  leading: const Icon(Icons.camera_alt, color: Color(0xFF3852B4)),
+                  leading: Icon(Icons.camera_alt, color: _primaryColor),
                   title: const Text('Kamera'),
                   onTap: () => Navigator.pop(ctx, ImageSource.camera),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.photo_library, color: Color(0xFF3852B4)),
+                  leading: Icon(Icons.photo_library, color: _primaryColor),
                   title: const Text('Galeri'),
                   onTap: () => Navigator.pop(ctx, ImageSource.gallery),
                 ),
@@ -168,40 +171,41 @@ class _EditProfileKantinScreenState extends State<EditProfileKantinScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Scaffold(
-        backgroundColor: const Color(0xFFF9FAFB),
-        body: const Center(child: AppLoadingAnimation()),
+      return const Scaffold(
+        backgroundColor: Color(0xFFF4F6FB),
+        body: Center(child: AppLoadingAnimation()),
       );
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: const Color(0xFFF4F6FB),
       body: SingleChildScrollView(
         child: Column(
           children: [
             ProfileHeaderCurve(
               title: 'Edit Info Kantin',
+              primaryColor: _primaryColor,
               profileImage: Stack(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.3),
                       shape: BoxShape.circle,
                     ),
                     child: CircleAvatar(
                       radius: 40,
-                      backgroundColor: Colors.grey[300],
+                      backgroundColor: Colors.white.withValues(alpha: 0.2),
                       backgroundImage: _selectedImage != null
                           ? FileImage(_selectedImage!)
                           : (_kantinData?.fotoKantin != null
                               ? NetworkImage(_kantinData!.fotoKantin!)
                               : null),
                       child: _selectedImage == null && _kantinData?.fotoKantin == null
-                          ? Icon(
+                          ? const Icon(
                               Icons.store,
                               size: 40,
-                              color: Colors.grey[600],
+                              color: Colors.white70,
                             )
                           : null,
                     ),
@@ -218,13 +222,13 @@ class _EditProfileKantinScreenState extends State<EditProfileKantinScreen> {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.15),
+                              color: Colors.black.withValues(alpha: 0.15),
                               blurRadius: 4,
                               offset: const Offset(0, 2),
                             ),
                           ],
                         ),
-                        child: const Icon(Icons.camera_alt, color: Color(0xFF3852B4), size: 16),
+                        child: Icon(Icons.camera_alt, color: _primaryColor, size: 16),
                       ),
                     ),
                   ),
@@ -232,29 +236,30 @@ class _EditProfileKantinScreenState extends State<EditProfileKantinScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFF7ED),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFFFFEDD5)),
+                      color: _primaryColor.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: _primaryColor.withValues(alpha: 0.2)),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Icon(Icons.info, color: Color(0xFFF97316), size: 20),
-                        SizedBox(width: 8),
+                      children: [
+                        Icon(Icons.info_outline, color: _primaryColor, size: 20),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Catatan: Klik ikon Kamera untuk mengubah foto profil kantin',
+                            'Klik ikon kamera untuk mengubah foto profil kantin',
                             style: TextStyle(
-                              color: Color(0xFFC2410C),
+                              color: _primaryColor,
                               fontSize: 12,
                               height: 1.4,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ),
@@ -262,13 +267,12 @@ class _EditProfileKantinScreenState extends State<EditProfileKantinScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  const Text(
-                    'NAMA KANTIN',
+                  Text(
+                    'Nama Kantin',
                     style: TextStyle(
-                      color: Color(0xFF9CA3AF),
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
+                      color: Colors.grey.shade500,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -288,23 +292,23 @@ class _EditProfileKantinScreenState extends State<EditProfileKantinScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFFF59E0B), width: 1.5),
+                        borderSide: BorderSide(color: _primaryColor, width: 1.5),
                       ),
                     ),
                   ),
                   const SizedBox(height: 32),
                   SizedBox(
                     width: double.infinity,
-                    height: 48,
+                    height: 52,
                     child: ElevatedButton(
                       onPressed: _isSaving ? null : _updateKantin,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF97316),
-                        disabledBackgroundColor: const Color(0xFFD4A574),
+                        backgroundColor: _primaryColor,
+                        disabledBackgroundColor: _primaryColor.withValues(alpha: 0.5),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        elevation: 2,
+                        elevation: 0,
                       ),
                       child: _isSaving
                           ? const SizedBox(
@@ -319,8 +323,8 @@ class _EditProfileKantinScreenState extends State<EditProfileKantinScreen> {
                               'Simpan Perubahan',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                     ),

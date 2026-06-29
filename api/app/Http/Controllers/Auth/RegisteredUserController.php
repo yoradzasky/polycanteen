@@ -32,13 +32,13 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'username' => 'required|string|max:255', // Ubah name menjadi username
+            'nama_lengkap' => 'required|string|max:255', // Ubah name menjadi nama_lengkap
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
         $user = User::create([
-            'username' => $request->username, // Ubah name menjadi username
+            'nama_lengkap' => $request->nama_lengkap, // Ubah name menjadi nama_lengkap
             'email' => $request->email,
             'password' => Hash::make($request->password),
             // 'role' tidak perlu ditulis karena sudah default 'mahasiswa' dari database

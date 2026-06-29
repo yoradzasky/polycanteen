@@ -14,7 +14,7 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
-        'username',
+        'nama_lengkap',
         'email',
         'password',
         'status_akun',
@@ -52,6 +52,6 @@ class User extends Authenticatable
     {
         return $this->pegawai?->nama_karyawan
             ?? $this->pemilik?->nama_pemilik
-            ?? $this->username;
+            ?? $this->nama_lengkap;
     }
 }

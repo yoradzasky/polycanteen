@@ -62,7 +62,7 @@ class BuyerApprovalController extends Controller
                 ->with('error', $exception->getMessage());
         }
 
-        $message = "Akun {$result['user']->username} berhasil disetujui.";
+        $message = "Akun {$result['user']->nama_lengkap} berhasil disetujui.";
         if ($result['is_default'] ?? true) {
             $message .= " Password default: {$result['default_password']}";
         } else {
