@@ -22,6 +22,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   String? _currentPhotoUrl;
   bool _isLoading = true;
 
+  String? _selectedJurusan;
+  final List<String> _jurusanList = [
+    'Teknologi Informasi',
+    'Produksi Pertanian',
+    'Teknologi Pertanian',
+    'Peternakan',
+    'Manajemen Agribisnis',
+    'Kesehatan',
+    'Teknik',
+    'Bahasa, Komunikasi dan Pariwisata',
+    'Lainnya',
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -36,6 +49,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _nimController.text = data['nim'] ?? '';
         _telpController.text = data['no_telp'] ?? '';
         _currentEmail = data['email'] ?? '';
+        _selectedJurusan = data['jurusan'];
+        if (_selectedJurusan != null && !_jurusanList.contains(_selectedJurusan)) {
+          // Jika jurusan dari DB tidak ada di list (misal salah ketik/lama), set ke Lainnya atau null
+          _jurusanList.add(_selectedJurusan!);
+        }
 
         if (data['foto_profil_path'] != null) {
           _currentPhotoUrl =
@@ -120,6 +138,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       await _service.updateProfile(
         nama: _namaController.text,
         nim: _nimController.text,
+        jurusan: _selectedJurusan ?? '',
         telp: _telpController.text,
         email: _currentEmail,
         fotoFile: _selectedImage,
@@ -308,6 +327,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   children: [
                     _buildTextField("Nama Lengkap", _namaController),
                     _buildTextField("Nomor Induk Mahasiswa", _nimController),
+                    _buildJurusanDropdown(),
                     _buildTextField("Nomor Telepon", _telpController),
                   ],
                 ),
@@ -375,6 +395,69 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             decoration: InputDecoration(
               filled: true,
               fillColor: readOnly ? Colors.grey.shade50 : const Color(0xFFFFFDFB),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFFFE0C2), width: 1),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFF2994A), width: 1.5),
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildJurusanDropdown() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Jurusan",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+              color: Color(0xFFF2994A),
+            ),
+          ),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            value: _selectedJurusan,
+            hint: const Text(
+              'Pilih Jurusan',
+              style: TextStyle(
+                color: Color(0xFF9E9E9E),
+                fontSize: 15,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+            items: _jurusanList.map((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(value),
+              );
+            }).toList(),
+            onChanged: (newValue) {
+              setState(() {
+                _selectedJurusan = newValue;
+              });
+            },
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1E232C),
+            ),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: const Color(0xFFFFFDFB),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),

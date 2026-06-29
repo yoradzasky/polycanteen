@@ -99,6 +99,7 @@ class BuyerApprovalController extends Controller
             'id' => $application->id,
             'name' => $application->name,
             'nim' => $application->nim,
+            'jurusan' => $application->jurusan,
             'email' => $application->email,
             'phone' => $application->phone,
             'account_expires_at' => $application->account_expires_at,

@@ -101,6 +101,7 @@ class MahasiswaService {
   Future<Map<String, dynamic>> updateProfile({
     required String nama,
     required String nim,
+    required String jurusan,
     required String telp,
     required String email,
     File?
@@ -111,6 +112,7 @@ class MahasiswaService {
       Map<String, dynamic> data = {
         'nama_mahasiswa': nama,
         'nim': nim,
+        'jurusan': jurusan,
         'no_telp': telp,
         'email': email,
       };

@@ -68,6 +68,7 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:buyer_applications,email|unique:users,email',
             'nim' => 'required|string|unique:buyer_applications,nim|unique:mahasiswa,nim',
+            'jurusan' => 'nullable|string|max:100',
             'phone' => 'required|string|max:20',
             'password' => 'required|string|min:6',
             'foto_ktm' => 'nullable|image|max:2048', // Max 2MB
@@ -82,6 +83,7 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'nim' => $request->nim,
+            'jurusan' => $request->jurusan,
             'phone' => $request->phone,
             'password' => Hash::make($request->password),
             'foto_ktm_path' => $fotoKtmPath,
