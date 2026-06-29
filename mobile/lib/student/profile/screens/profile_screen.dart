@@ -107,9 +107,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onPressed: () async {
                 Navigator.pop(dialogContext);
                 setState(() => isLoading = true);
-                await AuthService.logout();
+                
+                try {
+                  await AuthService.logout();
+                } catch (e) {
+                  // Lanjutkan paksa logout meskipun gagal di servis
+                }
+                
                 if (mounted) {
-                  Navigator.of(context).pushAndRemoveUntil(
+                  Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
                     MaterialPageRoute(
                       builder: (context) => const LoginScreen(),
                     ),

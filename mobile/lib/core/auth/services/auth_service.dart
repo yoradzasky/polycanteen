@@ -77,15 +77,19 @@ class AuthService {
               'Accept': 'application/json',
             },
           ),
-        );
+        ).timeout(const Duration(seconds: 10));
       }
     } catch (e) {
       // Abaikan jika terjadi error dari server (misal tidak ada koneksi internet).
       // Yang terpenting proses di blok finally tetap berjalan.
     } finally {
       // Selalu pastikan token dan role dihapus dari HP, apa pun balasan dari server
-      await _prefs.remove('auth_token');
-      await _prefs.remove('user_role');
+      try {
+        await _prefs.remove('auth_token');
+        await _prefs.remove('user_role');
+      } catch (e) {
+        // Abaikan error saat menghapus token
+      }
     }
   }
 }

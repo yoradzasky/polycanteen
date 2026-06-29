@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
 {
     /**
      * Seed the application's database.
-     * Urutan penting karena ada foreign key constraints.
+     * Urutan penting karena ada foreign key constraints
      */
     public function run(): void
     {

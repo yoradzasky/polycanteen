@@ -274,6 +274,53 @@ class _CanteenListScreenState extends State<CanteenListScreen> {
                   ],
                 ),
               ),
+              // Badge Status Buka / Tutup
+              Positioned(
+                top: 12,
+                right: 12,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: kantin['status_toko']?.toString().toLowerCase() == 'buka'
+                        ? const Color(0xFF4CAF50)
+                        : const Color(0xFFE53935),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        kantin['status_toko']?.toString().toLowerCase() == 'buka'
+                            ? Icons.check_circle
+                            : Icons.cancel,
+                        color: Colors.white,
+                        size: 12,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        kantin['status_toko']?.toString().toLowerCase() == 'buka'
+                            ? 'Buka'
+                            : 'Tutup',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),
