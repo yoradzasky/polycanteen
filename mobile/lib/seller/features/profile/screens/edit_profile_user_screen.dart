@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
+import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 import '../widgets/profile_header_curve.dart';
 import '../models/user_profile.dart';
 import '../services/profile_service.dart';
@@ -26,6 +27,11 @@ class _EditProfileUserScreenState extends State<EditProfileUserScreen> {
   bool _isLoading = true;
   bool _isSaving = false;
   String? _error;
+  String _userRole = 'pegawai';
+
+  Color get _primaryColor => _userRole == 'pegawai'
+      ? const Color(0xFF5E7AC4)
+      : const Color(0xFF3949AB);
 
   @override
   void initState() {
@@ -33,8 +39,18 @@ class _EditProfileUserScreenState extends State<EditProfileUserScreen> {
     _namaController = TextEditingController();
     _phoneController = TextEditingController();
     _emailController = TextEditingController();
+    _loadRole();
     // Delay sedikit untuk memastikan context siap
     Future.delayed(const Duration(milliseconds: 500), _loadProfile);
+  }
+
+  Future<void> _loadRole() async {
+    final prefs = EncryptedSharedPreferences();
+    final role = await prefs.getString('user_role');
+    if (!mounted) return;
+    setState(() {
+      _userRole = role.isNotEmpty ? role : 'pegawai';
+    });
   }
 
   Future<void> _loadProfile() async {
@@ -47,7 +63,7 @@ class _EditProfileUserScreenState extends State<EditProfileUserScreen> {
       final profile = await ProfileService.getProfile();
       setState(() {
         _profile = profile;
-        _namaController.text = profile.namaPemilik ?? profile.username;
+        _namaController.text = profile.nama;
         _phoneController.text = profile.noTelp ?? '';
         _emailController.text = profile.email;
         _isLoading = false;
@@ -78,7 +94,7 @@ class _EditProfileUserScreenState extends State<EditProfileUserScreen> {
       setState(() => _isSaving = true);
 
       await ProfileService.updateProfile(
-        username: _profile?.username ?? '', // Keep existing username
+        namaLengkap: _profile?.namaLengkap ?? '', // Keep existing namaLengkap
         email: _emailController.text,
         namaPemilik: _namaController.text,
         noTelp: _phoneController.text.isEmpty ? null : _phoneController.text,
@@ -141,12 +157,12 @@ class _EditProfileUserScreenState extends State<EditProfileUserScreen> {
                 ),
                 const SizedBox(height: 16),
                 ListTile(
-                  leading: const Icon(Icons.camera_alt, color: Color(0xFF3852B4)),
+                  leading: Icon(Icons.camera_alt, color: _primaryColor),
                   title: const Text('Kamera'),
                   onTap: () => Navigator.pop(ctx, ImageSource.camera),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.photo_library, color: Color(0xFF3852B4)),
+                  leading: Icon(Icons.photo_library, color: _primaryColor),
                   title: const Text('Galeri'),
                   onTap: () => Navigator.pop(ctx, ImageSource.gallery),
                 ),
@@ -189,14 +205,14 @@ class _EditProfileUserScreenState extends State<EditProfileUserScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Scaffold(
-        backgroundColor: const Color(0xFFF9FAFB),
-        body: const Center(child: AppLoadingAnimation()),
+      return const Scaffold(
+        backgroundColor: Color(0xFFF4F6FB),
+        body: Center(child: AppLoadingAnimation()),
       );
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: const Color(0xFFF4F6FB),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -204,11 +220,15 @@ class _EditProfileUserScreenState extends State<EditProfileUserScreen> {
             ProfileHeaderCurve(
               title: 'Edit Profil Pengguna',
               userName: _namaController.text,
+              primaryColor: _primaryColor,
               profileImage: Stack(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      shape: BoxShape.circle,
+                    ),
                     child: ClipOval(
                       child: _selectedImage != null
                           ? Image.file(
@@ -226,22 +246,22 @@ class _EditProfileUserScreenState extends State<EditProfileUserScreen> {
                                   errorBuilder: (context, url, error) => Container(
                                     width: 80,
                                     height: 80,
-                                    color: Colors.grey[300],
-                                    child: Icon(
+                                    color: Colors.white.withValues(alpha: 0.2),
+                                    child: const Icon(
                                       Icons.person,
                                       size: 44,
-                                      color: Colors.grey[600],
+                                      color: Colors.white70,
                                     ),
                                   ),
                                 )
                               : Container(
                                   width: 80,
                                   height: 80,
-                                  color: Colors.grey[300],
-                                  child: Icon(
+                                  color: Colors.white.withValues(alpha: 0.2),
+                                  child: const Icon(
                                     Icons.person,
                                     size: 44,
-                                    color: Colors.grey[600],
+                                    color: Colors.white70,
                                   ),
                                 )),
                     ),
@@ -253,8 +273,18 @@ class _EditProfileUserScreenState extends State<EditProfileUserScreen> {
                       onTap: _pickImage,
                       child: Container(
                         padding: const EdgeInsets.all(6),
-                        decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                        child: const Icon(Icons.camera_alt, color: Color(0xFF3852B4), size: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.15),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Icon(Icons.camera_alt, color: _primaryColor, size: 16),
                       ),
                     ),
                   ),
@@ -264,7 +294,7 @@ class _EditProfileUserScreenState extends State<EditProfileUserScreen> {
 
             // --- Form Input ---
             Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -283,13 +313,14 @@ class _EditProfileUserScreenState extends State<EditProfileUserScreen> {
                   // Tombol Simpan
                   SizedBox(
                     width: double.infinity,
-                    height: 48,
+                    height: 52,
                     child: ElevatedButton(
                       onPressed: _isSaving ? null : _updateProfile,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF59E0B),
-                        disabledBackgroundColor: const Color(0xFFD4A574),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        backgroundColor: _primaryColor,
+                        disabledBackgroundColor: _primaryColor.withValues(alpha: 0.5),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        elevation: 0,
                       ),
                       child: _isSaving
                           ? const SizedBox(
@@ -300,7 +331,7 @@ class _EditProfileUserScreenState extends State<EditProfileUserScreen> {
                                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
-                          : const Text('Update Profile', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                          : const Text('Simpan Perubahan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
                     ),
                   ),
                 ],
@@ -315,7 +346,7 @@ class _EditProfileUserScreenState extends State<EditProfileUserScreen> {
   Widget _buildInputLabel(String label) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
-      child: Text(label, style: const TextStyle(color: Color(0xFF6B7280), fontSize: 12, fontWeight: FontWeight.w600)),
+      child: Text(label, style: TextStyle(color: Colors.grey.shade500, fontSize: 13, fontWeight: FontWeight.w600)),
     );
   }
 
@@ -331,6 +362,7 @@ class _EditProfileUserScreenState extends State<EditProfileUserScreen> {
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE5E7EB))),
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE5E7EB))),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: _primaryColor, width: 1.5)),
       ),
     );
   }

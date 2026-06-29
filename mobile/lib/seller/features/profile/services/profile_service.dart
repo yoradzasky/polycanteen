@@ -95,7 +95,7 @@ class ProfileService {
 
   // Update user profile
   static Future<UserProfile> updateProfile({
-    required String username,
+    required String namaLengkap,
     required String email,
     String? namaPemilik,
     String? noTelp,
@@ -105,7 +105,7 @@ class ProfileService {
     try {
       developer.log('Updating profile');
       final formDataMap = <String, dynamic>{
-        'username': username,
+        'nama_lengkap': namaLengkap,
         'email': email,
       };
       // Always include optional fields so backend can update them

@@ -160,7 +160,7 @@ class CanteenService
 
                 // Tahap 2: Buat akun user untuk pemilik
                 $userPemilik = User::create([
-                    'username' => strstr($data['email'], '@', true) . rand(1000, 9999),
+                    'nama_lengkap' => strstr($data['email'], '@', true) . rand(1000, 9999),
                     'email' => $data['email'],
                     'password' => Hash::make('password'),
                     'role' => 'pemilik',
@@ -180,7 +180,7 @@ class CanteenService
                     foreach ($data['karyawan'] as $karyawan) {
                         // Buat akun user untuk setiap karyawan
                         $userKaryawan = User::create([
-                            'username' => strstr($karyawan['email'], '@', true) . rand(1000, 9999),
+                            'nama_lengkap' => strstr($karyawan['email'], '@', true) . rand(1000, 9999),
                             'email' => $karyawan['email'],
                             'password' => Hash::make('password'),
                             'role' => 'pegawai',
@@ -285,7 +285,7 @@ class CanteenService
                         } else {
                             // Buat user dan pegawai baru
                             $userBaru = User::create([
-                                'username' => strstr($karyawanData['email'], '@', true) . rand(1000, 9999),
+                                'nama_lengkap' => strstr($karyawanData['email'], '@', true) . rand(1000, 9999),
                                 'email' => $karyawanData['email'],
                                 'password' => Hash::make('password'),
                                 'role' => 'pegawai',

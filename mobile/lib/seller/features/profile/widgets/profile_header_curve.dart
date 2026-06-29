@@ -4,12 +4,14 @@ class ProfileHeaderCurve extends StatelessWidget {
   final String title;
   final Widget? profileImage;
   final String? userName;
+  final Color primaryColor;
 
   const ProfileHeaderCurve({
     super.key,
     required this.title,
     this.profileImage,
     this.userName,
+    this.primaryColor = const Color(0xFF3949AB),
   });
 
   @override
@@ -24,9 +26,9 @@ class ProfileHeaderCurve extends StatelessWidget {
         left: 16,
         right: 16,
       ),
-      decoration: const BoxDecoration(
-        color: Color(0xFF3852B4),
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: primaryColor,
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(32),
           bottomRight: Radius.circular(32),
         ),
@@ -46,7 +48,7 @@ class ProfileHeaderCurve extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 16,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

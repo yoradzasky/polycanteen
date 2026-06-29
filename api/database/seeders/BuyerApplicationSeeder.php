@@ -72,7 +72,7 @@ class BuyerApplicationSeeder extends Seeder
         $user = User::updateOrCreate(
             ['email' => $data['email']],
             [
-                'username' => $data['name'],
+                'nama_lengkap' => $data['name'],
                 'password' => Hash::make(ApprovalService::DEFAULT_PASSWORD),
                 'status_akun' => 'aktif',
                 'role' => 'mahasiswa',

@@ -212,7 +212,7 @@ class OrderController extends Controller
             // Kirim notifikasi FCM ke penjual
             try {
                 $fcmService = app(\App\Services\FcmNotificationService::class);
-                $mahasiswaNama = Auth::user()->mahasiswa?->nama_mahasiswa ?? Auth::user()->username;
+                $mahasiswaNama = Auth::user()->mahasiswa?->nama_mahasiswa ?? Auth::user()->nama_lengkap;
                 $fcmService->sendToKantinOwners(
                     $pesanan->kantin_id,
                     'Pesanan Baru!',
@@ -268,7 +268,7 @@ class OrderController extends Controller
             // Kirim notifikasi FCM ke pemilik & pegawai kantin
             try {
                 $fcmService = app(\App\Services\FcmNotificationService::class);
-                $mahasiswaNama = Auth::user()->mahasiswa?->nama_mahasiswa ?? Auth::user()->username;
+                $mahasiswaNama = Auth::user()->mahasiswa?->nama_mahasiswa ?? Auth::user()->nama_lengkap;
                 $fcmService->sendToKantinOwners(
                     $pesanan->kantin_id,
                     'Pesanan Dibatalkan',

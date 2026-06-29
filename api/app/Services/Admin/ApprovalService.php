@@ -52,7 +52,7 @@ class ApprovalService
 
             // Buat akun login utama di tabel users MySQL.
             $user = User::create([
-                'username' => $application->name,
+                'nama_lengkap' => $application->name,
                 'email' => $application->email,
                 'password' => $application->password ?? Hash::make($defaultPassword),
                 'role' => 'mahasiswa',

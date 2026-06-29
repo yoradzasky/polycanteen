@@ -43,7 +43,7 @@ class DashboardController extends Controller
             ->limit(100) 
             ->get()
             ->map(function ($pesanan) {
-                $nama = $pesanan->mahasiswa?->nama_mahasiswa ?? $pesanan->mahasiswa?->user?->username ?? 'Unknown';
+                $nama = $pesanan->mahasiswa?->nama_mahasiswa ?? $pesanan->mahasiswa?->user?->nama_lengkap ?? 'Unknown';
                 $fotoProfile = $pesanan->mahasiswa?->user?->foto_profile ?? 'https://ui-avatars.com/api/?name=' . urlencode($nama) . '&background=random&color=fff';
                 
                 return [
@@ -67,12 +67,12 @@ class DashboardController extends Controller
             ->limit(50)
             ->get()
             ->map(function ($user) {
-                $fotoProfile = $user->foto_profile ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->username) . '&background=random&color=fff';
+                $fotoProfile = $user->foto_profile ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->nama_lengkap) . '&background=random&color=fff';
                 
                 return [
                     'id' => $user->id,
-                    // GUNAKAN $user->username
-                    'nama' => $user->username ?? 'Unknown', 
+                    // GUNAKAN $user->nama_lengkap
+                    'nama' => $user->nama_lengkap ?? 'Unknown', 
                     'userId' => $user->id,
                     'fotoProfile' => $fotoProfile,
                     'tipe' => 'Registrasi Akun Baru',
