@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../payment/screens/payment_screen.dart';
 import '../services/menu_service.dart';
-import '../../../core/widgets/custom_snackbar.dart';
+import '../../home/widgets/custom_snackbar.dart';
 
 class KeranjangWidget extends StatelessWidget {
   final List<Map<String, dynamic>> cartItems;

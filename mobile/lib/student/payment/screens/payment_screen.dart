@@ -11,7 +11,7 @@ import 'qris_payment_screen.dart';
 import '../../../seller/tracking/widgets/location_permission_sheet.dart';
 import '../../../core/layouts/student_main_layout.dart';
 import 'location_picker_screen.dart';
-import '../../../core/widgets/custom_snackbar.dart';
+import '../../home/widgets/custom_snackbar.dart';
 
 class PaymentScreen extends StatefulWidget {
   final int pesananId;

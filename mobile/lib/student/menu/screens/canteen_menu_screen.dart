@@ -4,7 +4,7 @@ import '../widgets/variant_bottom_sheet.dart';
 import '../widgets/keranjang.dart';
 import '../services/menu_service.dart';
 import 'menu_detail.dart';
-import '../../../core/widgets/custom_snackbar.dart';
+import '../../home/widgets/custom_snackbar.dart';
 import 'package:mobile/core/widgets/app_loading_animation.dart';
 
 class CanteenMenuScreen extends StatefulWidget {
