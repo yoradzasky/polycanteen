@@ -117,6 +117,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Modul Pesanan (Orders)
         Route::get('/orders', [StudentOrderController::class, 'index']);
+        Route::get('/orders/latest-pending', [PaymentController::class, 'getLatestPendingOrder']);
         Route::get('/orders/{id}', [StudentOrderController::class, 'show']);
         Route::patch('/orders/{id}/submit', [StudentOrderController::class, 'submitOrder']);
         Route::patch('/orders/{id}/cancel', [StudentOrderController::class, 'cancelOrder']);
@@ -128,7 +129,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/reviews', [ReviewController::class, 'store']);
 
         // Rute pembayaran & status pesanan
-        Route::get('/orders/latest-pending', [PaymentController::class, 'getLatestPendingOrder']);
         Route::post('/payment/{pesanan_id}', [PaymentController::class, 'createPayment']);
         Route::get('/payment/status/{pesanan_id}', [PaymentController::class, 'checkStatus']);
     });
