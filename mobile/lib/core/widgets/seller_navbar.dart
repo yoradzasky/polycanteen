@@ -87,8 +87,15 @@ class SellerNavbar extends StatelessWidget {
                       ),
                     )
                   else
-                    const Expanded(
-                      child: SizedBox.shrink(),
+                    Expanded(
+                      child: _buildNavItem(
+                        icon: Icons.history,
+                        label: 'Riwayat',
+                        index: 2,
+                        isActive: currentIndex == 2,
+                        activeColor: primaryColor,
+                        inactiveColor: inactiveColor,
+                      ),
                     ),
                   Expanded(
                     child: _buildNavItem(

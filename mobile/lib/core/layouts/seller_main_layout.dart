@@ -7,6 +7,7 @@ import '../../seller/features/menu/screens/menu_list_screen.dart';
 import '../../seller/features/scanner/screens/qr_scanner_screen.dart';
 import '../../seller/features/profile/screens/profile.dart';
 import '../../seller/features/finance/screens/finance_report_screen.dart';
+import '../../seller/features/finance/screens/seller_order_history_screen.dart';
 import '../../seller/features/finance/services/finance_service.dart';
 import 'package:provider/provider.dart';
 import 'package:mobile/core/widgets/app_loading_animation.dart';
@@ -23,16 +24,7 @@ class _SellerMainLayoutState extends State<SellerMainLayout> {
   String _userRole = 'pegawai';
   bool _isLoadingRole = true;
 
-  final List<Widget> _screens = [
-    const OrderListScreen(),
-    const MenuListScreen(),
-    // Ganti Placeholder dengan Layar Laporan Keuangan
-    ChangeNotifierProvider(
-      create: (_) => FinanceProvider(),
-      child: const FinanceReportScreen(),
-    ),
-    const ProfileTokoScreen(), // Profil Screen
-  ];
+  List<Widget>? _screens;
 
   @override
   void initState() {
@@ -46,6 +38,17 @@ class _SellerMainLayoutState extends State<SellerMainLayout> {
     if (!mounted) return;
     setState(() {
       _userRole = role.isNotEmpty ? role : 'pegawai';
+      _screens = [
+        const OrderListScreen(),
+        const MenuListScreen(),
+        ChangeNotifierProvider(
+          create: (_) => FinanceProvider(),
+          child: _userRole == 'pemilik' 
+              ? const FinanceReportScreen() 
+              : SellerOrderHistoryScreen(userRole: _userRole, isFromTab: true),
+        ),
+        const ProfileTokoScreen(), // Profil Screen
+      ];
       _isLoadingRole = false;
     });
   }
@@ -58,16 +61,16 @@ class _SellerMainLayoutState extends State<SellerMainLayout> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoadingRole) {
+    if (_isLoadingRole || _screens == null) {
       return const Scaffold(
-        body: const Center(child: AppLoadingAnimation()),
+        body: Center(child: AppLoadingAnimation()),
       );
     }
 
     return Scaffold(
       body: IndexedStack(
         index: _selectedIndex,
-        children: _screens,
+        children: _screens!,
       ),
       bottomNavigationBar: SellerNavbar(
         currentIndex: _selectedIndex,

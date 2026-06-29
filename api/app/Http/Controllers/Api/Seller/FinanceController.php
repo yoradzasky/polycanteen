@@ -17,16 +17,17 @@ class FinanceController extends Controller
     {
         $user = Auth::user();
         if ($user->pemilik) return $user->pemilik->kantin_id;
+        if ($user->pegawai) return $user->pegawai->kantin_id;
         return null;
     }
 
     /**
-     * Validasi Role. Pastikan hanya 'pemilik'
+     * Validasi Role. Pastikan 'pemilik' atau 'pegawai'
      */
     private function checkRole()
     {
         $user = Auth::user();
-        return $user->role === 'pemilik';
+        return in_array($user->role, ['pemilik', 'pegawai']);
     }
 
     /**
