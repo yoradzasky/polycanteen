@@ -520,7 +520,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               builder: (context) => QrisPaymentScreen(
                 qrUrl: qrString,
                 pesananId: widget.pesananId!,
-                totalAmount: _formatCurrency(widget.totalHarga),
+                totalAmount: _formatCurrency(_totalHarga),
               ),
             ),
           );
@@ -573,7 +573,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final String formattedTotal = _formatCurrency(_totalHarga);
+    final double subtotalValue = widget.pesananId == null ? _totalHarga : (_totalHarga - 1000);
+    final double totalValue = widget.pesananId == null ? (_totalHarga + 1000) : _totalHarga;
+
+    final String formattedSubtotal = _formatCurrency(subtotalValue);
+    final String formattedTotal = _formatCurrency(totalValue);
 
     // Tentukan teks tombol dan aksi
     String buttonText = 'Bayar Sekarang - $formattedTotal';
@@ -787,7 +791,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 ],
                 
                 PaymentSummaryCard(
-                  subtotal: formattedTotal,
+                  subtotal: formattedSubtotal,
                   total: formattedTotal,
                   totalItems: _orderItems.fold<int>(0, (sum, item) {
                     final qty = int.tryParse(item['jumlah_pesanan']?.toString() ?? '1') ?? 1;
@@ -1132,7 +1136,7 @@ class PaymentSummaryCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text('Biaya Layanan', style: TextStyle(color: Color(0xFF6B7280), fontSize: 13)),
-              const Text('Rp 0', style: TextStyle(color: Color(0xFF6B7280), fontSize: 13)),
+              const Text('Rp 1.000', style: TextStyle(color: Color(0xFF6B7280), fontSize: 13)),
             ],
           ),
           const Padding(
