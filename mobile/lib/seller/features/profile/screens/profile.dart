@@ -62,10 +62,15 @@ class _ProfileTokoScreenState extends State<ProfileTokoScreen> {
   }
 
   Future<void> _handleLogout() async {
-    await AuthService.logout();
+    try {
+      await AuthService.logout();
+    } catch (e) {
+      // Lanjutkan paksa logout meskipun gagal di servis
+    }
+    
     if (mounted) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => LoginScreen()),
+      Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
         (route) => false,
       );
     }
