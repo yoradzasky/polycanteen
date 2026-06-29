@@ -409,7 +409,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ],
                           ),
                         ),
-                        if (activeOrder != null && activeOrder!['status_pesanan'] != 'selesai' && activeOrder!['status_pesanan'] != 'dibatalkan') _buildActiveOrderCard(),
+                        if (activeOrder != null && activeOrder!['status_pesanan'] != 'selesai') _buildActiveOrderCard(),
                       ],
                     ),
                   ),
@@ -656,10 +656,21 @@ class _HomeScreenState extends State<HomeScreen> {
         status == 'dalam_perjalanan' ||
         status == 'selesai');
 
-    String label3 = (tipe == 'take_away') ? "Sedang Diantar" : "Siap Diambil";
+    String label3 = "Siap Diambil";
+    if (tipe == 'delivery') {
+      label3 = "Dikirim";
+    } else if (tipe == 'take_away') {
+      label3 = "Sedang Diantar";
+    }
 
     String alertText = "";
     if (tipe == 'take_away') {
+      if (status == 'dalam_perjalanan') {
+        alertText = "Pesanan Anda Sedang Diantar";
+      } else if (status == 'selesai') {
+        alertText = "Pesanan Anda telah sampai!";
+      }
+    } else if (tipe == 'delivery') {
       if (status == 'dalam_perjalanan') {
         alertText = "Pesanan Anda Sedang Diantar";
       } else if (status == 'selesai') {

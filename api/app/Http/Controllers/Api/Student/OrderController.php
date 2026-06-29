@@ -370,13 +370,16 @@ class OrderController extends Controller
                 return [
                     'id'              => $d->id,
                     'menu_id'         => $d->menu_id,
-                    'nama_item'       => $d->menu->nama_item ?? '-',
-                    'foto_menu'       => $d->menu->foto_menu ?? null,
                     'jumlah_pesanan'  => $d->jumlah_pesanan,
                     'harga_saat_beli' => $d->harga_saat_beli,
                     'subtotal'        => $d->subtotal,
                     'varian_snapshot' => $d->varian_snapshot,
                     'topping_snapshot'=> $d->topping_snapshot,
+                    'menu'            => [
+                        'id'        => $d->menu_id,
+                        'nama_item' => $d->menu->nama_item ?? '-',
+                        'foto_menu' => $d->menu->foto_menu ?? null,
+                    ],
                 ];
             })->values();
 

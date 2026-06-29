@@ -560,7 +560,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           const SizedBox(width: 8),
                           Text(
                             tipePesanan == 'delivery'
-                                ? 'Pesanan siap diantar ke lokasi!'
+                                ? 'Pesanan sedang diantar ke lokasi'
                                 : 'Pesanan siap diambil!',
                             style: const TextStyle(
                               color: Color(0xFF2E7D32),
@@ -653,6 +653,18 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   ],
                   Divider(color: Colors.grey.shade200),
                   const SizedBox(height: 8),
+                  if (totalHarga >= 1000) ...[
+                    _buildInfoRow(
+                      'Subtotal',
+                      'Rp ${_formatCurrency(totalHarga - 1000)}',
+                    ),
+                    const SizedBox(height: 8),
+                    _buildInfoRow(
+                      'Biaya Layanan',
+                      'Rp 1.000',
+                    ),
+                    const SizedBox(height: 8),
+                  ],
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -796,7 +808,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   // ==========================================
   Widget _buildProgressTracker(int activeStep, String tipePesanan) {
     final steps = tipePesanan == 'delivery'
-        ? ['Diterima', 'Disiapkan', 'Dikirim']
+        ? ['Diterima', 'Dimasak', 'Dikirim']
         : ['Diterima', 'Dimasak', 'Siap Diambil'];
 
     return Row(
