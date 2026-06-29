@@ -12,6 +12,7 @@ import '../../../seller/tracking/widgets/location_permission_sheet.dart';
 import '../../../core/layouts/student_main_layout.dart';
 import 'location_picker_screen.dart';
 import '../../home/widgets/custom_snackbar.dart';
+import '../../menu/services/menu_service.dart';
 
 class PaymentScreen extends StatefulWidget {
   final int? pesananId;
@@ -132,11 +133,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   Future<void> _updateItemQuantity(int detailId, String action) async {
-    if (detailId == 0) return;
+    if (detailId == 0 || widget.pesananId == null) return;
     setState(() => _isLoading = true);
     try {
       final updatedData = await _orderService.updateItemQuantity(
-        widget.pesananId,
+        widget.pesananId!,
         detailId,
         action,
       );
