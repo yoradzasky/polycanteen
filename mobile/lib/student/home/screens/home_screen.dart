@@ -619,9 +619,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
     bool isDimasak =
         (status == 'dimasak' ||
+        status == 'siap_diambil' ||
+        status == 'menunggu_dikirim' ||
         status == 'dalam_perjalanan' ||
         status == 'selesai');
-    bool isSelesai = (status == 'selesai' || status == 'dalam_perjalanan');
+    bool isSelesai =
+        (status == 'siap_diambil' ||
+        status == 'menunggu_dikirim' ||
+        status == 'dalam_perjalanan' ||
+        status == 'selesai');
 
     String label3 = (tipe == 'take_away') ? "Sedang Diantar" : "Siap Diambil";
 

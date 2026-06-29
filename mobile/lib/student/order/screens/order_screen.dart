@@ -377,15 +377,15 @@ class _OrderScreenState extends State<OrderScreen>
 
     // Progress steps
     int activeStep = -1;
-    if (status == 'dibayar') activeStep = 0;
-    if (status == 'dikonfirmasi' || status == 'diproses') activeStep = 1;
-    if (status == 'dimasak') activeStep = 2;
-
-    if (tipePesanan == 'delivery') {
-      if (status == 'menunggu_dikirim') activeStep = 2;
-      if (status == 'dalam_perjalanan') activeStep = 3;
-    } else {
-      if (status == 'siap_diambil') activeStep = 3;
+    if (status == 'dibayar' || status == 'dikonfirmasi' || status == 'diproses') {
+      activeStep = 0;
+    } else if (status == 'dimasak') {
+      activeStep = 1;
+    } else if (status == 'siap_diambil' ||
+        status == 'menunggu_dikirim' ||
+        status == 'dalam_perjalanan' ||
+        status == 'selesai') {
+      activeStep = 2;
     }
 
     final bool isSiap =
