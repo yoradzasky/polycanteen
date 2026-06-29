@@ -172,6 +172,26 @@ class _CanteenListScreenState extends State<CanteenListScreen> {
     String ratingDisplay = rating > 0 ? rating.toStringAsFixed(1) : "0.0";
 
     String imageUrl = _getImageUrl(kantin['logo_path']);
+    bool isBuka = kantin['status_toko']?.toString().toLowerCase() == 'buka';
+    bool isTutup = !isBuka;
+
+    Widget imageWidget = imageUrl.isNotEmpty
+        ? Image.network(
+            imageUrl,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return const Center(
+                child: Icon(
+                  Icons.broken_image,
+                  size: 50,
+                  color: Colors.grey,
+                ),
+              );
+            },
+          )
+        : const Center(
+            child: Icon(Icons.store, size: 50, color: Colors.grey),
+          );
 
     return GestureDetector(
       onTap: () {
@@ -201,23 +221,17 @@ class _CanteenListScreenState extends State<CanteenListScreen> {
           child: Stack(
             children: [
               Positioned.fill(
-                child: imageUrl.isNotEmpty
-                    ? Image.network(
-                        imageUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Center(
-                            child: Icon(
-                              Icons.broken_image,
-                              size: 50,
-                              color: Colors.grey,
-                            ),
-                          );
-                        },
+                child: isTutup
+                    ? ColorFiltered(
+                        colorFilter: const ColorFilter.matrix(<double>[
+                          0.2126, 0.7152, 0.0722, 0, 0,
+                          0.2126, 0.7152, 0.0722, 0, 0,
+                          0.2126, 0.7152, 0.0722, 0, 0,
+                          0,      0,      0,      1, 0,
+                        ]),
+                        child: imageWidget,
                       )
-                    : const Center(
-                        child: Icon(Icons.store, size: 50, color: Colors.grey),
-                      ),
+                    : imageWidget,
               ),
               Positioned.fill(
                 child: Container(
@@ -284,7 +298,7 @@ class _CanteenListScreenState extends State<CanteenListScreen> {
                     vertical: 5,
                   ),
                   decoration: BoxDecoration(
-                    color: kantin['status_toko']?.toString().toLowerCase() == 'buka'
+                    color: isBuka
                         ? const Color(0xFF4CAF50)
                         : const Color(0xFFE53935),
                     borderRadius: BorderRadius.circular(20),
@@ -300,7 +314,7 @@ class _CanteenListScreenState extends State<CanteenListScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        kantin['status_toko']?.toString().toLowerCase() == 'buka'
+                        isBuka
                             ? Icons.check_circle
                             : Icons.cancel,
                         color: Colors.white,
@@ -308,7 +322,7 @@ class _CanteenListScreenState extends State<CanteenListScreen> {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        kantin['status_toko']?.toString().toLowerCase() == 'buka'
+                        isBuka
                             ? 'Buka'
                             : 'Tutup',
                         style: const TextStyle(
