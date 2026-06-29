@@ -57,12 +57,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
     setState(() {
       _orderItems = widget.cartItems!.map((item) {
         return {
+          'id': item['id'],
           'menu': {
-            'nama_item': item['nama_item'] ?? 'Menu',
-            'foto_menu': item['foto_menu'],
+            'id': item['menu']?['id'] ?? item['menu_id'],
+            'nama_item': item['menu']?['nama_item'] ?? item['nama_item'] ?? 'Menu',
+            'foto_menu': item['menu']?['foto_menu'] ?? item['foto_menu'],
           },
           'jumlah_pesanan': item['jumlah'],
-          'harga_saat_beli': item['harga_dasar'],
+          'harga_saat_beli': item['menu']?['harga'] ?? item['harga_dasar'],
           'varian_snapshot': item['varian_selected'],
         };
       }).toList();
@@ -132,35 +134,97 @@ class _PaymentScreenState extends State<PaymentScreen> {
     _statusTimer = null;
   }
 
-  Future<void> _updateItemQuantity(int detailId, String action) async {
-    if (detailId == 0 || widget.pesananId == null) return;
+  Future<void> _updateItemQuantity(int index, String action) async {
+    final item = _orderItems[index];
+
+    // Jika pesanan sudah dibuat
+    if (widget.pesananId != null) {
+      final detailId = int.tryParse(item['id']?.toString() ?? '0') ?? 0;
+      if (detailId == 0) return;
+      setState(() => _isLoading = true);
+      try {
+        final updatedData = await _orderService.updateItemQuantity(
+          widget.pesananId!,
+          detailId,
+          action,
+        );
+        
+        setState(() {
+          _orderItems = updatedData['details'] ?? [];
+          _totalHarga = double.tryParse(updatedData['total_harga']?.toString() ?? '0') ?? 0.0;
+          _isLoading = false;
+        });
+        
+        CustomSnackBar.show(context, message: 'Pesanan berhasil diubah', isSuccess: true);
+      } catch (e) {
+        setState(() => _isLoading = false);
+        CustomSnackBar.show(context, message: e.toString().replaceAll('Exception: ', ''), isError: true);
+      }
+      return;
+    }
+
+    // Jika belum checkout (masih di keranjang)
     setState(() => _isLoading = true);
     try {
-      final updatedData = await _orderService.updateItemQuantity(
-        widget.pesananId!,
-        detailId,
-        action,
-      );
+      final menuMap = item['menu'];
+      final rawMenuId = menuMap != null ? menuMap['id'] : item['menu_id'];
+      final menuId = int.tryParse(rawMenuId?.toString() ?? '');
       
+      if (menuId == null) {
+        throw 'Menu ID tidak ditemukan. Data: $item';
+      }
+
+      int qty = int.tryParse(item['jumlah_pesanan']?.toString() ?? '1') ?? 1;
+
+      if (action == 'increase') {
+        await MenuService().addToCart(
+          menuId: menuId,
+          jumlah: 1,
+          varianSelected: item['varian_snapshot'],
+        );
+        qty++;
+      } else if (action == 'decrease') {
+        if (qty > 1) {
+          await MenuService().decreaseCartQty(menuId);
+          qty--;
+        } else {
+          throw 'Jumlah minimal adalah 1';
+        }
+      }
+
       setState(() {
-        _orderItems = updatedData['details'] ?? [];
-        _totalHarga = double.tryParse(updatedData['total_harga']?.toString() ?? '0') ?? 0.0;
+        _orderItems[index]['jumlah_pesanan'] = qty;
+        _recalculateTotalHarga();
         _isLoading = false;
       });
-      
-      CustomSnackBar.show(
-        context,
-        message: 'Pesanan berhasil diubah',
-        isSuccess: true,
-      );
     } catch (e) {
       setState(() => _isLoading = false);
-      CustomSnackBar.show(
-        context,
-        message: e.toString().replaceAll('Exception: ', ''),
-        isError: true,
-      );
+      CustomSnackBar.show(context, message: e.toString().replaceAll('Exception: ', ''), isError: true);
     }
+  }
+
+  void _recalculateTotalHarga() {
+    _totalHarga = _orderItems.fold(0.0, (sum, item) {
+      double price = double.tryParse(item['harga_saat_beli']?.toString() ?? '0') ?? 0;
+      final qty = int.tryParse(item['jumlah_pesanan']?.toString() ?? '1') ?? 1;
+      
+      double varianPrice = 0;
+      final varianSnapshot = item['varian_snapshot'];
+      if (varianSnapshot != null && varianSnapshot is Map) {
+        varianSnapshot.forEach((key, value) {
+          if (value is Map && value.containsKey('harga')) {
+            varianPrice += double.tryParse(value['harga'].toString()) ?? 0;
+          } else if (value is List) {
+            for (var v in value) {
+              if (v is Map && v.containsKey('harga')) {
+                varianPrice += double.tryParse(v['harga'].toString()) ?? 0;
+              }
+            }
+          }
+        });
+      }
+      return sum + ((price + varianPrice) * qty);
+    });
   }
 
   void _showRejectionDialog(String alasan) {
@@ -754,13 +818,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 
                 if (_orderItems.isNotEmpty) ...[
                   const SectionTitle(title: 'Pesanan Anda'),
-                  ..._orderItems.map((item) {
+                  ..._orderItems.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final item = entry.value;
                     final menu = item['menu'] ?? {};
                     final name = menu['nama_item'] ?? '-';
                     final priceVal = double.tryParse(item['harga_saat_beli']?.toString() ?? '0') ?? 0;
                     final qty = int.tryParse(item['jumlah_pesanan']?.toString() ?? '1') ?? 1;
                     final String? image = menu['foto_menu'];
-                    final int detailId = int.tryParse(item['id']?.toString() ?? '0') ?? 0;
                     return OrderItemCard(
                       name: name,
                       price: _formatCurrency(priceVal),
@@ -768,8 +833,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       imagePath: image,
                       varianSnapshot: item['varian_snapshot'],
                       showControls: _orderStatus == 'pending',
-                      onIncrement: () => _updateItemQuantity(detailId, 'increase'),
-                      onDecrement: () => _updateItemQuantity(detailId, 'decrease'),
+                      onIncrement: () => _updateItemQuantity(index, 'increase'),
+                      onDecrement: () => _updateItemQuantity(index, 'decrease'),
                     );
                   }),
                   const SizedBox(height: 24),
@@ -972,6 +1037,12 @@ class OrderItemCard extends StatelessWidget {
     return children;
   }
 
+  String _getImageUrl(String? path) {
+    if (path == null || path.isEmpty) return 'https://via.placeholder.com/150';
+    if (path.startsWith('http')) return path;
+    return '${MenuService().baseUrlForStorage}/storage/$path';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -987,9 +1058,9 @@ class OrderItemCard extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: imagePath != null && imagePath!.startsWith('http')
+                child: imagePath != null && imagePath!.isNotEmpty
                     ? Image.network(
-                        imagePath!,
+                        _getImageUrl(imagePath),
                         width: 60,
                         height: 60,
                         fit: BoxFit.cover,
@@ -1077,22 +1148,7 @@ class OrderItemCard extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(height: 12),
-          Container(
-            height: 40,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF9FAFB),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const TextField(
-              decoration: InputDecoration(
-                hintText: 'Tambah catatan (cth: Jangan pedas)...',
-                hintStyle: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              ),
-            ),
-          )
+
         ],
       ),
     );
