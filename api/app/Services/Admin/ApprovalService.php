@@ -24,9 +24,9 @@ class ApprovalService
      *
      * Satu transaksi memastikan status pengajuan, data user, dan profil mahasiswa selalu konsisten.
      */
-    public function approve(int $applicationId, ?int $reviewedBy = null): array
+    public function approve(int $applicationId, ?int $reviewedBy = null, $expiresAt = false): array
     {
-        return DB::transaction(function () use ($applicationId, $reviewedBy) {
+        return DB::transaction(function () use ($applicationId, $reviewedBy, $expiresAt) {
             // Kunci baris pengajuan agar dua admin tidak bisa memproses data yang sama bersamaan.
             $application = BuyerApplication::query()
                 ->whereKey($applicationId)
@@ -61,6 +61,10 @@ class ApprovalService
                 'fcm_token' => $application->fcm_token,
             ]);
 
+            if ($expiresAt !== false) {
+                $application->account_expires_at = $expiresAt;
+            }
+
             // Simpan detail domain mahasiswa pada tabel profil mahasiswa.
             Mahasiswa::create([
                 'user_id' => $user->id,
@@ -77,6 +81,7 @@ class ApprovalService
                 'status' => 'approved',
                 'user_id' => $user->id,
                 'reviewed_by' => $reviewedBy,
+                'account_expires_at' => $application->account_expires_at,
                 'approved_at' => now(),
             ])->save();
 
