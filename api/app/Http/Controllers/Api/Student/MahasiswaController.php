@@ -64,9 +64,8 @@ class MahasiswaController extends Controller
             ->get();
 
         // Kriteria 7: Semua Menu
-        // Menampilkan seluruh katalog menu beserta data relasi kantinnya
+        // Menampilkan seluruh katalog menu beserta data relasi kantinnya (termasuk yang habis)
         $semuaMenu = Menu::with('kantin')
-        ->where('status_stok', true) // Hanya ambil yang tersedia
         ->withAvg('ulasan', 'rating')
         ->withCount('ulasan')
         ->get();

@@ -188,38 +188,54 @@ class _CanteenMenuScreenState extends State<CanteenMenuScreen> {
           final kantinName = errorMsg.split('|')[1];
           _showClearCartConfirmDialog(kantinName, menu, qty, varian);
         } else {
-          CustomSnackBar.show(
-            context,
-            message: errorMsg,
-            isError: true,
-          );
+          CustomSnackBar.show(context, message: errorMsg, isError: true);
         }
       }
     }
   }
 
-  void _showClearCartConfirmDialog(String kantinName, Map menu, int qty, Map? varian) {
+  void _showClearCartConfirmDialog(
+    String kantinName,
+    Map menu,
+    int qty,
+    Map? varian,
+  ) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('Ganti Kantin?', style: TextStyle(fontWeight: FontWeight.bold)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Text(
+            'Ganti Kantin?',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           content: Text(
             'Keranjang Anda berisi menu dari "$kantinName". '
-            'Apakah Anda ingin mengosongkan keranjang untuk memesan menu dari kantin ini?'
+            'Apakah Anda ingin mengosongkan keranjang untuk memesan menu dari kantin ini?',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Batal', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+              child: const Text(
+                'Batal',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
             TextButton(
               onPressed: () async {
                 Navigator.pop(context); // Tutup dialog
                 try {
                   await _menuService.clearCart(); // Kosongkan keranjang
-                  await _prosesTambahKeranjang(menu, qty, varian); // Panggil tambah keranjang lagi
+                  await _prosesTambahKeranjang(
+                    menu,
+                    qty,
+                    varian,
+                  ); // Panggil tambah keranjang lagi
                 } catch (err) {
                   if (mounted) {
                     CustomSnackBar.show(
@@ -230,7 +246,13 @@ class _CanteenMenuScreenState extends State<CanteenMenuScreen> {
                   }
                 }
               },
-              child: const Text('Ya, Kosongkan', style: TextStyle(color: const Color(0xFFF2994A), fontWeight: FontWeight.bold)),
+              child: const Text(
+                'Ya, Kosongkan',
+                style: TextStyle(
+                  color: const Color(0xFFF2994A),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         );
@@ -633,6 +655,10 @@ class _CanteenMenuScreenState extends State<CanteenMenuScreen> {
                     : SliverList(
                         delegate: SliverChildBuilderDelegate((context, index) {
                           final menu = filteredMenus[index];
+                          bool isHabis =
+                              menu['status_stok'] == false ||
+                              menu['status_stok'] == 0 ||
+                              menu['status_stok'] == '0';
                           int qty = _getQtyInCart(menu['id']);
                           double ratingMenu =
                               double.tryParse(
@@ -680,24 +706,60 @@ class _CanteenMenuScreenState extends State<CanteenMenuScreen> {
                                       width: 80,
                                       height: 80,
                                       color: Colors.grey[200],
-                                      child: menu['foto_menu'] != null
-                                          ? Image.network(
-                                              _getImageUrl(menu['foto_menu']),
-                                              fit: BoxFit.cover,
-                                              errorBuilder:
-                                                  (
-                                                    context,
-                                                    error,
-                                                    stackTrace,
-                                                  ) => const Icon(
+                                      child: Stack(
+                                        fit: StackFit.expand,
+                                        children: [
+                                          // Filter Hitam Putih jika Habis
+                                          ColorFiltered(
+                                            colorFilter: isHabis
+                                                ? const ColorFilter.mode(
+                                                    Colors.grey,
+                                                    BlendMode
+                                                        .saturation, // Mengubah jadi Grayscale
+                                                  )
+                                                : const ColorFilter.mode(
+                                                    Colors.transparent,
+                                                    BlendMode.multiply,
+                                                  ),
+                                            child: menu['foto_menu'] != null
+                                                ? Image.network(
+                                                    _getImageUrl(
+                                                      menu['foto_menu'],
+                                                    ),
+                                                    fit: BoxFit.cover,
+                                                    errorBuilder:
+                                                        (
+                                                          context,
+                                                          error,
+                                                          stackTrace,
+                                                        ) => const Icon(
+                                                          Icons.fastfood,
+                                                          color: Colors.grey,
+                                                        ),
+                                                  )
+                                                : const Icon(
                                                     Icons.fastfood,
                                                     color: Colors.grey,
                                                   ),
-                                            )
-                                          : const Icon(
-                                              Icons.fastfood,
-                                              color: Colors.grey,
+                                          ),
+                                          if (isHabis)
+                                            Container(
+                                              color: Colors.black.withOpacity(
+                                                0.5,
+                                              ),
+                                              alignment: Alignment.center,
+                                              child: const Text(
+                                                'HABIS',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 12,
+                                                  letterSpacing: 1,
+                                                ),
+                                              ),
                                             ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(width: 12),
@@ -870,9 +932,9 @@ class _CanteenMenuScreenState extends State<CanteenMenuScreen> {
                                                 GestureDetector(
                                                   onTap: _isKantinBuka
                                                       ? () =>
-                                                          _handleAddToCartClick(
-                                                            menu,
-                                                          )
+                                                            _handleAddToCartClick(
+                                                              menu,
+                                                            )
                                                       : () {
                                                           CustomSnackBar.show(
                                                             context,

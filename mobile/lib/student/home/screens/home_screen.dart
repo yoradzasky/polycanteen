@@ -1154,6 +1154,10 @@ class _HomeScreenState extends State<HomeScreen> {
         final menu = displayedMenus[index];
         final int waktu = menu['estimasi_waktu'] ?? 0;
 
+        // Cek status stok - handle boolean dan int/string
+        final dynamic rawStok = menu['status_stok'];
+        final bool isAvailable = rawStok == true || rawStok == 1 || rawStok == '1';
+
         final bool isGreen = waktu < 10;
         final Color badgeBg = isGreen
             ? const Color(0xFFE8F6EF)
@@ -1167,101 +1171,150 @@ class _HomeScreenState extends State<HomeScreen> {
         double harga = double.tryParse(menu['harga'].toString()) ?? 0;
 
         return GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => MenuDetailScreen(menuData: menu),
+          onTap: isAvailable
+              ? () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MenuDetailScreen(menuData: menu),
+                    ),
+                  ).then((_) => fetchCartData());
+                }
+              : null,
+          child: Opacity(
+            opacity: isAvailable ? 1.0 : 0.85,
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
               ),
-            ).then((_) => fetchCartData());
-          },
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    foto,
-                    width: 80,
-                    height: 80,
-                    fit: BoxFit.cover,
-                    errorBuilder: (c, e, s) => Container(
+              child: Row(
+                children: [
+                  // Foto menu dengan overlay HABIS jika stok kosong
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: SizedBox(
                       width: 80,
                       height: 80,
-                      color: Colors.grey[200],
-                      child: const Icon(Icons.fastfood, color: Colors.grey),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 15),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        menu['nama_item'] ?? 'Menu',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: Color(0xFF2C3138),
-                        ),
-                        // ✨ DITAMBAHKAN: Hindari teks overflow
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        namaKantin,
-                        style: TextStyle(
-                          color: Colors.grey.shade500,
-                          fontSize: 13,
-                        ),
-                        // ✨ DITAMBAHKAN: Hindari teks overflow
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
+                      child: Stack(
+                        fit: StackFit.expand,
                         children: [
-                          Text(
-                            "Rp ${_currencyFormat.format(harga)}",
-                            style: const TextStyle(
-                              color: Color(0xFF27AE60),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: badgeBg,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              "$waktu menit",
-                              style: TextStyle(
-                                color: badgeText,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
+                          ColorFiltered(
+                            colorFilter: isAvailable
+                                ? const ColorFilter.mode(
+                                    Colors.transparent,
+                                    BlendMode.multiply,
+                                  )
+                                : const ColorFilter.matrix(<double>[
+                                    0.2126, 0.7152, 0.0722, 0, 0,
+                                    0.2126, 0.7152, 0.0722, 0, 0,
+                                    0.2126, 0.7152, 0.0722, 0, 0,
+                                    0,      0,      0,      1, 0,
+                                  ]),
+                            child: Image.network(
+                              foto,
+                              width: 80,
+                              height: 80,
+                              fit: BoxFit.cover,
+                              errorBuilder: (c, e, s) => Container(
+                                width: 80,
+                                height: 80,
+                                color: Colors.grey[200],
+                                child: const Icon(Icons.fastfood, color: Colors.grey),
                               ),
                             ),
                           ),
+                          if (!isAvailable)
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.45),
+                              ),
+                              child: const Center(
+                                child: Text(
+                                  'HABIS',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 14,
+                                    letterSpacing: 1.5,
+                                  ),
+                                ),
+                              ),
+                            ),
                         ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 15),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          menu['nama_item'] ?? 'Menu',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: isAvailable
+                                ? const Color(0xFF2C3138)
+                                : Colors.grey,
+                          ),
+                          // ✨ DITAMBAHKAN: Hindari teks overflow
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          namaKantin,
+                          style: TextStyle(
+                            color: Colors.grey.shade500,
+                            fontSize: 13,
+                          ),
+                          // ✨ DITAMBAHKAN: Hindari teks overflow
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Text(
+                              "Rp ${_currencyFormat.format(harga)}",
+                              style: TextStyle(
+                                color: isAvailable
+                                    ? const Color(0xFF27AE60)
+                                    : Colors.grey,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isAvailable ? badgeBg : Colors.grey.shade200,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                isAvailable ? "$waktu menit" : "Stok Habis",
+                                style: TextStyle(
+                                  color: isAvailable ? badgeText : Colors.grey,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );
