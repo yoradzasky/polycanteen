@@ -14,7 +14,7 @@ class PaymentService {
     final token = await _prefs.getString('auth_token');
 
     final response = await http.post(
-      Uri.parse('$_baseUrl/student/payment/$pesananId'),
+      Uri.parse('$_baseUrl/mahasiswa/payment/$pesananId'),
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -45,10 +45,10 @@ class PaymentService {
 
   Future<Map<String, dynamic>> getPaymentStatus(int pesananId) async {
     final token = await _prefs.getString('auth_token');
-    // Using student/payment/status/{id} as the target endpoint.
+    // Using mahasiswa/payment/status/{id} as the target endpoint.
     // Note: If this returns 404, it means the backend route is not yet implemented.
     final response = await http.get(
-      Uri.parse('$_baseUrl/student/payment/status/$pesananId'),
+      Uri.parse('$_baseUrl/mahasiswa/payment/status/$pesananId'),
       headers: {
         'Accept': 'application/json',
         'Authorization': 'Bearer ${token.isNotEmpty ? token : ''}',

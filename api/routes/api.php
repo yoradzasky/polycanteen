@@ -50,53 +50,11 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
-    // Profile routes
-    Route::get('/profile', [ProfileController::class, 'show']);
-    Route::post('/profile', [ProfileController::class, 'update']);
 
-    // Kantin profile routes
-    Route::get('/kantin/profile', [ProfileController::class, 'getKantinProfile']);
-    Route::post('/kantin/profile', [ProfileController::class, 'updateKantinProfile']);
 
-    // Password routes
-    Route::put('/change-password', [ProfileController::class, 'changePassword']);
 
-    Route::post('/logout', [AuthController::class, 'logout']);
-
-    // --- Grup Khusus Mahasiswa / Student (Prefix: /student) ---
-    Route::prefix('student')->group(function () {
-
-        // Rute untuk mengambil data beranda dinamis
-        Route::get('/beranda', [MahasiswaController::class, 'getBerandaData']);
-
-        Route::get('/kantin', [StudentKantinController::class, 'index']);
-
-        Route::get('/kantin/{kantin_id}/menu', [StudentMenuController::class, 'index']);
-
-        // Rute Keranjang (Cart)
-        Route::get('/keranjang', [CartController::class, 'index']);
-        Route::post('/keranjang', [CartController::class, 'store']);
-        Route::post('/keranjang/checkout', [CartController::class, 'checkout']);
-        Route::put('/keranjang/{id}', [CartController::class, 'update']);
-        Route::delete('/keranjang/{menu_id}', [CartController::class, 'destroy']);
-        Route::delete('/keranjang/clear/all', [CartController::class, 'clearAll']);
-
-        // Rute untuk mengambil data profil mahasiswa (TAMBAHKAN DI SINI)
-        Route::get('/profil', [MahasiswaController::class, 'getProfileData']);
-
-        // TAMBAHKAN BARIS INI: Rute untuk update profil mahasiswa
-        Route::post('/profil/update', [MahasiswaController::class, 'updateProfile']);
-
-        // --- TAMBAHAN ROUTE UNTUK PEMBAYARAN MAHASISWA ---
-        Route::get('/orders/latest-pending', [PaymentController::class, 'getLatestPendingOrder']);
-        Route::post('/payment/{pesanan_id}', [PaymentController::class, 'createPayment']);
-        Route::get('/payment/status/{pesanan_id}', [PaymentController::class, 'checkStatus']);
-        Route::patch('/orders/{id}/submit', [StudentOrderController::class, 'submitOrder']);
-        Route::patch('/orders/{id}/cancel', [StudentOrderController::class, 'cancelOrder']);
-    });
-
-    // --- Grup Khusus Penjual (Prefix: /pemilik) ---
-    Route::prefix('pemilik')->group(function () {
+    // --- Grup Khusus Penjual (Prefix: /penjual) ---
+    Route::prefix('penjual')->group(function () {
 
         // Modul Pesanan (Orders)
         Route::get('/orders', [OrderController::class, 'index']);
@@ -124,6 +82,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/kantin/profile', [ProfileController::class, 'getKantinProfile']);
         Route::post('/kantin/profile', [ProfileController::class, 'updateKantinProfile']);
         Route::put('/change-password', [ProfileController::class, 'changePassword']);
+        Route::post('/logout', [AuthController::class, 'logout']);
 
         // Modul Keuangan & Laporan
         Route::get('/finance/summary', [FinanceController::class, 'summary']);
@@ -151,6 +110,10 @@ Route::middleware('auth:sanctum')->group(function () {
         // Rute profil mahasiswa
         Route::get('/profil', [MahasiswaController::class, 'getProfileData']);
         Route::post('/profil/update', [MahasiswaController::class, 'updateProfile']);
+        Route::get('/profile', [ProfileController::class, 'show']);
+        Route::post('/profile', [ProfileController::class, 'update']);
+        Route::put('/change-password', [ProfileController::class, 'changePassword']);
+        Route::post('/logout', [AuthController::class, 'logout']);
 
         // Modul Pesanan (Orders)
         Route::get('/orders', [StudentOrderController::class, 'index']);

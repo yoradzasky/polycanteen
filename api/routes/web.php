@@ -3,8 +3,8 @@
 use App\Http\Controllers\Admin\CanteenController;
 use App\Http\Controllers\Admin\BuyerApprovalController;
 use App\Http\Controllers\Admin\BuyerController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Api\Seller\SellerController;
+
+
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\DashboardController;
@@ -108,10 +108,6 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->name('admin.')->grou
 
 });
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [SellerController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [SellerController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [SellerController::class, 'destroy'])->name('profile.destroy');
-});
+
 
 require __DIR__ . '/auth.php';

@@ -30,14 +30,14 @@ class OrderService {
     return Options(headers: {'Authorization': 'Bearer $token'});
   }
 
-  // ───── GET /pemilik/orders ─────
+  // ───── GET /penjual/orders ─────
   Future<Map<String, dynamic>> getOrders({String? status}) async {
     try {
       final queryParams = <String, dynamic>{};
       if (status != null) queryParams['status'] = status;
 
       final response = await _dio.get(
-        '/pemilik/orders',
+        '/penjual/orders',
         queryParameters: queryParams,
         options: await _authOptions(),
       );
@@ -61,11 +61,11 @@ class OrderService {
     }
   }
 
-  // ───── GET /pemilik/orders/{id} ─────
+  // ───── GET /penjual/orders/{id} ─────
   Future<Map<String, dynamic>> getOrderDetail(int orderId) async {
     try {
       final response = await _dio.get(
-        '/pemilik/orders/$orderId',
+        '/penjual/orders/$orderId',
         options: await _authOptions(),
       );
 
@@ -88,7 +88,7 @@ class OrderService {
     }
   }
 
-  // ───── PATCH /pemilik/orders/{id}/status ─────
+  // ───── PATCH /penjual/orders/{id}/status ─────
   Future<void> updateOrderStatus(
     int orderId,
     String status, {
@@ -103,7 +103,7 @@ class OrderService {
       }
 
       final response = await _dio.patch(
-        '/pemilik/orders/$orderId/status',
+        '/penjual/orders/$orderId/status',
         data: data,
         options: await _authOptions(),
       );
@@ -126,11 +126,11 @@ class OrderService {
     }
   }
 
-  // ───── POST /pemilik/deliveries/{id}/confirm ─────
+  // ───── POST /penjual/deliveries/{id}/confirm ─────
   Future<void> confirmDelivery(int orderId, String qrToken) async {
     try {
       final response = await _dio.post(
-        '/pemilik/deliveries/$orderId/confirm',
+        '/penjual/deliveries/$orderId/confirm',
         data: {'qr_token': qrToken},
         options: await _authOptions(),
       );
@@ -152,11 +152,11 @@ class OrderService {
     }
   }
 
-  // ───── POST /pemilik/deliveries/{id}/start ─────
+  // ───── POST /penjual/deliveries/{id}/start ─────
   Future<void> startDelivery(int orderId) async {
     try {
       final response = await _dio.post(
-        '/pemilik/deliveries/$orderId/start',
+        '/penjual/deliveries/$orderId/start',
         options: await _authOptions(),
       );
 
@@ -184,11 +184,11 @@ class OrderService {
     return 'Terjadi kesalahan jaringan (Kode: ${e.response?.statusCode})';
   }
 
-  // ───── PATCH /pemilik/kantin/status ─────
+  // ───── PATCH /penjual/kantin/status ─────
   Future<void> updateStatusKantin(String statusToko) async {
     try {
       final response = await _dio.patch(
-        '/pemilik/kantin/status',
+        '/penjual/kantin/status',
         data: {'status_toko': statusToko},
         options: await _authOptions(),
       );

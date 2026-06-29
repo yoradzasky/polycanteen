@@ -65,8 +65,8 @@ class ProfileService {
   static Future<UserProfile> getProfile() async {
     _setupDio();
     try {
-      developer.log('Fetching profile from /pemilik/profile');
-      final response = await _dio.get('/pemilik/profile');
+      developer.log('Fetching profile from /penjual/profile');
+      final response = await _dio.get('/penjual/profile');
 
       developer.log('Profile response: ${response.statusCode}');
       
@@ -121,7 +121,7 @@ class ProfileService {
       final formData = FormData.fromMap(formDataMap);
 
       // Gunakan POST
-      final response = await _dio.post('/pemilik/profile', data: formData);
+      final response = await _dio.post('/penjual/profile', data: formData);
 
       developer.log('Update response: ${response.statusCode}');
       
@@ -162,7 +162,7 @@ class ProfileService {
   static Future<KantinProfile> getKantinProfile() async {
     _setupDio();
     try {
-      final response = await _dio.get('/pemilik/kantin/profile');
+      final response = await _dio.get('/penjual/kantin/profile');
       if (response.statusCode == 200 && response.data['success'] == true) {
         return KantinProfile.fromJson(response.data['data']);
       }
@@ -196,7 +196,7 @@ class ProfileService {
       final formData = FormData.fromMap(formDataMap);
 
       // Gunakan POST
-      final response = await _dio.post('/pemilik/kantin/profile', data: formData);
+      final response = await _dio.post('/penjual/kantin/profile', data: formData);
 
       if (response.statusCode == 200 && response.data['success'] == true) {
         return KantinProfile.fromJson(response.data['data']);
@@ -231,7 +231,7 @@ class ProfileService {
       }
 
       final response = await _dio.put(
-        '/pemilik/change-password',
+        '/penjual/change-password',
         data: {
           'current_password': currentPassword,
           'new_password': newPassword,

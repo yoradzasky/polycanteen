@@ -127,12 +127,12 @@ class MenuService {
     }
   }
 
-  // ───── POST /student/keranjang/checkout ─────
+  // ───── POST /mahasiswa/keranjang/checkout ─────
   // Mengonversi isi keranjang menjadi pesanan
   Future<Map<String, dynamic>> checkout() async {
     try {
       final response = await _dio.post(
-        '/student/keranjang/checkout',
+        '/mahasiswa/keranjang/checkout',
         options: await _authOptions(),
       );
       

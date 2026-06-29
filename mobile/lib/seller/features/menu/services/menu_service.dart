@@ -151,7 +151,7 @@ class MenuService {
         queryParams['search'] = search;
       }
       final response = await _dio.get(
-        '/pemilik/menus',
+        '/penjual/menus',
         queryParameters: queryParams,
         options: await _authOptions(),
       );
@@ -217,7 +217,7 @@ class MenuService {
       final formData = FormData.fromMap(formMap);
 
       final response = await _dio.post(
-        '/pemilik/menus',
+        '/penjual/menus',
         data: formData,
         options: await _authOptions(contentType: 'multipart/form-data'),
       );
@@ -278,7 +278,7 @@ class MenuService {
       final formData = FormData.fromMap(formMap);
 
       final response = await _dio.post(
-        '/pemilik/menus/$menuId',
+        '/penjual/menus/$menuId',
         data: formData,
         options: await _authOptions(contentType: 'multipart/form-data'),
       );
@@ -308,7 +308,7 @@ class MenuService {
   Future<void> deleteMenu(int menuId) async {
     try {
       final response = await _dio.delete(
-        '/pemilik/menus/$menuId',
+        '/penjual/menus/$menuId',
         options: await _authOptions(),
       );
 
@@ -337,7 +337,7 @@ class MenuService {
   Future<Menu> toggleMenuStatus(int menuId) async {
     try {
       final response = await _dio.patch(
-        '/pemilik/menus/$menuId/toggle-status',
+        '/penjual/menus/$menuId/toggle-status',
         options: await _authOptions(),
       );
 

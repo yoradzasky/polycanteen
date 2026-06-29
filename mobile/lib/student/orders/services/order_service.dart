@@ -9,9 +9,9 @@ class OrderService {
 
   Future<Map<String, dynamic>> getOrderDetail(int pesananId) async {
     final token = await _prefs.getString('auth_token');
-    // Using student/payment/status/{id} (GET) which returns payment status and order details.
+    // Using mahasiswa/payment/status/{id} (GET) which returns payment status and order details.
     final response = await http.get(
-      Uri.parse('$_baseUrl/student/payment/status/$pesananId'),
+      Uri.parse('$_baseUrl/mahasiswa/payment/status/$pesananId'),
       headers: {
         'Accept': 'application/json',
         'Authorization': 'Bearer ${token.isNotEmpty ? token : ''}',
@@ -22,7 +22,7 @@ class OrderService {
       final body = jsonDecode(response.body);
       return body['data'];
     } else if (response.statusCode == 404) {
-      throw Exception('Route API tidak ditemukan (404). Pastikan backend student/payment/{id} sudah ada.');
+      throw Exception('Route API tidak ditemukan (404). Pastikan backend mahasiswa/payment/{id} sudah ada.');
     } else {
       throw Exception('Gagal mengambil detail pesanan (Status: ${response.statusCode})');
     }
@@ -31,7 +31,7 @@ class OrderService {
   Future<Map<String, dynamic>?> getLatestPendingOrder() async {
     final token = await _prefs.getString('auth_token');
     final response = await http.get(
-      Uri.parse('$_baseUrl/student/orders/latest-pending'),
+      Uri.parse('$_baseUrl/mahasiswa/orders/latest-pending'),
       headers: {
         'Accept': 'application/json',
         'Authorization': 'Bearer ${token.isNotEmpty ? token : ''}',
@@ -55,7 +55,7 @@ class OrderService {
   }) async {
     final token = await _prefs.getString('auth_token');
     final response = await http.patch(
-      Uri.parse('$_baseUrl/student/orders/$pesananId/submit'),
+      Uri.parse('$_baseUrl/mahasiswa/orders/$pesananId/submit'),
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -82,7 +82,7 @@ class OrderService {
   Future<Map<String, dynamic>> cancelOrder(int pesananId) async {
     final token = await _prefs.getString('auth_token');
     final response = await http.patch(
-      Uri.parse('$_baseUrl/student/orders/$pesananId/cancel'),
+      Uri.parse('$_baseUrl/mahasiswa/orders/$pesananId/cancel'),
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',

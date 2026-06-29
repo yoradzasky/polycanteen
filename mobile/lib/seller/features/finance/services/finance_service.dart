@@ -13,7 +13,7 @@ class FinanceService {
     final token = await prefs.getString('auth_token');
 
     final response = await http.get(
-      Uri.parse('$baseUrl/pemilik/finance/summary'),
+      Uri.parse('$baseUrl/penjual/finance/summary'),
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -35,7 +35,7 @@ class FinanceService {
     final token = await prefs.getString('auth_token');
 
     final response = await http.get(
-      Uri.parse('$baseUrl/pemilik/finance/history'),
+      Uri.parse('$baseUrl/penjual/finance/history'),
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
