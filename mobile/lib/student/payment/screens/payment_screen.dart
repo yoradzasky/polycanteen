@@ -14,10 +14,11 @@ import 'location_picker_screen.dart';
 import '../../home/widgets/custom_snackbar.dart';
 
 class PaymentScreen extends StatefulWidget {
-  final int pesananId;
+  final int? pesananId;
   final double totalHarga;
+  final List<dynamic>? cartItems;
 
-  const PaymentScreen({super.key, required this.pesananId, required this.totalHarga});
+  const PaymentScreen({super.key, this.pesananId, required this.totalHarga, this.cartItems});
 
   @override
   State<PaymentScreen> createState() => _PaymentScreenState();
@@ -42,13 +43,35 @@ class _PaymentScreenState extends State<PaymentScreen> {
   @override
   void initState() {
     super.initState();
-    _loadOrderDetails();
+    if (widget.pesananId != null) {
+      _loadOrderDetails();
+    } else if (widget.cartItems != null) {
+      _loadCartDetails();
+    }
+  }
+
+  void _loadCartDetails() {
+    setState(() {
+      _orderItems = widget.cartItems!.map((item) {
+        return {
+          'menu': {
+            'nama_item': item['nama_item'] ?? 'Menu',
+            'foto_menu': item['foto_menu'],
+          },
+          'jumlah_pesanan': item['jumlah'],
+          'harga_saat_beli': item['harga_dasar'],
+          'varian_snapshot': item['varian_selected'],
+        };
+      }).toList();
+      _orderStatus = 'pending';
+      _isLoadingDetails = false;
+    });
   }
 
   Future<void> _loadOrderDetails() async {
     try {
       setState(() => _isLoadingDetails = true);
-      final details = await _orderService.getOrderDetail(widget.pesananId);
+      final details = await _orderService.getOrderDetail(widget.pesananId!);
       setState(() {
         _orderItems = details['detail_pesanan'] ?? [];
         _selectedOrderType = _formatOrderType(details['tipe_pesanan'] ?? 'dine_in');
@@ -73,9 +96,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   void _startStatusPolling() {
+    if (widget.pesananId == null) return;
     _statusTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
       try {
-        final details = await _orderService.getOrderDetail(widget.pesananId);
+        final details = await _orderService.getOrderDetail(widget.pesananId!);
         final newStatus = details['status_pesanan'] ?? 'pending';
         if (newStatus != _orderStatus) {
           setState(() {
@@ -315,8 +339,17 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
     setState(() => _isLoading = true);
     try {
+      int finalPesananId;
+      if (widget.pesananId != null) {
+        finalPesananId = widget.pesananId!;
+      } else {
+        // If it's from cart, we checkout first
+        final orderData = await MenuService().checkout();
+        finalPesananId = orderData['id'];
+      }
+
       await _orderService.submitOrder(
-        widget.pesananId,
+        finalPesananId,
         tipePesanan: _selectedOrderType,
         alamatPengantaran: _selectedOrderType == 'Pengantaran' ? _addressController.text.trim() : null,
         destLat: _selectedOrderType == 'Pengantaran' ? _latitude : null,
@@ -370,9 +403,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
     if (confirm != true) return;
 
+    if (widget.pesananId == null) {
+      Navigator.pop(context); // Nothing to cancel if it hasn't been checked out
+      return;
+    }
+
     setState(() => _isLoading = true);
     try {
-      await _orderService.cancelOrder(widget.pesananId);
+      await _orderService.cancelOrder(widget.pesananId!);
       if (mounted) {
         CustomSnackBar.show(
           context,
@@ -421,11 +459,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   Future<void> _handlePayment() async {
+    if (widget.pesananId == null) return;
     print('DEBUG: Starting payment process for pesananId: ${widget.pesananId} with method: $_selectedMethod');
     setState(() => _isLoading = true);
     try {
       final result = await _paymentService.createPayment(
-        widget.pesananId,
+        widget.pesananId!,
         paymentType: _selectedMethod,
       );
       print('DEBUG: Payment API Result: $result');
@@ -445,7 +484,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             MaterialPageRoute(
               builder: (context) => QrisPaymentScreen(
                 qrUrl: qrString,
-                pesananId: widget.pesananId,
+                pesananId: widget.pesananId!,
                 totalAmount: _formatCurrency(widget.totalHarga),
               ),
             ),
@@ -466,7 +505,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => QueueTicketScreen(pesananId: widget.pesananId),
+                      builder: (context) => QueueTicketScreen(pesananId: widget.pesananId!),
                     ),
                   );
                 },
