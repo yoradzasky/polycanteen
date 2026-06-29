@@ -31,11 +31,11 @@ class ProfileController extends Controller
         return $host . $url;
     }
 
-    // Get current user profile
     public function show(Request $request)
     {
         $user = $request->user();
         $fotoProfile = $this->getFullUrl($user->foto_profile);
+        $nama = $user->courier_name;
         
         if ($user->role === 'pemilik') {
             $pemilik = $user->pemilik;
@@ -46,6 +46,7 @@ class ProfileController extends Controller
                     'username' => $user->username,
                     'email' => $user->email,
                     'role' => $user->role,
+                    'nama' => $nama,
                     'nama_pemilik' => $pemilik?->nama_pemilik,
                     'no_telp' => $pemilik?->no_telp,
                     'foto_profil_path' => $fotoProfile, // Use full URL here too
@@ -61,6 +62,7 @@ class ProfileController extends Controller
                 'username' => $user->username,
                 'email' => $user->email,
                 'role' => $user->role,
+                'nama' => $nama,
                 'foto_profile' => $fotoProfile,
             ]
         ]);
@@ -120,6 +122,24 @@ class ProfileController extends Controller
             $pemilik->save();
         }
 
+        // Update pegawai data if user is pegawai
+        if ($user->role === 'pegawai' && $user->pegawai) {
+            $pegawai = $user->pegawai;
+            
+            if (isset($validated['nama_pemilik'])) {
+                $pegawai->nama_karyawan = $validated['nama_pemilik'];
+            }
+            if (isset($validated['no_telp'])) {
+                $pegawai->no_telp = $validated['no_telp'];
+            }
+            
+            if ($request->hasFile($photoField)) {
+                $pegawai->foto_profil_path = $user->foto_profile;
+            }
+
+            $pegawai->save();
+        }
+
         $fotoProfileUrl = $this->getFullUrl($user->foto_profile);
 
         return response()->json([
@@ -130,9 +150,10 @@ class ProfileController extends Controller
                 'username' => $user->username,
                 'email' => $user->email,
                 'role' => $user->role,
+                'nama' => $user->courier_name,
                 'foto_profile' => $fotoProfileUrl,
                 'nama_pemilik' => $user->pemilik?->nama_pemilik,
-                'no_telp' => $user->pemilik?->no_telp,
+                'no_telp' => $user->pemilik?->no_telp ?? $user->pegawai?->no_telp,
             ]
         ]);
     }

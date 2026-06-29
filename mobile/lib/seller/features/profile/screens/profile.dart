@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:developer' as developer;
 import '../../../../core/auth/services/auth_service.dart';
 import '../../../../core/auth/screens/login_screen.dart';
@@ -37,27 +38,30 @@ class _ProfileTokoScreenState extends State<ProfileTokoScreen> {
       final profile = await ProfileService.getProfile();
       KantinProfile? kantinData;
 
-      // Hanya ambil profil kantin jika role adalah pemilik
-      if (profile.role == 'pemilik') {
-        try {
-          kantinData = await ProfileService.getKantinProfile();
-        } catch (e) {
-          developer.log('Error loading kantin data: $e');
-        }
+      try {
+        kantinData = await ProfileService.getKantinProfile();
+      } catch (e) {
+        developer.log('Error loading kantin data: $e');
       }
 
-      return {
-        'user': profile,
-        'kantin': kantinData,
-        'success': true,
-      };
+      return {'user': profile, 'kantin': kantinData, 'success': true};
     } catch (e) {
       developer.log('Error loading profile: $e');
-      return {
-        'success': false,
-        'error': e.toString(),
-      };
+      return {'success': false, 'error': e.toString()};
     }
+  }
+
+  String _getBaseUrl() {
+    final baseUrl = dotenv.env['BASE_URL'] ?? 'http://10.0.2.2:8000/api';
+    return baseUrl
+        .replaceAll(RegExp(r'/api$'), '')
+        .replaceAll(RegExp(r'/mobile$'), '');
+  }
+
+  String? _getFullImageUrl(String? path) {
+    if (path == null || path.isEmpty) return null;
+    if (path.startsWith('http')) return path;
+    return '${_getBaseUrl()}/storage/$path';
   }
 
   void _showLogoutDialog(BuildContext context) {
@@ -103,10 +107,8 @@ class _ProfileTokoScreenState extends State<ProfileTokoScreen> {
                 Navigator.pop(dialogContext);
                 try {
                   await AuthService.logout();
-                } catch (e) {
-                  // Lanjutkan paksa logout meskipun gagal di servis
-                }
-                
+                } catch (e) {}
+
                 if (mounted) {
                   Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
                     MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -130,29 +132,36 @@ class _ProfileTokoScreenState extends State<ProfileTokoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFF6ED),
-      body: FutureBuilder<Map<String, dynamic>>(
-        future: _profileData,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: AppLoadingAnimation());
-          }
+    return FutureBuilder<Map<String, dynamic>>(
+      future: _profileData,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            backgroundColor: Color(0xFFF4F6FB),
+            body: Center(child: AppLoadingAnimation()),
+          );
+        }
 
-          if (snapshot.hasError || snapshot.data?['success'] != true) {
-            return Center(
+        if (snapshot.hasError || snapshot.data?['success'] != true) {
+          return Scaffold(
+            backgroundColor: const Color(0xFFF4F6FB),
+            body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Icon(Icons.error, size: 64, color: Colors.red),
                   const SizedBox(height: 16),
-                  Text('Error: ${snapshot.data?['error'] ?? 'Tidak diketahui'}'),
+                  Text(
+                    'Error: ${snapshot.data?['error'] ?? 'Tidak diketahui'}',
+                  ),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: _loadProfileData,
                     child: const Text('Coba Lagi'),
                   ),
-                  if ((snapshot.data?['error'] ?? '').toString().contains('Unauthenticated')) ...[
+                  if ((snapshot.data?['error'] ?? '').toString().contains(
+                    'Unauthenticated',
+                  )) ...[
                     const SizedBox(height: 12),
                     OutlinedButton.icon(
                       onPressed: () => _showLogoutDialog(context),
@@ -168,226 +177,262 @@ class _ProfileTokoScreenState extends State<ProfileTokoScreen> {
                   ],
                 ],
               ),
-            );
-          }
+            ),
+          );
+        }
 
-          final UserProfile userData = snapshot.data!['user'];
-          final KantinProfile? kantinData = snapshot.data!['kantin'];
-          final bool isPemilik = userData.role == 'pemilik';
+        final UserProfile userData = snapshot.data!['user'];
+        final KantinProfile? kantinData = snapshot.data!['kantin'];
+        final bool isPemilik = userData.role == 'pemilik';
 
-          return SafeArea(
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 10),
-                  
-                  // Custom Screen Title
-                  const Text(
-                    "Profil Saya",
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      color: Color(0xFF1E232C),
-                      letterSpacing: -0.5,
+        final Color primaryColor = isPemilik ? const Color(0xFF3949AB) : const Color(0xFF5E7AC4);
+        final Color bgColor = const Color(0xFFF4F6FB);
+        final Color borderColor = const Color(0xFFE5E7EB);
+        final Color shadowColor = Colors.black.withValues(alpha: 0.05);
+
+        final String? imageUrl = _getFullImageUrl(userData.fotoProfil);
+
+        return Scaffold(
+          backgroundColor: bgColor,
+          body: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // --- CURVED HEADER (consistent with order list & finance) ---
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: primaryColor,
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(32),
+                      bottomRight: Radius.circular(32),
                     ),
                   ),
-                  const SizedBox(height: 24),
-
-                  // --- HEADER CARD PROFIL ---
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: const Color(0xFFFFE0C2), width: 1.5),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFF08D39).withValues(alpha: 0.04),
-                          blurRadius: 15,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: const Color(0xFFFFE0C2),
-                              width: 3,
-                            ),
-                          ),
-                          child: CircleAvatar(
-                            radius: 50,
-                            backgroundImage: userData.fotoProfil != null ? NetworkImage(userData.fotoProfil!) : null,
-                            backgroundColor: Colors.grey.shade200,
-                            onBackgroundImageError: (_, __) {},
-                            child: userData.fotoProfil == null ? Icon(Icons.person, size: 48, color: Colors.grey[600]) : null,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Nama
-                        Text(
-                          userData.namaPemilik ?? userData.username,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1E232C),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-
-                        // Role & Kantin
-                        Text(
-                          "${isPemilik ? 'Pemilik' : 'Pegawai'} - ${kantinData?.namaKantin ?? 'Kantin'}",
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF8391A1),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        if (isPemilik) ...[
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFFF6ED),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.star, color: Colors.orange, size: 14),
-                                const SizedBox(width: 4),
-                                Text(
-                                  (kantinData?.rating ?? 0.0).toStringAsFixed(1),
-                                  style: const TextStyle(
-                                    color: Color(0xFFF08D39),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
+                  padding: EdgeInsets.only(
+                    left: 20,
+                    right: 20,
+                    bottom: 32,
+                    top: MediaQuery.of(context).padding.top + 16,
                   ),
-
-                  const SizedBox(height: 30),
-
-                  // --- SECTION AKUN ---
-                  const Text(
-                    "Pengaturan Akun",
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF8391A1),
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // --- MENU EDIT PROFIL USER ---
-                  _buildMenuItem(
-                    icon: Icons.person_outline_rounded,
-                    label: "Edit Profil User",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const EditProfileUserScreen()),
-                      ).then((_) => _loadProfileData());
-                    },
-                  ),
-                  const SizedBox(height: 12),
-
-                  // --- MENU KEAMANAN / UBAH PASSWORD ---
-                  _buildMenuItem(
-                    icon: Icons.security_outlined,
-                    label: "Keamanan Akun / Ubah Password",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const ChangePasswordScreen()),
-                      ).then((_) => _loadProfileData());
-                    },
-                  ),
-                  
-                  if (isPemilik) ...[
-                    const SizedBox(height: 30),
-                    // --- SECTION KANTIN ---
-                    const Text(
-                      "Pengaturan Kantin",
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF8391A1),
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    // --- MENU EDIT PROFIL KANTIN ---
-                    _buildMenuItem(
-                      icon: Icons.storefront_outlined,
-                      label: "Ubah Profil Kantin",
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const EditProfileKantinScreen()),
-                        ).then((_) => _loadProfileData());
-                      },
-                    ),
-                  ],
-
-                  const SizedBox(height: 48),
-
-                  // --- TOMBOL KELUAR ---
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: OutlinedButton.icon(
-                      onPressed: () => _showLogoutDialog(context),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(
-                          color: Color(0xFFEB4335),
-                          width: 1.5,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        backgroundColor: const Color(0xFFFFF5F5),
-                      ),
-                      icon: const Icon(
-                        Icons.logout_rounded,
-                        color: Color(0xFFEB4335),
-                      ),
-                      label: const Text(
-                        "Keluar Akun",
+                  child: Column(
+                    children: [
+                      // Title row
+                      const Text(
+                        'Profil Saya',
                         style: TextStyle(
-                          color: Color(0xFFEB4335),
-                          fontSize: 15,
+                          color: Colors.white,
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 20),
+
+                      // Avatar
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.4),
+                            width: 3,
+                          ),
+                        ),
+                        child: CircleAvatar(
+                          radius: 50,
+                          backgroundImage: imageUrl != null ? NetworkImage(imageUrl) : null,
+                          backgroundColor: Colors.white.withValues(alpha: 0.2),
+                          onBackgroundImageError: imageUrl != null ? (_, __) {} : null,
+                          child: imageUrl == null
+                              ? const Icon(Icons.person, size: 48, color: Colors.white70)
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Nama
+                      Text(
+                        userData.nama,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+
+                      // Role & Kantin
+                      Text(
+                        "${isPemilik ? 'Pemilik' : 'Pegawai'} - ${kantinData?.namaKantin ?? 'Kantin'}",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.white.withValues(alpha: 0.7),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      if (kantinData != null &&
+                          kantinData.rating != null) ...[
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.star, color: Colors.amber, size: 16),
+                              const SizedBox(width: 4),
+                              Text(
+                                kantinData.rating!.toStringAsFixed(1),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
-                  const SizedBox(height: 20),
-                ],
-              ),
+                ),
+
+                // --- MENU ITEMS SECTION ---
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // --- SECTION AKUN ---
+                      Text(
+                        "Pengaturan Akun",
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey.shade500,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // --- MENU EDIT PROFIL USER ---
+                      _buildMenuItem(
+                        icon: Icons.person_outline_rounded,
+                        label: "Edit Profil User",
+                        primaryColor: primaryColor,
+                        bgColor: bgColor,
+                        borderColor: borderColor,
+                        shadowColor: shadowColor,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const EditProfileUserScreen(),
+                            ),
+                          ).then((_) => _loadProfileData());
+                        },
+                      ),
+                      const SizedBox(height: 12),
+
+                      // --- MENU KEAMANAN / UBAH PASSWORD ---
+                      _buildMenuItem(
+                        icon: Icons.security_outlined,
+                        label: "Keamanan Akun / Ubah Password",
+                        primaryColor: primaryColor,
+                        bgColor: bgColor,
+                        borderColor: borderColor,
+                        shadowColor: shadowColor,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ChangePasswordScreen(),
+                            ),
+                          ).then((_) => _loadProfileData());
+                        },
+                      ),
+
+                      if (isPemilik) ...[
+                        const SizedBox(height: 24),
+                        // --- SECTION KANTIN ---
+                        Text(
+                          "Pengaturan Kantin",
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade500,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // --- MENU EDIT PROFIL KANTIN ---
+                        _buildMenuItem(
+                          icon: Icons.storefront_outlined,
+                          label: "Ubah Profil Kantin",
+                          primaryColor: primaryColor,
+                          bgColor: bgColor,
+                          borderColor: borderColor,
+                          shadowColor: shadowColor,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const EditProfileKantinScreen(),
+                              ),
+                            ).then((_) => _loadProfileData());
+                          },
+                        ),
+                      ],
+
+                      const SizedBox(height: 32),
+
+                      // --- TOMBOL KELUAR ---
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: OutlinedButton.icon(
+                          onPressed: () => _showLogoutDialog(context),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(
+                              color: Color(0xFFEB4335),
+                              width: 1.5,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            backgroundColor: const Color(0xFFFFF5F5),
+                          ),
+                          icon: const Icon(
+                            Icons.logout_rounded,
+                            color: Color(0xFFEB4335),
+                          ),
+                          label: const Text(
+                            "Keluar Akun",
+                            style: TextStyle(
+                              color: Color(0xFFEB4335),
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -395,6 +440,10 @@ class _ProfileTokoScreenState extends State<ProfileTokoScreen> {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
+    required Color primaryColor,
+    required Color bgColor,
+    required Color borderColor,
+    required Color shadowColor,
   }) {
     return InkWell(
       onTap: onTap,
@@ -404,12 +453,12 @@ class _ProfileTokoScreenState extends State<ProfileTokoScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFFFE0C2), width: 1),
+          border: Border.all(color: borderColor, width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFF08D39).withValues(alpha: 0.04),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: shadowColor,
+              blurRadius: 15,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
@@ -418,14 +467,10 @@ class _ProfileTokoScreenState extends State<ProfileTokoScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFF6ED),
+                color: primaryColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(
-                icon,
-                color: const Color(0xFFF08D39),
-                size: 20,
-              ),
+              child: Icon(icon, color: primaryColor, size: 20),
             ),
             const SizedBox(width: 16),
             Expanded(

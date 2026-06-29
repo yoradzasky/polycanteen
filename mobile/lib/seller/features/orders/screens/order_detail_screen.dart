@@ -12,28 +12,33 @@ class OrderDetailScreen extends StatelessWidget {
     required this.primaryColor,
   });
 
+  Color get _bgColor => const Color(0xFFF4F6FB);
+  Color get _borderColor => const Color(0xFFE5E7EB);
+  Color get _shadowColor => Colors.black.withValues(alpha: 0.05);
+  Color get _iconColor => primaryColor;
+  Color get _iconBgColor => primaryColor.withValues(alpha: 0.1);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF6ED),
+      backgroundColor: _bgColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFFF6ED),
+        backgroundColor: primaryColor,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         title: const Text(
           'Detail Pesanan',
           style: TextStyle(
-            color: Color(0xFF1A1A2E),
-            fontWeight: FontWeight.w900,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
             fontSize: 20,
-            letterSpacing: -0.5,
           ),
         ),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new,
-            color: Color(0xFF1A1A2E),
+            color: Colors.white,
             size: 20,
           ),
           onPressed: () => Navigator.pop(context),
@@ -56,7 +61,7 @@ class OrderDetailScreen extends StatelessWidget {
       ),
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(20),
-        color: const Color(0xFFFFF6ED),
+        color: _bgColor,
         child: ElevatedButton(
           onPressed: () {
             Navigator.push(
@@ -70,7 +75,7 @@ class OrderDetailScreen extends StatelessWidget {
             );
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFF08D39),
+            backgroundColor: primaryColor,
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
@@ -91,12 +96,12 @@ class OrderDetailScreen extends StatelessWidget {
     return BoxDecoration(
       color: Colors.white,
       borderRadius: BorderRadius.circular(16),
-      border: Border.all(color: const Color(0xFFFFE0C2), width: 1),
+      border: Border.all(color: _borderColor, width: 1.5),
       boxShadow: [
         BoxShadow(
-          color: const Color(0xFFF08D39).withValues(alpha: 0.04),
-          blurRadius: 10,
-          offset: const Offset(0, 4),
+          color: _shadowColor,
+          blurRadius: 15,
+          offset: const Offset(0, 6),
         ),
       ],
     );
@@ -230,7 +235,10 @@ class OrderDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    (order['tipe_pesanan'] ?? '-').toString().replaceAll('_', ' ').toUpperCase(),
+                    (order['tipe_pesanan'] ?? '-')
+                        .toString()
+                        .replaceAll('_', ' ')
+                        .toUpperCase(),
                     style: const TextStyle(
                       fontWeight: FontWeight.w800,
                       fontSize: 15,
@@ -248,7 +256,8 @@ class OrderDetailScreen extends StatelessWidget {
 
   Widget _buildPaymentMethod() {
     final payment = order['payment'] ?? {};
-    final metodeBayar = payment['metode_bayar']?.toString().toUpperCase() ?? '-';
+    final metodeBayar =
+        payment['metode_bayar']?.toString().toUpperCase() ?? '-';
     String rawStatus = payment['status_bayar']?.toString().toLowerCase() ?? '';
     String statusBayar = 'LUNAS';
 
@@ -267,10 +276,10 @@ class OrderDetailScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFFFFF6ED),
+              color: _iconBgColor,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.qr_code_2, color: Color(0xFFF08D39), size: 24),
+            child: Icon(Icons.qr_code_2, color: _iconColor, size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -336,7 +345,9 @@ class OrderDetailScreen extends StatelessWidget {
             final item = details[index];
             final namaMenu = item['menu']?['nama_item'] ?? 'Item';
             final qty = int.tryParse(item['jumlah_pesanan'].toString()) ?? 1;
-            final hargaSatuan = (double.tryParse(item['harga_saat_beli'].toString()) ?? 0).toInt();
+            final hargaSatuan =
+                (double.tryParse(item['harga_saat_beli'].toString()) ?? 0)
+                    .toInt();
 
             final dynamic rawVarian = item['varian_snapshot'];
             final List<Map<String, String>> parsedVariants = [];
@@ -347,27 +358,45 @@ class OrderDetailScreen extends StatelessWidget {
                   final category = key.toString();
                   if (value is Map) {
                     final nama = value['nama'] ?? value['name'] ?? '-';
-                    parsedVariants.add({'category': category, 'name': nama.toString()});
+                    parsedVariants.add({
+                      'category': category,
+                      'name': nama.toString(),
+                    });
                   } else if (value is List) {
                     for (var v in value) {
                       if (v is Map) {
                         final nama = v['nama'] ?? v['name'] ?? '-';
-                        parsedVariants.add({'category': category, 'name': nama.toString()});
+                        parsedVariants.add({
+                          'category': category,
+                          'name': nama.toString(),
+                        });
                       } else {
-                        parsedVariants.add({'category': category, 'name': v.toString()});
+                        parsedVariants.add({
+                          'category': category,
+                          'name': v.toString(),
+                        });
                       }
                     }
                   } else {
-                    parsedVariants.add({'category': category, 'name': value.toString()});
+                    parsedVariants.add({
+                      'category': category,
+                      'name': value.toString(),
+                    });
                   }
                 });
               } else if (rawVarian is List) {
                 for (var v in rawVarian) {
                   if (v is Map) {
                     final nama = v['nama'] ?? v['name'] ?? v.toString();
-                    parsedVariants.add({'category': 'Varian', 'name': nama.toString()});
+                    parsedVariants.add({
+                      'category': 'Varian',
+                      'name': nama.toString(),
+                    });
                   } else {
-                    parsedVariants.add({'category': 'Varian', 'name': v.toString()});
+                    parsedVariants.add({
+                      'category': 'Varian',
+                      'name': v.toString(),
+                    });
                   }
                 }
               }
@@ -382,12 +411,12 @@ class OrderDetailScreen extends StatelessWidget {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFFF6ED),
+                        color: _iconBgColor,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.restaurant,
-                        color: Color(0xFFF08D39),
+                        color: _iconColor,
                         size: 20,
                       ),
                     ),
@@ -487,16 +516,14 @@ class OrderDetailScreen extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF6ED),
+        color: _bgColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFFFFE0C2),
-        ),
+        border: Border.all(color: _borderColor, width: 1.5),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.sticky_note_2_outlined, color: Color(0xFFF08D39), size: 20),
+          Icon(Icons.sticky_note_2_outlined, color: _iconColor, size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -529,7 +556,8 @@ class OrderDetailScreen extends StatelessWidget {
   }
 
   Widget _buildPriceSummary() {
-    final int totalHarga = (double.tryParse(order['total_harga'].toString()) ?? 0).toInt();
+    final int totalHarga =
+        (double.tryParse(order['total_harga'].toString()) ?? 0).toInt();
     List<dynamic> details = order['details'] ?? [];
     int subtotal = 0;
     for (var item in details) {
@@ -574,8 +602,8 @@ class OrderDetailScreen extends StatelessWidget {
               ),
               Text(
                 'Rp ${NumberFormat('#,###', 'id_ID').format(totalHarga)}',
-                style: const TextStyle(
-                  color: Color(0xFF2D3A8C),
+                style: TextStyle(
+                  color: primaryColor,
                   fontWeight: FontWeight.w900,
                   fontSize: 18,
                 ),
@@ -593,7 +621,11 @@ class OrderDetailScreen extends StatelessWidget {
       children: [
         Text(
           label,
-          style: TextStyle(color: Colors.grey.shade600, fontSize: 14, fontWeight: FontWeight.w500),
+          style: TextStyle(
+            color: Colors.grey.shade600,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
         ),
         Text(
           'Rp ${NumberFormat('#,###', 'id_ID').format(price)}',
