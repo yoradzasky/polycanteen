@@ -80,6 +80,7 @@ class AuthController extends Controller
             'phone' => 'required|string|max:20',
             'password' => 'required|string|min:6',
             'foto_ktm' => 'nullable|image|max:2048', // Max 2MB
+            'fcm_token' => 'nullable|string',
         ]);
 
         $fotoKtmPath = null;
@@ -96,6 +97,7 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
             'foto_ktm_path' => $fotoKtmPath,
             'status' => 'pending',
+            'fcm_token' => $request->fcm_token,
         ]);
 
         return response()->json([
