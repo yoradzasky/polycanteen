@@ -192,16 +192,15 @@ class _OrderListScreenState extends State<OrderListScreen> {
       
       bool matchesTab = false;
       if (_selectedTabIndex == 0) {
-        matchesTab = status == 'pending' || status == 'menunggu_persetujuan'; // Baru masuk
+        matchesTab = status == 'pending' || status == 'menunggu_persetujuan' || status == 'dibayar'; // Baru masuk
       } else if (_selectedTabIndex == 1) {
-        matchesTab = status == 'dibayar' ||
-            status == 'dimasak' ||
+        matchesTab = status == 'dimasak' ||
             status == 'dalam_perjalanan' ||
             status == 'siap_diambil' ||
             status == 'menunggu_dikirim' ||
             status == 'menunggu_pembayaran'; // Diproses
       } else {
-        matchesTab = status == 'selesai'; // Selesai
+        matchesTab = status == 'selesai' || status == 'dibatalkan'; // Selesai
       }
 
       if (!matchesTab) return false;
@@ -213,15 +212,16 @@ class _OrderListScreenState extends State<OrderListScreen> {
       } else if (_selectedTypeFilter == 'dine_in') {
         return tipePesanan.contains('dine in') ||
             tipePesanan.contains('makan di tempat') ||
-            tipePesanan == 'dine_in';
+            tipePesanan.contains('dine_in') ||
+            tipePesanan.contains('dine-in');
       } else if (_selectedTypeFilter == 'take_away') {
         return tipePesanan.contains('take away') ||
             tipePesanan.contains('bungkus') ||
-            tipePesanan == 'take_away';
+            tipePesanan.contains('take_away') ||
+            tipePesanan.contains('take-away');
       } else if (_selectedTypeFilter == 'delivery') {
         return tipePesanan.contains('delivery') ||
-            tipePesanan.contains('pengantaran') ||
-            tipePesanan == 'delivery';
+            tipePesanan.contains('pengantaran');
       }
 
       return true;
@@ -457,7 +457,8 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                 'Selesai',
                                 badgeCount: _orders
                                     .where(
-                                      (o) => o['status_pesanan'] == 'selesai',
+                                      (o) => o['status_pesanan'] == 'selesai' ||
+                                             o['status_pesanan'] == 'dibatalkan',
                                     )
                                     .length,
                               ),
@@ -545,7 +546,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                         final status = orderMap['status_pesanan'];
                         final orderId = orderMap['id'];
 
-                        if (status == 'selesai') {
+                        if (status == 'selesai' || status == 'dibatalkan') {
                           return CompletedOrderCard(
                             key: ValueKey(orderId),
                             order: orderMap,
@@ -889,16 +890,26 @@ class CompletedOrderCard extends StatelessWidget {
                       const SizedBox(height: 6),
                       Row(
                         children: [
-                          const Icon(
-                            Icons.check,
-                            color: Color(0xFF27AE60),
+                          Icon(
+                            order['status_pesanan'] == 'selesai'
+                                ? Icons.check
+                                : Icons.close,
+                            color: order['status_pesanan'] == 'selesai'
+                                ? const Color(0xFF27AE60)
+                                : const Color(0xFFE53935),
                             size: 16,
                           ),
                           const SizedBox(width: 4),
-                          const Text(
-                            'Selesai',
+                          Text(
+                            order['status_pesanan'] == 'selesai'
+                                ? 'Selesai'
+                                : (order['status_pesanan'] == 'ditolak'
+                                    ? 'Ditolak'
+                                    : 'Dibatalkan'),
                             style: TextStyle(
-                              color: Color(0xFF27AE60),
+                              color: order['status_pesanan'] == 'selesai'
+                                  ? const Color(0xFF27AE60)
+                                  : const Color(0xFFE53935),
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
                             ),
@@ -970,11 +981,15 @@ class OrderCard extends StatelessWidget {
     Color tipeColor = Colors.grey;
     Color tipeBgColor = Colors.grey.shade100;
     if (tipePesanan.toLowerCase().contains('dine in') ||
-        tipePesanan.toLowerCase().contains('makan di tempat')) {
+        tipePesanan.toLowerCase().contains('makan di tempat') ||
+        tipePesanan.toLowerCase().contains('dine_in') ||
+        tipePesanan.toLowerCase().contains('dine-in')) {
       tipeColor = const Color(0xFF27AE60);
       tipeBgColor = const Color(0xFFB9F6CA).withValues(alpha: 0.5);
     } else if (tipePesanan.toLowerCase().contains('take away') ||
-        tipePesanan.toLowerCase().contains('bungkus')) {
+        tipePesanan.toLowerCase().contains('bungkus') ||
+        tipePesanan.toLowerCase().contains('take_away') ||
+        tipePesanan.toLowerCase().contains('take-away')) {
       tipeColor = const Color(0xFFF2994A);
       tipeBgColor = const Color(0xFFFFF3F0);
     }
@@ -1272,7 +1287,7 @@ class OrderCard extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                if (tabIndex == 0) ...[
+                if (tabIndex == 0 && (order['status_pesanan'] == 'pending' || order['status_pesanan'] == 'menunggu_persetujuan')) ...[
                   Row(
                     children: [
                       Expanded(
@@ -1411,7 +1426,7 @@ class OrderCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                ] else if (tabIndex == 1 &&
+                ] else if (tabIndex == 0 &&
                     order['status_pesanan'] == 'dibayar') ...[
                   SizedBox(
                     width: double.infinity,
@@ -2162,6 +2177,7 @@ class OrderDetailsDialog extends StatelessWidget {
                       ),
                       child: const Text(
                         'Lihat Halaman Detail',
+                        textAlign: TextAlign.center,
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
