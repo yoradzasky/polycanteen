@@ -57,7 +57,7 @@ class ApprovalService
                 'password' => $application->password ?? Hash::make($defaultPassword),
                 'role' => 'mahasiswa',
                 'status_akun' => 'aktif',
-                'foto_profile' => $application->foto_ktm_path,
+                'foto_profile' => null,
                 'fcm_token' => $application->fcm_token,
             ]);
 
@@ -69,7 +69,7 @@ class ApprovalService
                 'jurusan' => $application->jurusan,
                 'no_telp' => $application->phone,
                 'masa_aktif' => $application->account_expires_at,
-                'foto_profil_path' => $application->foto_ktm_path,
+                'foto_profil_path' => null,
             ]);
 
             // Tandai pengajuan sebagai selesai agar riwayat approval tetap tercatat.
