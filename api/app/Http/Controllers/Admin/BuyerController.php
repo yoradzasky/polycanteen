@@ -78,18 +78,9 @@ class BuyerController extends Controller
         }
 
         if ($status === 'aktif') {
-            $query->whereHas('mahasiswa', function ($q) {
-                $q->whereNotNull('masa_aktif')
-                  ->where('masa_aktif', '>', Carbon::now());
-            });
+            $query->where('status_akun', 'aktif');
         } elseif ($status === 'nonaktif') {
-            $query->where(function ($q) {
-                $q->whereDoesntHave('mahasiswa')
-                  ->orWhereHas('mahasiswa', function ($subQ) {
-                      $subQ->whereNull('masa_aktif')
-                           ->orWhere('masa_aktif', '<=', Carbon::now());
-                  });
-            });
+            $query->where('status_akun', '!=', 'aktif');
         }
 
         /** @var \Illuminate\Pagination\LengthAwarePaginator $buyers */
@@ -101,10 +92,8 @@ class BuyerController extends Controller
             'asc' // 'asc' untuk A-Z, ubah ke 'desc' jika ingin Z-A
         )->paginate(10);
         $buyers->withQueryString(); 
-
         $buyers->through(function ($user) {
             $mhs = $user->mahasiswa;
-            $isActive = $mhs && $mhs->masa_aktif && Carbon::parse($mhs->masa_aktif)->isFuture();
 
             return [
                 'id' => $user->id,
@@ -115,7 +104,7 @@ class BuyerController extends Controller
                 'phone' => $mhs->no_telp ?? '-',
                 'total_rp' => 'Rp ' . number_format($mhs->pesanan_sum_total_harga ?? 0, 0, ',', '.'),
                 'total_trx' => ($mhs->pesanan_count ?? 0) . ' transaksi',
-                'status' => $isActive ? 'Aktif' : 'Nonaktif',
+                'status' => ucfirst($user->status_akun ?? 'aktif'),
                 'date' => $user->created_at->translatedFormat('d M Y'),
                 'time' => $user->created_at->format('H:i') . ' WIB',
                 
@@ -164,7 +153,7 @@ class BuyerController extends Controller
             'nim' => $mhs?->nim ?? '-',
             // -----------------------------------
             
-            'status' => $isActive ? 'Aktif' : 'Nonaktif',
+            'status' => ucfirst($user->status_akun ?? 'aktif'),
             'email' => $user->email,
             'phone' => $mhs?->no_telp ?? '-',
             'user_id' => '#PBY-' . str_pad($user->id, 5, '0', STR_PAD_LEFT),
