@@ -713,6 +713,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           const SizedBox(height: 8),
                           DropdownButtonFormField<String>(
+                            isExpanded: true,
                             value: _selectedJurusan,
                             hint: const Text(
                               'Pilih Jurusan',
@@ -725,7 +726,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             items: _jurusanList.map((String value) {
                               return DropdownMenuItem<String>(
                                 value: value,
-                                child: Text(value),
+                                child: Text(
+                                  value,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               );
                             }).toList(),
                             onChanged: (newValue) {
