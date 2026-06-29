@@ -54,6 +54,24 @@ class ProfileController extends Controller
                 ]
             ]);
         }
+        
+        if ($user->role === 'pegawai') {
+            $pegawai = $user->pegawai;
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $user->id,
+                    'nama_lengkap' => $user->nama_lengkap,
+                    'email' => $user->email,
+                    'role' => $user->role,
+                    'nama' => $nama,
+                    'nama_pemilik' => $pegawai?->nama_karyawan,
+                    'no_telp' => $pegawai?->no_telp,
+                    'foto_profil_path' => $fotoProfile,
+                    'foto_profile' => $fotoProfile,
+                ]
+            ]);
+        }
 
         return response()->json([
             'success' => true,

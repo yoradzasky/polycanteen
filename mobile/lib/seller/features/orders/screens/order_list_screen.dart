@@ -2000,7 +2000,58 @@ class OrderDetailsDialog extends StatelessWidget {
                       final namaMenu = item['menu']?['nama_item'] ?? 'Item';
                       final qty = int.tryParse(item['jumlah_pesanan']?.toString() ?? '1') ?? 1;
                       final hargaSatuan = (double.tryParse(item['harga_saat_beli']?.toString() ?? '0') ?? 0).toInt();
-                      final hasVarian = item['varian_snapshot'] != null;
+                      final dynamic rawVarian = item['varian_snapshot'];
+                      final List<Map<String, String>> parsedVariants = [];
+
+                      if (rawVarian != null) {
+                        if (rawVarian is Map) {
+                          rawVarian.forEach((key, value) {
+                            final category = key.toString();
+                            if (value is Map) {
+                              final nama = value['nama'] ?? value['name'] ?? '-';
+                              parsedVariants.add({
+                                'category': category,
+                                'name': nama.toString(),
+                              });
+                            } else if (value is List) {
+                              for (var v in value) {
+                                if (v is Map) {
+                                  final nama = v['nama'] ?? v['name'] ?? '-';
+                                  parsedVariants.add({
+                                    'category': category,
+                                    'name': nama.toString(),
+                                  });
+                                } else {
+                                  parsedVariants.add({
+                                    'category': category,
+                                    'name': v.toString(),
+                                  });
+                                }
+                              }
+                            } else {
+                              parsedVariants.add({
+                                'category': category,
+                                'name': value.toString(),
+                              });
+                            }
+                          });
+                        } else if (rawVarian is List) {
+                          for (var v in rawVarian) {
+                            if (v is Map) {
+                              final nama = v['nama'] ?? v['name'] ?? v.toString();
+                              parsedVariants.add({
+                                'category': 'Varian',
+                                'name': nama.toString(),
+                              });
+                            } else {
+                              parsedVariants.add({
+                                'category': 'Varian',
+                                'name': v.toString(),
+                              });
+                            }
+                          }
+                        }
+                      }
 
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12.0),
@@ -2035,11 +2086,17 @@ class OrderDetailsDialog extends StatelessWidget {
                                       color: Color(0xFF1A1A2E),
                                     ),
                                   ),
-                                  if (hasVarian) ...[
-                                    const SizedBox(height: 2),
-                                    const Text(
-                                      '• Memiliki varian',
-                                      style: TextStyle(color: Colors.grey, fontSize: 11),
+                                  if (parsedVariants.isNotEmpty) ...[
+                                    const SizedBox(height: 4),
+                                    ...parsedVariants.map(
+                                      (v) => Text(
+                                        '• ${v['category']}: ${v['name']}',
+                                        style: TextStyle(
+                                          color: Colors.grey.shade600,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ],
