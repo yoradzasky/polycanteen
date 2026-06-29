@@ -352,12 +352,12 @@ class OrderController extends Controller
                 ], 400);
             }
 
-            $pesanan->total_harga = $totalHarga;
+            $pesanan->total_harga = $totalHarga + 1000;
             $pesanan->save();
 
             // Hitung nominal pembayaran
             if ($pesanan->payment) {
-                $pesanan->payment->nominal = $totalHarga;
+                $pesanan->payment->nominal = $totalHarga + 1000;
                 $pesanan->payment->save();
             }
 

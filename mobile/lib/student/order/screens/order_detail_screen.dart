@@ -417,7 +417,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       ),
                       child: Center(
                         child: QrImageView(
-                          data: 'ORD-${widget.pesananId}',
+                          data: tipePesanan == 'delivery'
+                              ? (_order!['qr_token'] ?? 'ORD-${widget.pesananId}')
+                              : 'ORD-${widget.pesananId}',
                           version: QrVersions.auto,
                           size: 140.0,
                         ),
