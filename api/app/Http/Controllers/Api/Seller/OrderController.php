@@ -168,6 +168,10 @@ class OrderController extends Controller
                             $title = 'Pesanan Diterima';
                             $body = 'Pesanan Anda telah disetujui, silakan bayar';
                             break;
+                        case 'dimasak':
+                            $title = 'Pesanan Sedang Dimasak';
+                            $body = 'Pembayaran dikonfirmasi! Pesanan Anda sedang dimasak.';
+                            break;
                         case 'ditolak':
                             $title = 'Pesanan Ditolak';
                             $alasan = $order->alasan_penolakan ?? 'Bahan makanan habis';
