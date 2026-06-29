@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:geolocator/geolocator.dart';
@@ -199,7 +200,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
             status == 'siap_diambil' ||
             status == 'menunggu_dikirim'; // Diproses
       } else {
-        matchesTab = status == 'selesai' || status == 'dibatalkan'; // Selesai
+        matchesTab = status == 'selesai'; // Selesai
       }
 
       if (!matchesTab) return false;
@@ -456,8 +457,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                 'Selesai',
                                 badgeCount: _orders
                                     .where(
-                                      (o) => o['status_pesanan'] == 'selesai' ||
-                                             o['status_pesanan'] == 'dibatalkan',
+                                      (o) => o['status_pesanan'] == 'selesai',
                                     )
                                     .length,
                               ),
@@ -976,6 +976,10 @@ class OrderCard extends StatelessWidget {
     String catatan = order['catatan_pesanan'] ?? '';
     String tipePesanan = order['tipe_pesanan'] ?? '-';
 
+    final baseUrl = dotenv.env['BASE_URL'] ?? 'http://192.168.1.14:8000/api';
+    final cleanBase = baseUrl.replaceAll(RegExp(r'/api$'), '').replaceAll(RegExp(r'/mobile$'), '');
+    final fotoPath = order['mahasiswa']?['foto_profil_path'];
+
     // Tentukan warna tag berdasarkan tipe pesanan
     Color tipeColor = Colors.grey;
     Color tipeBgColor = Colors.grey.shade100;
@@ -1017,11 +1021,16 @@ class OrderCard extends StatelessWidget {
                 CircleAvatar(
                   radius: 22,
                   backgroundColor: Colors.grey.shade300,
-                  child: const Icon(
-                    Icons.person,
-                    color: Colors.white,
-                    size: 24,
-                  ),
+                  backgroundImage: (fotoPath != null && fotoPath.toString().isNotEmpty)
+                      ? NetworkImage('$cleanBase/storage/$fotoPath')
+                      : null,
+                  child: (fotoPath == null || fotoPath.toString().isEmpty)
+                      ? const Icon(
+                          Icons.person,
+                          color: Colors.white,
+                          size: 24,
+                        )
+                      : null,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -1807,6 +1816,10 @@ class OrderDetailsDialog extends StatelessWidget {
     final notes = order['catatan_pesanan'] ?? '';
     final orderType = order['tipe_pesanan'] ?? '-';
 
+    final baseUrl = dotenv.env['BASE_URL'] ?? 'http://192.168.1.14:8000/api';
+    final cleanBase = baseUrl.replaceAll(RegExp(r'/api$'), '').replaceAll(RegExp(r'/mobile$'), '');
+    final fotoPath = order['mahasiswa']?['foto_profil_path'];
+
     // Format order time
     String orderTime = '-';
     if (order['created_at'] != null) {
@@ -1961,7 +1974,12 @@ class OrderDetailsDialog extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.person_outline, size: 18, color: Colors.grey),
+                          (fotoPath != null && fotoPath.toString().isNotEmpty)
+                              ? CircleAvatar(
+                                  radius: 12,
+                                  backgroundImage: NetworkImage('$cleanBase/storage/$fotoPath'),
+                                )
+                              : const Icon(Icons.person_outline, size: 18, color: Colors.grey),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
