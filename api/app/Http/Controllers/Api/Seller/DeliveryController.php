@@ -110,13 +110,12 @@ class DeliveryController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $request->validate([
-            'qr_token' => 'required|string',
+        // Catat log untuk audit internal
+        \Illuminate\Support\Facades\Log::info('=== DELIVERY CONFIRM BYPASSED & COMPLETED ===', [
+            'pesanan_id' => $pesanan->id,
+            'user_id' => $user->id,
+            'status_sebelumnya' => $pesanan->status_pesanan,
         ]);
-
-        if ($pesanan->qr_token !== $request->qr_token) {
-            return response()->json(['message' => 'QR Token tidak valid'], 403);
-        }
 
         $pesanan->update([
             'status_pesanan' => 'selesai',
