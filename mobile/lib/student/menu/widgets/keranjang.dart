@@ -46,30 +46,19 @@ class KeranjangWidget extends StatelessWidget {
 
     return GestureDetector(
       onTap: () async {
-        try {
-          // Lakukan checkout keranjang untuk mendapatkan pesanan baru secara dinamis
-          final orderData = await MenuService().checkout();
-          if (context.mounted) {
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => PaymentScreen(
-                  pesananId: orderData['id'],
-                  totalHarga: double.parse(orderData['total_harga'].toString()),
-                ),
+        if (context.mounted) {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PaymentScreen(
+                pesananId: null, // NOT checked out yet
+                cartItems: cartItems,
+                totalHarga: totalPrice,
               ),
-            );
-            if (onCartCheckedOut != null) {
-              onCartCheckedOut!();
-            }
-          }
-        } catch (e) {
-          if (context.mounted) {
-            CustomSnackBar.show(
-              context,
-              message: 'Gagal memproses checkout: ${e.toString().replaceAll('Exception: ', '')}',
-              isError: true,
-            );
+            ),
+          );
+          if (onCartCheckedOut != null) {
+            onCartCheckedOut!();
           }
         }
       },
