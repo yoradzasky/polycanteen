@@ -140,7 +140,8 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
       selectedWajib.forEach((key, value) => varianPayload[key] = value);
       selectedOpsional.forEach((key, list) {
         if (list.isNotEmpty) {
-           varianPayload[key] = list; // Opsional dimasukkan sebagai array di dalam map varian
+          varianPayload[key] =
+              list; // Opsional dimasukkan sebagai array di dalam map varian
         }
       });
 
@@ -163,11 +164,7 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
           final kantinName = errorMsg.split('|')[1];
           _showClearCartConfirmDialog(kantinName);
         } else {
-          CustomSnackBar.show(
-            context,
-            message: errorMsg,
-            isError: true,
-          );
+          CustomSnackBar.show(context, message: errorMsg, isError: true);
         }
       }
     } finally {
@@ -180,16 +177,27 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('Ganti Kantin?', style: TextStyle(fontWeight: FontWeight.bold)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Text(
+            'Ganti Kantin?',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           content: Text(
             'Keranjang Anda berisi menu dari "$kantinName". '
-            'Apakah Anda ingin mengosongkan keranjang untuk memesan menu dari kantin ini?'
+            'Apakah Anda ingin mengosongkan keranjang untuk memesan menu dari kantin ini?',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Batal', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+              child: const Text(
+                'Batal',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
             TextButton(
               onPressed: () async {
@@ -209,7 +217,13 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                   if (mounted) setState(() => isAddingToCart = false);
                 }
               },
-              child: const Text('Ya, Kosongkan', style: TextStyle(color: const Color(0xFFF2994A), fontWeight: FontWeight.bold)),
+              child: const Text(
+                'Ya, Kosongkan',
+                style: TextStyle(
+                  color: Color(0xFFF2994A),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         );
@@ -219,6 +233,12 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // ✨ CEK STATUS STOK HABIS
+    bool isHabis =
+        widget.menuData['status_stok'] == false ||
+        widget.menuData['status_stok'] == 0 ||
+        widget.menuData['status_stok'] == '0';
+
     final String namaMenu = widget.menuData['nama_item'] ?? 'Nama Menu';
     final String deskripsi =
         widget.menuData['deskripsi'] ?? 'Tidak ada deskripsi.';
@@ -248,23 +268,81 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // GAMBAR HEADER
+                // ✨ 1. GAMBAR HEADER (Perbaikan Filter Hitam Putih)
                 SizedBox(
                   height: 320,
                   width: double.infinity,
-                  child: widget.menuData['foto_menu'] != null
-                      ? Image.network(
-                          _getImageUrl(widget.menuData['foto_menu']),
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Container(color: Colors.grey[300]),
-                        )
-                      : Container(color: Colors.grey[300]),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Builder(
+                        builder: (context) {
+                          Widget imgWidget =
+                              widget.menuData['foto_menu'] != null
+                              ? Image.network(
+                                  _getImageUrl(widget.menuData['foto_menu']),
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      Container(color: Colors.grey[300]),
+                                )
+                              : Container(color: Colors.grey[300]);
+
+                          // Gunakan Matrix Hitam Putih yang 100% stabil, tanpa BlendMode bocor
+                          return (isHabis || !widget.isKantinBuka)
+                              ? ColorFiltered(
+                                  colorFilter:
+                                      const ColorFilter.matrix(<double>[
+                                        0.2126,
+                                        0.7152,
+                                        0.0722,
+                                        0,
+                                        0,
+                                        0.2126,
+                                        0.7152,
+                                        0.0722,
+                                        0,
+                                        0,
+                                        0.2126,
+                                        0.7152,
+                                        0.0722,
+                                        0,
+                                        0,
+                                        0,
+                                        0,
+                                        0,
+                                        1,
+                                        0,
+                                      ]),
+                                  child: imgWidget,
+                                )
+                              : imgWidget; // Jika tersedia, hapus widget filter sepenuhnya
+                        },
+                      ),
+                      if (isHabis)
+                        Container(
+                          color: Colors.black.withOpacity(0.5),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            'STOK HABIS',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 2,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
 
-                // AREA PUTIH OVERLAPPING (DETAIL MENU)
+                // ✨ 2. AREA PUTIH OVERLAPPING (Perbaikan Tinggi Kosong)
                 Container(
                   transform: Matrix4.translationValues(0, -30, 0),
+                  constraints: BoxConstraints(
+                    // Memaksa area krem membentang sampai menutupi tepi terbawah layar
+                    minHeight: MediaQuery.of(context).size.height - 290,
+                  ),
                   decoration: const BoxDecoration(
                     color: Color(0xFFFFF6ED),
                     borderRadius: BorderRadius.vertical(
@@ -665,14 +743,20 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                     // TOMBOL TAMBAH KE KERANJANG
                     Expanded(
                       child: SizedBox(
-                        height: 56, // Cukup untuk 2 baris teks
+                        height: 56,
                         child: ElevatedButton(
-                          onPressed: (!widget.isKantinBuka || isAddingToCart) ? null : _handleAddToCart,
+                          // Disable jika kantin tutup, sedang loading, atau stok habis
+                          onPressed:
+                              (!widget.isKantinBuka ||
+                                  isAddingToCart ||
+                                  isHabis)
+                              ? null
+                              : _handleAddToCart,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFF2994A),
-                            disabledBackgroundColor: !widget.isKantinBuka
+                            backgroundColor: isHabis
                                 ? Colors.grey[400]
-                                : const Color(0xFFF2994A).withOpacity(0.7),
+                                : const Color(0xFFF2994A),
+                            disabledBackgroundColor: Colors.grey[400],
                             foregroundColor: Colors.white,
                             disabledForegroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
@@ -689,39 +773,48 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                                     strokeWidth: 3,
                                   ),
                                 )
-                              : !widget.isKantinBuka
-                                  ? const Text(
-                                      'Kantin Tutup',
+                              : isHabis // Jika Habis
+                              ? const Text(
+                                  'Stok Habis',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                )
+                              : !widget
+                                    .isKantinBuka // Jika Tutup
+                              ? const Text(
+                                  'Kantin Tutup',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                )
+                              : Column(
+                                  // Kondisi Normal Buka & Stok Ada
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Text(
+                                      'Tambah ke Keranjang',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 14,
+                                        fontSize: 13,
                                       ),
-                                    )
-                                  : Column(
-                                      mainAxisAlignment: MainAxisAlignment
-                                          .center, // Pusatkan teks di tengah
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Text(
-                                          'Tambah ke Keranjang',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                        Text(
-                                          NumberFormat.currency(
-                                            locale: 'id',
-                                            symbol: 'Rp ',
-                                            decimalDigits: 0,
-                                          ).format(_calculateTotalPrice()),
-                                          style: const TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
                                     ),
+                                    Text(
+                                      NumberFormat.currency(
+                                        locale: 'id',
+                                        symbol: 'Rp ',
+                                        decimalDigits: 0,
+                                      ).format(_calculateTotalPrice()),
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                         ),
                       ),
                     ),

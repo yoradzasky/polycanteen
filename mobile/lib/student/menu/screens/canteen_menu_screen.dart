@@ -189,38 +189,54 @@ class _CanteenMenuScreenState extends State<CanteenMenuScreen> {
           final kantinName = errorMsg.split('|')[1];
           _showClearCartConfirmDialog(kantinName, menu, qty, varian);
         } else {
-          CustomSnackBar.show(
-            context,
-            message: errorMsg,
-            isError: true,
-          );
+          CustomSnackBar.show(context, message: errorMsg, isError: true);
         }
       }
     }
   }
 
-  void _showClearCartConfirmDialog(String kantinName, Map menu, int qty, Map? varian) {
+  void _showClearCartConfirmDialog(
+    String kantinName,
+    Map menu,
+    int qty,
+    Map? varian,
+  ) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('Ganti Kantin?', style: TextStyle(fontWeight: FontWeight.bold)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Text(
+            'Ganti Kantin?',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           content: Text(
             'Keranjang Anda berisi menu dari "$kantinName". '
-            'Apakah Anda ingin mengosongkan keranjang untuk memesan menu dari kantin ini?'
+            'Apakah Anda ingin mengosongkan keranjang untuk memesan menu dari kantin ini?',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Batal', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+              child: const Text(
+                'Batal',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
             TextButton(
               onPressed: () async {
                 Navigator.pop(context); // Tutup dialog
                 try {
                   await _menuService.clearCart(); // Kosongkan keranjang
-                  await _prosesTambahKeranjang(menu, qty, varian); // Panggil tambah keranjang lagi
+                  await _prosesTambahKeranjang(
+                    menu,
+                    qty,
+                    varian,
+                  ); // Panggil tambah keranjang lagi
                 } catch (err) {
                   if (mounted) {
                     CustomSnackBar.show(
@@ -231,7 +247,13 @@ class _CanteenMenuScreenState extends State<CanteenMenuScreen> {
                   }
                 }
               },
-              child: const Text('Ya, Kosongkan', style: TextStyle(color: const Color(0xFFF2994A), fontWeight: FontWeight.bold)),
+              child: const Text(
+                'Ya, Kosongkan',
+                style: TextStyle(
+                  color: Color(0xFFF2994A),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         );
@@ -300,8 +322,15 @@ class _CanteenMenuScreenState extends State<CanteenMenuScreen> {
       backgroundColor: const Color(0xFFFFF6ED),
       body: Stack(
         children: [
-          CustomScrollView(
-            slivers: [
+          RefreshIndicator(
+            color: const Color(0xFFF2994A),
+            onRefresh: () async {
+              await fetchMenuData();
+              await fetchCartData();
+            },
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
               // HEADER KANTIN DENGAN EFEK OVERLAPPING
               SliverAppBar(
                 expandedHeight: 280,
@@ -342,14 +371,38 @@ class _CanteenMenuScreenState extends State<CanteenMenuScreen> {
                         left: 0,
                         right: 0,
                         bottom: 60,
-                        child: widget.kantinData['logo_path'] != null
-                            ? Image.network(
-                                _getImageUrl(widget.kantinData['logo_path']),
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    Container(color: Colors.grey[300]),
-                              )
-                            : Container(color: Colors.grey[300]),
+                        child: Builder(
+                          builder: (context) {
+                            Widget imageWidget =
+                                widget.kantinData['logo_path'] != null
+                                    ? Image.network(
+                                        _getImageUrl(
+                                          widget.kantinData['logo_path'],
+                                        ),
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                Container(
+                                                  color: Colors.grey[300],
+                                                ),
+                                      )
+                                    : Container(color: Colors.grey[300]);
+
+                            return !_isKantinBuka
+                                ? ColorFiltered(
+                                    colorFilter: const ColorFilter.matrix(
+                                      <double>[
+                                        0.2126, 0.7152, 0.0722, 0, 0,
+                                        0.2126, 0.7152, 0.0722, 0, 0,
+                                        0.2126, 0.7152, 0.0722, 0, 0,
+                                        0, 0, 0, 1, 0,
+                                      ],
+                                    ),
+                                    child: imageWidget,
+                                  )
+                                : imageWidget;
+                          },
+                        ),
                       ),
 
                       // Lapis 2: Kotak Nama Kantin Overlapping
@@ -608,7 +661,7 @@ class _CanteenMenuScreenState extends State<CanteenMenuScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
                 sliver: isLoading
                     ? const SliverToBoxAdapter(
-                        child: const Center(child: AppLoadingAnimation()),
+                        child: Center(child: AppLoadingAnimation()),
                       )
                     : filteredMenus.isEmpty
                     ? SliverToBoxAdapter(
@@ -634,7 +687,15 @@ class _CanteenMenuScreenState extends State<CanteenMenuScreen> {
                     : SliverList(
                         delegate: SliverChildBuilderDelegate((context, index) {
                           final menu = filteredMenus[index];
+
+                          // ✨ STATUS STOK MENU
+                          bool isHabis =
+                              menu['status_stok'] == false ||
+                              menu['status_stok'] == 0 ||
+                              menu['status_stok'] == '0';
+
                           int qty = _getQtyInCart(menu['id']);
+
                           double ratingMenu =
                               double.tryParse(
                                 menu['ulasan_avg_rating']?.toString() ?? '0',
@@ -681,24 +742,85 @@ class _CanteenMenuScreenState extends State<CanteenMenuScreen> {
                                       width: 80,
                                       height: 80,
                                       color: Colors.grey[200],
-                                      child: menu['foto_menu'] != null
-                                          ? Image.network(
-                                              _getImageUrl(menu['foto_menu']),
-                                              fit: BoxFit.cover,
-                                              errorBuilder:
-                                                  (
-                                                    context,
-                                                    error,
-                                                    stackTrace,
-                                                  ) => const Icon(
-                                                    Icons.fastfood,
-                                                    color: Colors.grey,
-                                                  ),
-                                            )
-                                          : const Icon(
-                                              Icons.fastfood,
-                                              color: Colors.grey,
+                                      child: Stack(
+                                        fit: StackFit.expand,
+                                        children: [
+                                          // ✨ Filter Hitam Putih jika Habis
+                                          Builder(
+                                            builder: (context) {
+                                              Widget imgWidget =
+                                                  menu['foto_menu'] != null
+                                                  ? Image.network(
+                                                      _getImageUrl(
+                                                        menu['foto_menu'],
+                                                      ),
+                                                      fit: BoxFit.cover,
+                                                      errorBuilder:
+                                                          (
+                                                            context,
+                                                            error,
+                                                            stackTrace,
+                                                          ) => const Icon(
+                                                            Icons.fastfood,
+                                                            color: Colors.grey,
+                                                          ),
+                                                    )
+                                                  : const Icon(
+                                                      Icons.fastfood,
+                                                      color: Colors.grey,
+                                                    );
+
+                                              return (isHabis || !_isKantinBuka)
+                                                  ? ColorFiltered(
+                                                      colorFilter:
+                                                          const ColorFilter.matrix(
+                                                            <double>[
+                                                              0.2126,
+                                                              0.7152,
+                                                              0.0722,
+                                                              0,
+                                                              0,
+                                                              0.2126,
+                                                              0.7152,
+                                                              0.0722,
+                                                              0,
+                                                              0,
+                                                              0.2126,
+                                                              0.7152,
+                                                              0.0722,
+                                                              0,
+                                                              0,
+                                                              0,
+                                                              0,
+                                                              0,
+                                                              1,
+                                                              0,
+                                                            ],
+                                                          ),
+                                                      child: imgWidget,
+                                                    )
+                                                  : imgWidget;
+                                            },
+                                          ),
+                                          // ✨ Label HABIS
+                                          if (isHabis)
+                                            Container(
+                                              color: Colors.black.withOpacity(
+                                                0.5,
+                                              ),
+                                              alignment: Alignment.center,
+                                              child: const Text(
+                                                'HABIS',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 12,
+                                                  letterSpacing: 1,
+                                                ),
+                                              ),
                                             ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(width: 12),
@@ -868,12 +990,22 @@ class _CanteenMenuScreenState extends State<CanteenMenuScreen> {
                                                   ),
                                                   const SizedBox(width: 12),
                                                 ],
+                                                // ✨ TOMBOL TAMBAH (+) DENGAN LOGIKA isHabis
                                                 GestureDetector(
-                                                  onTap: _isKantinBuka
+                                                  onTap: isHabis
+                                                      ? () {
+                                                          CustomSnackBar.show(
+                                                            context,
+                                                            message:
+                                                                'Menu ini sedang habis.',
+                                                            isError: true,
+                                                          );
+                                                        }
+                                                      : _isKantinBuka
                                                       ? () =>
-                                                          _handleAddToCartClick(
-                                                            menu,
-                                                          )
+                                                            _handleAddToCartClick(
+                                                              menu,
+                                                            )
                                                       : () {
                                                           CustomSnackBar.show(
                                                             context,
@@ -888,17 +1020,24 @@ class _CanteenMenuScreenState extends State<CanteenMenuScreen> {
                                                     decoration: BoxDecoration(
                                                       shape: BoxShape.circle,
                                                       border: Border.all(
-                                                        color: _isKantinBuka
-                                                            ? Colors.grey[300]!
-                                                            : Colors.grey[200]!,
+                                                        color:
+                                                            (isHabis ||
+                                                                !_isKantinBuka)
+                                                            ? Colors.grey[200]!
+                                                            : Colors.grey[300]!,
                                                       ),
+                                                      color: isHabis
+                                                          ? Colors.grey[200]
+                                                          : Colors.transparent,
                                                     ),
                                                     child: Icon(
                                                       Icons.add,
                                                       size: 16,
-                                                      color: _isKantinBuka
-                                                          ? Colors.black
-                                                          : Colors.grey[400],
+                                                      color:
+                                                          (isHabis ||
+                                                              !_isKantinBuka)
+                                                          ? Colors.grey[400]
+                                                          : Colors.black,
                                                     ),
                                                   ),
                                                 ),
@@ -917,6 +1056,7 @@ class _CanteenMenuScreenState extends State<CanteenMenuScreen> {
                       ),
               ),
             ],
+          ),
           ),
 
           if (cartItems.isNotEmpty)

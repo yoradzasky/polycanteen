@@ -41,13 +41,13 @@ class CartController extends Controller
             // Hitung total dan subtotal untuk setiap item
             $cartItems->each(function ($item) {
                 $varianPrice = 0;
-                
+
                 if (is_array($item->varian_selected)) {
                     foreach ($item->varian_selected as $key => $value) {
                         // Jika Wajib (Associative Array dengan key 'harga')
                         if (is_array($value) && isset($value['harga'])) {
                             $varianPrice += $value['harga'];
-                        } 
+                        }
                         // Jika Opsional (Array dari Associative Arrays)
                         elseif (is_array($value)) {
                             foreach ($value as $v) {
@@ -58,7 +58,7 @@ class CartController extends Controller
                         }
                     }
                 }
-                
+
                 $itemPrice = $item->menu->harga + $varianPrice;
                 $item->item_subtotal = $itemPrice * $item->jumlah;
                 $item->item_price = $itemPrice;
@@ -101,11 +101,27 @@ class CartController extends Controller
                 ], 403);
             }
 
+            // ✨ AMBIL DATA MENU & CEK STOK (Validasi Backend)
+            $newMenu = \App\Models\Menu::find($validated['menu_id']);
+
+            if (!$newMenu) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Menu tidak ditemukan.',
+                ], 404);
+            }
+
+            if (!$newMenu->status_stok) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Maaf, stok menu ini sedang habis dan tidak bisa ditambahkan.',
+                ], 400); // 400 Bad Request
+            }
+
             // Cek apakah keranjang memiliki item dari kantin yang berbeda
             $firstCartItem = Keranjang::where('mahasiswa_id', $mahasiswaId)->with('menu.kantin')->first();
             if ($firstCartItem && $firstCartItem->menu) {
-                $newMenu = \App\Models\Menu::find($validated['menu_id']);
-                if ($newMenu && $firstCartItem->menu->kantin_id !== $newMenu->kantin_id) {
+                if ($firstCartItem->menu->kantin_id !== $newMenu->kantin_id) {
                     $existingKantinName = $firstCartItem->menu->kantin->nama_kantin ?? 'Kantin Lain';
                     return response()->json([
                         'success' => false,
@@ -123,22 +139,18 @@ class CartController extends Controller
 
             // CEK MANUAL APAKAH ADA ITEM YANG VARIAN-NYA PERSIS SAMA
             foreach ($existingItems as $item) {
-                // Gunakan helper khusus agar aman meski urutan key/value JSON berantakan
                 $isVarianSame = $this->isVarianEqual($item->varian_selected, $validated['varian_selected'] ?? null);
-
                 if ($isVarianSame) {
                     $cartItem = $item;
-                    break; // Ditemukan yang persis sama, hentikan pencarian
+                    break;
                 }
             }
 
             if ($cartItem) {
-                // Update jumlah JIKA menu dan varian persis sama
                 $cartItem->jumlah += $validated['jumlah'];
                 $cartItem->save();
                 $message = 'Item quantity updated';
             } else {
-                // Buat baris baru JIKA menu sama TAPI variannya beda (atau menu benar-benar baru)
                 $cartItem = Keranjang::create([
                     'mahasiswa_id' => $mahasiswaId,
                     'menu_id' => $validated['menu_id'],
@@ -221,8 +233,8 @@ class CartController extends Controller
 
             // Ambil SEMUA data keranjang untuk menu_id ini
             $cartItems = Keranjang::where('mahasiswa_id', $mahasiswaId)
-                                  ->where('menu_id', $menuId)
-                                  ->get();
+                ->where('menu_id', $menuId)
+                ->get();
 
             if ($cartItems->isEmpty()) {
                 return response()->json(['success' => false, 'message' => 'Cart item not found'], 404);
@@ -313,6 +325,14 @@ class CartController extends Controller
             $kantinId = null;
 
             foreach ($cartItems as $item) {
+                // ✨ PROTEKSI EKSTRA: Cek stok sesaat sebelum membuat Pesanan
+                if (!$item->menu->status_stok) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Checkout gagal: Menu "' . $item->menu->nama_item . '" saat ini sedang habis. Silakan hapus item tersebut dari keranjang Anda.',
+                    ], 400);
+                }
+
                 if (!$kantinId) {
                     $kantinId = $item->menu->kantin_id;
                 }
@@ -417,8 +437,10 @@ class CartController extends Controller
      */
     private function isVarianEqual($varian1, $varian2)
     {
-        if (is_null($varian1) && is_null($varian2)) return true;
-        if (is_null($varian1) || is_null($varian2)) return false;
+        if (is_null($varian1) && is_null($varian2))
+            return true;
+        if (is_null($varian1) || is_null($varian2))
+            return false;
 
         // Pastikan keduanya berbentuk array murni
         $v1 = json_decode(json_encode($varian1), true);
@@ -436,7 +458,8 @@ class CartController extends Controller
      */
     private function recursiveSort(&$array)
     {
-        if (!is_array($array)) return;
+        if (!is_array($array))
+            return;
 
         // Cek apakah array ini asosiatif (punya key string) atau sequential (index angka)
         $isAssoc = array_keys($array) !== range(0, count($array) - 1);
