@@ -50,13 +50,26 @@ class ApprovalService
 
             $defaultPassword = self::DEFAULT_PASSWORD;
 
+            $statusAkun = 'aktif';
+            
+            // Tentukan expiration date final
+            $finalExpiresAt = $expiresAt !== false ? $expiresAt : $application->account_expires_at;
+            
+            if (!empty($finalExpiresAt)) {
+                $parsedDate = \Carbon\Carbon::parse($finalExpiresAt)->startOfDay();
+                $today = \Carbon\Carbon::now()->startOfDay();
+                if ($parsedDate->lessThanOrEqualTo($today)) {
+                    $statusAkun = 'nonaktif';
+                }
+            }
+
             // Buat akun login utama di tabel users MySQL.
             $user = User::create([
                 'nama_lengkap' => $application->name,
                 'email' => $application->email,
                 'password' => $application->password ?? Hash::make($defaultPassword),
                 'role' => 'mahasiswa',
-                'status_akun' => 'aktif',
+                'status_akun' => $statusAkun,
                 'foto_profile' => null,
                 'fcm_token' => $application->fcm_token,
             ]);
