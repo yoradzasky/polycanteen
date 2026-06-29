@@ -192,13 +192,12 @@ class _OrderListScreenState extends State<OrderListScreen> {
       
       bool matchesTab = false;
       if (_selectedTabIndex == 0) {
-        matchesTab = status == 'pending' || status == 'menunggu_persetujuan' || status == 'dibayar'; // Baru masuk
+        matchesTab = status == 'pending' || status == 'menunggu_persetujuan' || status == 'dibayar' || status == 'menunggu_pembayaran'; // Baru masuk
       } else if (_selectedTabIndex == 1) {
         matchesTab = status == 'dimasak' ||
             status == 'dalam_perjalanan' ||
             status == 'siap_diambil' ||
-            status == 'menunggu_dikirim' ||
-            status == 'menunggu_pembayaran'; // Diproses
+            status == 'menunggu_dikirim'; // Diproses
       } else {
         matchesTab = status == 'selesai' || status == 'dibatalkan'; // Selesai
       }
@@ -432,7 +431,8 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                     (o) =>
                                         o['status_pesanan'] == 'dibayar' ||
                                         o['status_pesanan'] == 'pending' ||
-                                        o['status_pesanan'] == 'menunggu_persetujuan',
+                                        o['status_pesanan'] == 'menunggu_persetujuan' ||
+                                        o['status_pesanan'] == 'menunggu_pembayaran',
                                   )
                                   .length,
                               ),
@@ -446,8 +446,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                           o['status_pesanan'] == 'dimasak' ||
                                           o['status_pesanan'] == 'dalam_perjalanan' ||
                                           o['status_pesanan'] == 'siap_diambil' ||
-                                          o['status_pesanan'] == 'menunggu_dikirim' ||
-                                          o['status_pesanan'] == 'menunggu_pembayaran',
+                                          o['status_pesanan'] == 'menunggu_dikirim',
                                     )
                                     .length,
                               ),
@@ -1483,7 +1482,7 @@ class OrderCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                ] else if (tabIndex == 1 &&
+                ] else if (tabIndex == 0 &&
                     order['status_pesanan'] == 'menunggu_pembayaran') ...[
                   SizedBox(
                     width: double.infinity,
