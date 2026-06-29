@@ -325,7 +325,7 @@ class _OrderScreenState extends State<OrderScreen>
     if (_dalamProses.isEmpty) {
       return RefreshIndicator(
         onRefresh: () => _fetchOrders(showLoading: false),
-        color: const Color(0xFF2D3A8C),
+        color: const Color(0xFFF08D39),
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
@@ -344,7 +344,7 @@ class _OrderScreenState extends State<OrderScreen>
 
     return RefreshIndicator(
       onRefresh: () => _fetchOrders(showLoading: false),
-      color: const Color(0xFF2D3A8C),
+      color: const Color(0xFFF08D39),
       child: ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
@@ -866,7 +866,7 @@ class _OrderScreenState extends State<OrderScreen>
     if (_riwayat.isEmpty) {
       return RefreshIndicator(
         onRefresh: () => _fetchOrders(showLoading: false),
-        color: const Color(0xFF2D3A8C),
+        color: const Color(0xFFF08D39),
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
@@ -885,7 +885,7 @@ class _OrderScreenState extends State<OrderScreen>
 
     return RefreshIndicator(
       onRefresh: () => _fetchOrders(showLoading: false),
-      color: const Color(0xFF2D3A8C),
+      color: const Color(0xFFF08D39),
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
