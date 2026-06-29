@@ -55,7 +55,7 @@ class MidtransWebhookController extends Controller
             DB::transaction(function () use ($pesanan, $transactionStatus, $request) {
                 // Update Tabel Pesanan
                 if ($transactionStatus == 'capture' || $transactionStatus == 'settlement') {
-                    $pesanan->status_pesanan = 'dimasak';
+                    $pesanan->status_pesanan = 'dibayar';
                 } elseif ($transactionStatus == 'cancel' || $transactionStatus == 'deny' || $transactionStatus == 'expire') {
                     $pesanan->status_pesanan = 'gagal';
                 } elseif ($transactionStatus == 'pending') {
@@ -78,6 +78,20 @@ class MidtransWebhookController extends Controller
                 );
             });
             
+            // Kirim notifikasi FCM ke penjual saat pembayaran berhasil
+            if ($transactionStatus == 'capture' || $transactionStatus == 'settlement') {
+                try {
+                    $fcmService = app(\App\Services\FcmNotificationService::class);
+                    $fcmService->sendToKantinOwners(
+                        $pesanan->kantin_id,
+                        'Pembayaran Diterima!',
+                        'Pembayaran pesanan telah diterima. Silakan mulai memasak.'
+                    );
+                } catch (\Throwable $e) {
+                    \Log::error('FCM Payment Notification Error: ' . $e->getMessage());
+                }
+            }
+
             \Log::info('Midtrans Webhook Success for Order ID: ' . $realOrderId);
         } catch (\Exception $e) {
             \Log::error('Midtrans Webhook Database Error: ' . $e->getMessage());

@@ -119,6 +119,8 @@ class OrderController extends Controller
             // Format response sesuai spesifikasi
             $details = $pesanan->details->map(function ($detail) {
                 return [
+                    'id'              => $detail->id,
+                    'menu_id'         => $detail->menu_id,
                     'nama_item'       => $detail->menu->nama_item ?? '-',
                     'foto_menu'       => $detail->menu->foto_menu ?? null,
                     'jumlah_pesanan'  => $detail->jumlah_pesanan,
@@ -286,6 +288,114 @@ class OrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat membatalkan pesanan: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * 5. PATCH /mahasiswa/orders/{id}/items
+     * Mengupdate jumlah item pesanan selama status pesanan masih pending.
+     */
+    public function updateItemQuantity(Request $request, $id)
+    {
+        try {
+            $mahasiswaId = $this->getMahasiswaId();
+            if (!$mahasiswaId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak. Anda tidak terdaftar sebagai mahasiswa.',
+                ], 403);
+            }
+
+            $validated = $request->validate([
+                'detail_id' => 'required|exists:pesanan_detail,id',
+                'action' => 'required|in:increase,decrease',
+            ]);
+
+            $pesanan = Pesanan::where('mahasiswa_id', $mahasiswaId)->findOrFail($id);
+
+            // Update only if status is pending
+            if ($pesanan->status_pesanan !== 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pesanan tidak dapat diubah setelah diajukan.',
+                ], 400);
+            }
+
+            $detail = \App\Models\PesananDetail::where('pesanan_id', $pesanan->id)
+                ->findOrFail($validated['detail_id']);
+
+            \Illuminate\Support\Facades\DB::beginTransaction();
+
+            if ($validated['action'] === 'increase') {
+                $detail->jumlah_pesanan += 1;
+                $detail->subtotal = $detail->harga_saat_beli * $detail->jumlah_pesanan;
+                $detail->save();
+            } else {
+                if ($detail->jumlah_pesanan > 1) {
+                    $detail->jumlah_pesanan -= 1;
+                    $detail->subtotal = $detail->harga_saat_beli * $detail->jumlah_pesanan;
+                    $detail->save();
+                } else {
+                    $detail->delete();
+                }
+            }
+
+            // Hitung ulang total_harga pesanan
+            $totalHarga = \App\Models\PesananDetail::where('pesanan_id', $pesanan->id)->sum('subtotal');
+            
+            if ($totalHarga == 0) {
+                \Illuminate\Support\Facades\DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pesanan tidak boleh kosong. Gunakan tombol Batal jika ingin membatalkan.',
+                ], 400);
+            }
+
+            $pesanan->total_harga = $totalHarga;
+            $pesanan->save();
+
+            // Hitung nominal pembayaran
+            if ($pesanan->payment) {
+                $pesanan->payment->nominal = $totalHarga;
+                $pesanan->payment->save();
+            }
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            // Refresh data pesanan & details
+            $pesanan->load(['details.menu', 'payment']);
+
+            $details = $pesanan->details->map(function ($d) {
+                return [
+                    'id'              => $d->id,
+                    'menu_id'         => $d->menu_id,
+                    'nama_item'       => $d->menu->nama_item ?? '-',
+                    'foto_menu'       => $d->menu->foto_menu ?? null,
+                    'jumlah_pesanan'  => $d->jumlah_pesanan,
+                    'harga_saat_beli' => $d->harga_saat_beli,
+                    'subtotal'        => $d->subtotal,
+                    'varian_snapshot' => $d->varian_snapshot,
+                    'topping_snapshot'=> $d->topping_snapshot,
+                ];
+            })->values();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Jumlah item berhasil diupdate.',
+                'data' => [
+                    'id'              => $pesanan->id,
+                    'total_harga'     => $pesanan->total_harga,
+                    'details'         => $details,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            Log::error('Error updateItemQuantity: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengupdate item pesanan: ' . $e->getMessage(),
             ], 500);
         }
     }

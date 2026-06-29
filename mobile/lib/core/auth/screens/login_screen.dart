@@ -323,6 +323,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
   XFile? _ktmImage;
   final ImagePicker _picker = ImagePicker();
 
+  String? _selectedJurusan;
+  final List<String> _jurusanList = [
+    'Teknologi Informasi',
+    'Produksi Pertanian',
+    'Teknologi Pertanian',
+    'Peternakan',
+    'Manajemen Agribisnis',
+    'Kesehatan',
+    'Teknik',
+    'Bahasa, Komunikasi dan Pariwisata',
+    'Lainnya',
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -349,6 +362,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final isValid =
         _fullNameController.text.trim().isNotEmpty &&
         _nimController.text.trim().isNotEmpty &&
+        _selectedJurusan != null &&
         _emailController.text.trim().isNotEmpty &&
         _phoneController.text.trim().isNotEmpty &&
         _passwordController.text.isNotEmpty &&
@@ -386,6 +400,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       request.fields['name'] = name;
       request.fields['email'] = email;
       request.fields['nim'] = nim;
+      if (_selectedJurusan != null) {
+        request.fields['jurusan'] = _selectedJurusan!;
+      }
       request.fields['phone'] = phone;
       request.fields['password'] = password;
 
@@ -681,6 +698,65 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         label: 'NIM (Nomor Induk Mahasiswa)',
                         hint: 'Masukkan NIM Anda',
                         keyboardType: TextInputType.number,
+                      ),
+                      const SizedBox(height: 16),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Jurusan',
+                            style: TextStyle(
+                              color: Color(0xFF1A1A1A),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          DropdownButtonFormField<String>(
+                            value: _selectedJurusan,
+                            hint: const Text(
+                              'Pilih Jurusan',
+                              style: TextStyle(
+                                color: Color(0xFF9E9E9E),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                            items: _jurusanList.map((String value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList(),
+                            onChanged: (newValue) {
+                              setState(() {
+                                _selectedJurusan = newValue;
+                              });
+                              _updateFormValid();
+                            },
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 16),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                    const BorderSide(color: Color(0xFFE0E0E0)),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                    const BorderSide(color: Color(0xFFE0E0E0)),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                    color: Color(0xFF2D50EE), width: 1.5),
+                              ),
+                              filled: true,
+                              fillColor: const Color(0xFFF9FAFB),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 16),
                       _RegisterField(
