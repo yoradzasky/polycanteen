@@ -362,7 +362,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
+      body: RefreshIndicator(
+        onRefresh: _silentRefresh,
+        color: const Color(0xFFF08D39),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
         child: Column(
           children: [
             // ── QR Code Section (At the very top) ──
@@ -780,6 +784,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             const SizedBox(height: 32),
           ],
         ),
+      ),
       ),
     );
   }
