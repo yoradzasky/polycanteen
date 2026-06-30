@@ -12,5 +12,8 @@ export default defineConfig({
     ],
     server: {
         cors: true,
+        headers: {
+            'Access-Control-Allow-Private-Network': 'true',
+        },
     },
 });

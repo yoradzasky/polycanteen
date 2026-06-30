@@ -252,7 +252,7 @@ class _SellerOrderHistoryScreenState extends State<SellerOrderHistoryScreen> {
                             itemCount: details.length,
                             itemBuilder: (context, idx) {
                               final item = details[idx];
-                              final String menuName = item['menu']?['nama_menu'] ?? 'Menu Lain';
+                              final String menuName = item['menu']?['nama_item'] ?? item['menu']?['nama_menu'] ?? 'Menu Lain';
                               final int qty = item['jumlah_pesanan'] ?? 1;
 
                               return Padding(
