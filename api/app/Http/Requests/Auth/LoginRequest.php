@@ -49,13 +49,13 @@ class LoginRequest extends FormRequest
             ]);
         }
 
-        if (Auth::user()->status_akun !== 'aktif') {
+        if (strtolower(Auth::user()->status_akun) === 'nonaktif') {
             Auth::logout();
             
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => 'Akun Anda belum aktif atau sedang dinonaktifkan. Silakan hubungi admin.',
+                'email' => 'Akun Anda telah dinonaktifkan. Silakan hubungi admin.',
             ]);
         }
 

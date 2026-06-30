@@ -32,6 +32,16 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        if (strtolower($request->user()->status_akun) === 'nonaktif') {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'email' => 'Akun Anda telah dinonaktifkan.',
+            ]);
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended(RouteServiceProvider::HOME);

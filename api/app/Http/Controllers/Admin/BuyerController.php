@@ -198,6 +198,9 @@ class BuyerController extends Controller
         $user->status_akun = 'nonaktif';
         $user->save();
 
+        // Revoke all tokens so that if they are currently logged in, they get logged out
+        $user->tokens()->delete();
+
         return redirect()->route('admin.buyers.index')->with('success', 'Akun mahasiswa berhasil dinonaktifkan.');
     }
 }
