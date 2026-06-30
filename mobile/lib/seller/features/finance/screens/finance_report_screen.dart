@@ -67,14 +67,14 @@ class _FinanceReportScreenState extends State<FinanceReportScreen> {
     // 3. Menu Paling Laris
     final Map<String, Map<String, dynamic>> menuMap = {};
     int totalQtySold = 0;
-    for (var order in history) {
+    for (var order in filteredOrders) {
       final List<dynamic> details = order['details'] ?? [];
       for (var detail in details) {
         final menu = detail['menu'];
         if (menu != null) {
-          final String menuName = menu['nama_menu'] ?? 'Menu Lain';
+          final String menuName = menu['nama_item'] ?? menu['nama_menu'] ?? 'Menu Lain';
           final String category = (menu['kategori'] ?? 'makanan').toString().toLowerCase();
-          final int qty = detail['jumlah_pesanan'] ?? 1;
+          final int qty = (double.tryParse(detail['jumlah_pesanan']?.toString() ?? '1') ?? 1.0).toInt();
           
           totalQtySold += qty;
           if (menuMap.containsKey(menuName)) {
