@@ -16,7 +16,7 @@ class CheckStatusAkun
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::check() && Auth::user()->status_akun === 'nonaktif') {
+        if (Auth::check() && Auth::user()->status_akun !== 'aktif') {
             if ($request->expectsJson() || $request->is('api/*')) {
                 $user = Auth::user();
                 if (method_exists($user, 'currentAccessToken') && $user->currentAccessToken()) {
@@ -25,7 +25,7 @@ class CheckStatusAkun
                 
                 return response()->json([
                     'success' => false,
-                    'message' => 'Akun Anda sedang dinonaktifkan. Silakan hubungi admin.'
+                    'message' => 'Akun Anda belum aktif atau sedang dinonaktifkan. Silakan hubungi admin.'
                 ], 403);
             }
             
@@ -34,7 +34,7 @@ class CheckStatusAkun
             $request->session()->regenerateToken();
             
             return redirect()->route('login')->withErrors([
-                'email' => 'Akun Anda sedang dinonaktifkan. Silakan hubungi admin.',
+                'email' => 'Akun Anda belum aktif atau sedang dinonaktifkan. Silakan hubungi admin.',
             ]);
         }
 
