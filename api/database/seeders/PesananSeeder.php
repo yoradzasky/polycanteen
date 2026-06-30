@@ -41,7 +41,7 @@ class PesananSeeder extends Seeder
             // PESANAN BARU MASUK (status: dibayar)
             // =====================================================================
 
-            // 1. Baru masuk dine-in - Budi di Kantin Barokah
+            // 1. Baru masuk dine-in - Budi di Kantin Teknik
             [
                 'mahasiswa_index' => 0,
                 'kantin_index'    => 0,
@@ -65,7 +65,7 @@ class PesananSeeder extends Seeder
                 ],
             ],
 
-            // 2. Baru masuk take-away - Siti di Warung Bu Sri
+            // 2. Baru masuk take-away - Siti di Kantin TN
             [
                 'mahasiswa_index' => 1,
                 'kantin_index'    => 1,
@@ -89,18 +89,18 @@ class PesananSeeder extends Seeder
                 ],
             ],
 
-            // 3. Baru masuk delivery - Andi di Kantin Pak Agus
+            // 3. Baru masuk delivery - Andi di Kantin GKT
             [
                 'mahasiswa_index' => 2,
                 'kantin_index'    => 2,
                 'tipe_pesanan'    => 'delivery',
                 'status_pesanan'  => 'dibayar',
                 'nomor_antrian'   => 'A-001',
-                'catatan_pesanan' => 'Tolong taruh di depan pintu gedung D',
+                'catatan_pesanan' => 'Tolong taruh di depan pintu Gedung Teknik Sipil',
                 'courier_user'    => null,
-                'alamat_pengantaran' => 'Gedung D Lantai 2 Ruang D203, Politeknik Negeri Semarang',
-                'dest_lat'        => -7.3315678,
-                'dest_lng'        => 110.4952345,
+                'alamat_pengantaran' => 'Gedung Teknik Sipil Lt.2 Ruang D203, Polines Tembalang',
+                'dest_lat'        => -7.0525,
+                'dest_lng'        => 110.4360,
                 'menu_items'      => [
                     ['menu_index' => 0, 'jumlah' => 2, 'varian' => ['Level Pedas' => 'level 3', 'Bagian Ayam' => 'dada']],
                     ['menu_index' => 2, 'jumlah' => 2, 'varian' => ['Gula' => 'normal']],
@@ -120,7 +120,7 @@ class PesananSeeder extends Seeder
             // SEDANG DIMASAK (status: dimasak)
             // =====================================================================
 
-            // 4. Sedang dimasak dine-in - Dewi di Kantin Barokah
+            // 4. Sedang dimasak dine-in - Dewi di Kantin Teknik
             [
                 'mahasiswa_index' => 3,
                 'kantin_index'    => 0,
@@ -144,7 +144,7 @@ class PesananSeeder extends Seeder
                 ],
             ],
 
-            // 5. Sedang dimasak take-away - Rizky di Warung Bu Sri
+            // 5. Sedang dimasak take-away - Rizky di Kantin TN
             [
                 'mahasiswa_index' => 4,
                 'kantin_index'    => 1,
@@ -168,7 +168,7 @@ class PesananSeeder extends Seeder
                 ],
             ],
 
-            // 6. Sedang dimasak delivery - Budi di Kantin Pak Agus
+            // 6. Sedang dimasak delivery - Budi di Kantin GKT
             [
                 'mahasiswa_index' => 0,
                 'kantin_index'    => 2,
@@ -177,9 +177,9 @@ class PesananSeeder extends Seeder
                 'nomor_antrian'   => 'A-002',
                 'catatan_pesanan' => 'Mohon dikemas rapi untuk delivery',
                 'courier_user'    => null,
-                'alamat_pengantaran' => 'Asrama Mahasiswa Putra, Blok A No.5',
-                'dest_lat'        => -7.3320000,
-                'dest_lng'        => 110.4945678,
+                'alamat_pengantaran' => 'Gedung Teknik Mesin Lt.1, Polines Tembalang',
+                'dest_lat'        => -7.0528,
+                'dest_lng'        => 110.4355,
                 'menu_items'      => [
                     ['menu_index' => 0, 'jumlah' => 1, 'varian' => ['Level Pedas' => 'level 2', 'Bagian Ayam' => 'paha']],
                     ['menu_index' => 2, 'jumlah' => 1, 'varian' => ['Gula' => 'manis']],
@@ -199,7 +199,7 @@ class PesananSeeder extends Seeder
             // DALAM PERJALANAN / PENGANTARAN (status: dalam_perjalanan)
             // =====================================================================
 
-            // 7. Delivery dalam perjalanan - Siti di Kantin Pak Agus, diantar pegawai
+            // 7. Delivery dalam perjalanan - Siti di Kantin GKT, diantar pegawai
             [
                 'mahasiswa_index' => 1,
                 'kantin_index'    => 2,
@@ -208,9 +208,9 @@ class PesananSeeder extends Seeder
                 'nomor_antrian'   => 'A-003',
                 'catatan_pesanan' => 'Jangan lupa sendok garpu ya',
                 'courier_user'    => 'pegawai',
-                'alamat_pengantaran' => 'Gedung Kuliah Bersama Lt.3, Politeknik Negeri Semarang',
-                'dest_lat'        => -7.3310456,
-                'dest_lng'        => 110.4958789,
+                'alamat_pengantaran' => 'Gedung Kuliah Bersama Lt.3, Polines Tembalang',
+                'dest_lat'        => -7.0510,
+                'dest_lng'        => 110.4358,
                 'menu_items'      => [
                     ['menu_index' => 0, 'jumlah' => 1, 'varian' => ['Level Pedas' => 'level 1', 'Bagian Ayam' => 'sayap']],
                     ['menu_index' => 1, 'jumlah' => 1, 'varian' => ['Lauk 1' => 'ayam balado', 'Lauk 2' => 'perkedel', 'Sayur' => 'sayur asem']],
@@ -226,7 +226,7 @@ class PesananSeeder extends Seeder
                 ],
             ],
 
-            // 8. Delivery dalam perjalanan - Dewi di Kantin Barokah, diantar pemilik
+            // 8. Delivery dalam perjalanan - Dewi di Kantin Teknik, diantar pemilik
             [
                 'mahasiswa_index' => 3,
                 'kantin_index'    => 0,
@@ -235,9 +235,9 @@ class PesananSeeder extends Seeder
                 'nomor_antrian'   => 'A-003',
                 'catatan_pesanan' => 'Tunggu di lobby ya kak',
                 'courier_user'    => 'pemilik',
-                'alamat_pengantaran' => 'Gedung Rektorat, Politeknik Negeri Semarang',
-                'dest_lat'        => -7.3305123,
-                'dest_lng'        => 110.4962456,
+                'alamat_pengantaran' => 'Gedung Administrasi Pusat, Polines Tembalang',
+                'dest_lat'        => -7.0505,
+                'dest_lng'        => 110.4362,
                 'menu_items'      => [
                     ['menu_index' => 0, 'jumlah' => 1, 'varian' => ['Level Pedas' => 'pedas']],
                     ['menu_index' => 2, 'jumlah' => 2, 'varian' => ['Suhu' => 'es']],
@@ -257,7 +257,7 @@ class PesananSeeder extends Seeder
             // PESANAN SELESAI
             // =====================================================================
 
-            // 9. Selesai dine-in - Rizky di Kantin Barokah
+            // 9. Selesai dine-in - Rizky di Kantin Teknik
             [
                 'mahasiswa_index' => 4,
                 'kantin_index'    => 0,
@@ -280,7 +280,7 @@ class PesananSeeder extends Seeder
                 ],
             ],
 
-            // 10. Selesai delivery - Andi di Warung Bu Sri, diantar pegawai
+            // 10. Selesai delivery - Andi di Kantin TN, diantar pegawai
             [
                 'mahasiswa_index' => 2,
                 'kantin_index'    => 1,
@@ -289,9 +289,9 @@ class PesananSeeder extends Seeder
                 'nomor_antrian'   => 'A-003',
                 'catatan_pesanan' => null,
                 'courier_user'    => 'pegawai',
-                'alamat_pengantaran' => 'Perpustakaan Lantai 2, Politeknik Negeri Semarang',
-                'dest_lat'        => -7.3308765,
-                'dest_lng'        => 110.4960123,
+                'alamat_pengantaran' => 'Perpustakaan Polines Lt.2, Tembalang',
+                'dest_lat'        => -7.0508,
+                'dest_lng'        => 110.4360,
                 'menu_items'      => [
                     ['menu_index' => 1, 'jumlah' => 1, 'varian' => ['Jenis Mi' => 'mi kuning', 'Level Pedas' => 'pedas']],
                     ['menu_index' => 2, 'jumlah' => 1, 'varian' => ['Gula' => 'tanpa gula']],
@@ -311,7 +311,7 @@ class PesananSeeder extends Seeder
             // PESANAN LAINNYA (pending, ditolak, dibatalkan)
             // =====================================================================
 
-            // 11. Menunggu pembayaran - Dewi di Warung Bu Sri
+            // 11. Menunggu pembayaran - Dewi di Kantin TN
             [
                 'mahasiswa_index' => 3,
                 'kantin_index'    => 1,
@@ -334,7 +334,7 @@ class PesananSeeder extends Seeder
                 ],
             ],
 
-            // 12. Ditolak kantin - Siti di Kantin Barokah
+            // 12. Ditolak kantin - Siti di Kantin Teknik
             [
                 'mahasiswa_index' => 1,
                 'kantin_index'    => 0,
@@ -358,7 +358,7 @@ class PesananSeeder extends Seeder
                 ],
             ],
 
-            // 13. Dibatalkan pelanggan - Rizky di Kantin Pak Agus
+            // 13. Dibatalkan pelanggan - Rizky di Kantin GKT
             [
                 'mahasiswa_index' => 4,
                 'kantin_index'    => 2,
@@ -386,6 +386,20 @@ class PesananSeeder extends Seeder
         // --- Generate 20 Pesanan Baru Masuk per Kantin ---
         $layananTipes = ['dine-in', 'take-away', 'delivery'];
         $metodeBayar = ['qris', 'transfer', 'midtrans'];
+
+        // Alamat pengantaran khas Polines
+        $alamatDelivery = [
+            'Gedung Teknik Sipil Lt.1, Polines Tembalang',
+            'Gedung Teknik Mesin Lt.2, Polines Tembalang',
+            'Gedung Teknik Elektro Lab Komputer, Polines Tembalang',
+            'Gedung Akuntansi Lt.3, Polines Tembalang',
+            'Gedung Administrasi Bisnis Lt.1, Polines Tembalang',
+            'Perpustakaan Polines Lt.2, Tembalang',
+            'Gedung Kuliah Bersama Lt.1, Polines Tembalang',
+            'Gedung Kuliah Terpadu Lt.2, Polines Tembalang',
+            'Ruang Dosen Teknik Elektro, Polines Tembalang',
+            'Student Center Polines, Tembalang',
+        ];
 
         foreach ($kantinList as $kantinIndex => $kantin) {
             $menuListKantin = $menuByKantin[$kantin->id]->values();
@@ -417,9 +431,9 @@ class PesananSeeder extends Seeder
                     'nomor_antrian'   => 'A-' . str_pad($i + 100, 3, '0', STR_PAD_LEFT),
                     'catatan_pesanan' => 'Pesanan tambahan auto ' . ($i + 1),
                     'courier_user'    => null,
-                    'alamat_pengantaran' => $tipe === 'delivery' ? 'Gedung ' . chr(rand(65, 68)) . ' No. ' . rand(1, 20) : null,
-                    'dest_lat'        => $tipe === 'delivery' ? -7.3315678 + (rand(-100, 100) / 100000) : null,
-                    'dest_lng'        => $tipe === 'delivery' ? 110.4952345 + (rand(-100, 100) / 100000) : null,
+                    'alamat_pengantaran' => $tipe === 'delivery' ? $alamatDelivery[array_rand($alamatDelivery)] : null,
+                    'dest_lat'        => $tipe === 'delivery' ? -7.0519 + (rand(-100, 100) / 100000) : null,
+                    'dest_lng'        => $tipe === 'delivery' ? 110.4353 + (rand(-100, 100) / 100000) : null,
                     'menu_items'      => $menuItems,
                     'payment' => [
                         'metode_bayar'       => $mbayar,
@@ -470,9 +484,9 @@ class PesananSeeder extends Seeder
                     'nomor_antrian'   => 'A-' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT),
                     'catatan_pesanan' => 'Pesanan riwayat ' . ($i + 1),
                     'courier_user'    => $tipe === 'delivery' ? (rand(0, 1) ? 'pegawai' : 'pemilik') : null,
-                    'alamat_pengantaran' => $tipe === 'delivery' ? 'Gedung ' . chr(rand(65, 68)) . ' No. ' . rand(1, 20) : null,
-                    'dest_lat'        => $tipe === 'delivery' ? -7.3315678 + (rand(-100, 100) / 100000) : null,
-                    'dest_lng'        => $tipe === 'delivery' ? 110.4952345 + (rand(-100, 100) / 100000) : null,
+                    'alamat_pengantaran' => $tipe === 'delivery' ? $alamatDelivery[array_rand($alamatDelivery)] : null,
+                    'dest_lat'        => $tipe === 'delivery' ? -7.0519 + (rand(-100, 100) / 100000) : null,
+                    'dest_lng'        => $tipe === 'delivery' ? 110.4353 + (rand(-100, 100) / 100000) : null,
                     'menu_items'      => $menuItems,
                     'created_at'      => $waktuSelesai,
                     'updated_at'      => $waktuSelesai,
@@ -525,9 +539,9 @@ class PesananSeeder extends Seeder
                     'nomor_antrian'   => 'A-' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT),
                     'catatan_pesanan' => 'Pesanan riwayat belum dirating ' . ($i + 1),
                     'courier_user'    => $tipe === 'delivery' ? (rand(0, 1) ? 'pegawai' : 'pemilik') : null,
-                    'alamat_pengantaran' => $tipe === 'delivery' ? 'Gedung ' . chr(rand(65, 68)) . ' No. ' . rand(1, 20) : null,
-                    'dest_lat'        => $tipe === 'delivery' ? -7.3315678 + (rand(-100, 100) / 100000) : null,
-                    'dest_lng'        => $tipe === 'delivery' ? 110.4952345 + (rand(-100, 100) / 100000) : null,
+                    'alamat_pengantaran' => $tipe === 'delivery' ? $alamatDelivery[array_rand($alamatDelivery)] : null,
+                    'dest_lat'        => $tipe === 'delivery' ? -7.0519 + (rand(-100, 100) / 100000) : null,
+                    'dest_lng'        => $tipe === 'delivery' ? 110.4353 + (rand(-100, 100) / 100000) : null,
                     'menu_items'      => $menuItems,
                     'created_at'      => $waktuSelesai,
                     'updated_at'      => $waktuSelesai,

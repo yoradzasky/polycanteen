@@ -12,7 +12,7 @@ class UserSeeder extends Seeder
     {
         // ─── Admin ───────────────────────────────────────────────────────────
         User::create([
-            'nama_lengkap'      => 'admin',
+            'nama_lengkap'      => 'Admin Polines',
             'email'             => 'admin@polycanteen.id',
             'email_verified_at' => now(),
             'password'          => Hash::make('password'),
@@ -23,11 +23,11 @@ class UserSeeder extends Seeder
 
         // ─── Mahasiswa (5 akun) ───────────────────────────────────────────
         $mahasiswaList = [
-            ['nama_lengkap' => 'budi_santoso',   'email' => 'budi@student.politeknik.ac.id'],
-            ['nama_lengkap' => 'siti_rahayu',    'email' => 'siti@student.politeknik.ac.id'],
-            ['nama_lengkap' => 'andi_firmansyah','email' => 'andi@student.politeknik.ac.id'],
-            ['nama_lengkap' => 'dewi_lestari',   'email' => 'dewi@student.politeknik.ac.id'],
-            ['nama_lengkap' => 'rizky_pratama',  'email' => 'rizky@student.politeknik.ac.id'],
+            ['nama_lengkap' => 'Budi Santoso',    'email' => 'budi@mhs.polines.ac.id'],
+            ['nama_lengkap' => 'Siti Rahayu',     'email' => 'siti@mhs.polines.ac.id'],
+            ['nama_lengkap' => 'Andi Firmansyah', 'email' => 'andi@mhs.polines.ac.id'],
+            ['nama_lengkap' => 'Dewi Lestari',    'email' => 'dewi@mhs.polines.ac.id'],
+            ['nama_lengkap' => 'Rizky Pratama',   'email' => 'rizky@mhs.polines.ac.id'],
         ];
 
         foreach ($mahasiswaList as $mhs) {
@@ -44,9 +44,9 @@ class UserSeeder extends Seeder
 
         // ─── Pemilik Kantin (3 akun) ──────────────────────────────────────
         $pemilikList = [
-            ['nama_lengkap' => 'pak_hendra',  'email' => 'hendra@polycanteen.id'],
-            ['nama_lengkap' => 'bu_sri',      'email' => 'sri@polycanteen.id'],
-            ['nama_lengkap' => 'pak_agus',    'email' => 'agus@polycanteen.id'],
+            ['nama_lengkap' => 'Pak Hendra',  'email' => 'hendra@polycanteen.id'],
+            ['nama_lengkap' => 'Bu Sri',      'email' => 'sri@polycanteen.id'],
+            ['nama_lengkap' => 'Pak Agus',    'email' => 'agus@polycanteen.id'],
         ];
 
         foreach ($pemilikList as $pemilik) {
@@ -63,10 +63,10 @@ class UserSeeder extends Seeder
 
         // ─── Pegawai (4 akun) ─────────────────────────────────────────────
         $pegawaiList = [
-            ['nama_lengkap' => 'pegawai_kantin1_a', 'email' => 'pgw1a@polycanteen.id'],
-            ['nama_lengkap' => 'pegawai_kantin1_b', 'email' => 'pgw1b@polycanteen.id'],
-            ['nama_lengkap' => 'pegawai_kantin2_a', 'email' => 'pgw2a@polycanteen.id'],
-            ['nama_lengkap' => 'pegawai_kantin3_a', 'email' => 'pgw3a@polycanteen.id'],
+            ['nama_lengkap' => 'Ahmad Fauzi',    'email' => 'ahmad.fauzi@polycanteen.id'],
+            ['nama_lengkap' => 'Lina Marlina',   'email' => 'lina.marlina@polycanteen.id'],
+            ['nama_lengkap' => 'Teguh Santoso',  'email' => 'teguh.santoso@polycanteen.id'],
+            ['nama_lengkap' => 'Rina Oktavia',   'email' => 'rina.oktavia@polycanteen.id'],
         ];
 
         foreach ($pegawaiList as $pgw) {
