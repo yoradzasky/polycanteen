@@ -66,6 +66,9 @@ class PesananSeeder extends Seeder
                     
                     $menuCount = $menuByKantin[$kantin->id]->count();
                     $tipe = $layananTipes[array_rand($layananTipes)];
+                    if ($status === 'dalam_perjalanan') {
+                        $tipe = 'delivery';
+                    }
                     $mbayar = $metodeBayar[array_rand($metodeBayar)];
 
                     $numItems = rand(1, 3);
