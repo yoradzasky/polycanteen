@@ -190,20 +190,29 @@ class _PaymentScreenState extends State<PaymentScreen> {
         } else if (qty == 1) {
           await MenuService().decreaseCartQty(menuId);
           qty = 0;
-          if (!mounted) return;
-          Navigator.pop(context);
-          return;
         } else {
           throw 'Jumlah pesanan minimal adalah 1';
         }
       }
 
+      if (!mounted) return;
+
       setState(() {
-        _orderItems[index]['jumlah_pesanan'] = qty;
+        if (qty > 0) {
+          _orderItems[index]['jumlah_pesanan'] = qty;
+        } else {
+          _orderItems.removeAt(index);
+        }
         _recalculateTotalHarga();
         _isLoading = false;
       });
+
+      if (qty == 0 && _orderItems.isEmpty) {
+        Navigator.pop(context);
+        return;
+      }
     } catch (e) {
+      if (!mounted) return;
       setState(() => _isLoading = false);
       CustomSnackBar.show(context, message: e.toString().replaceAll('Exception: ', ''), isError: true);
     }
