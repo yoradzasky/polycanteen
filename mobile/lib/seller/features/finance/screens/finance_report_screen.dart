@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../services/finance_service.dart';
 import 'seller_order_history_screen.dart';
 import 'package:mobile/core/widgets/app_loading_animation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class FinanceReportScreen extends StatefulWidget {
   const FinanceReportScreen({Key? key}) : super(key: key);
@@ -74,16 +75,21 @@ class _FinanceReportScreenState extends State<FinanceReportScreen> {
         if (menu != null) {
           final String menuName = menu['nama_item'] ?? menu['nama_menu'] ?? 'Menu Lain';
           final String category = (menu['kategori'] ?? 'makanan').toString().toLowerCase();
+          final String? photoUrl = menu['foto_menu'] ?? menu['foto'];
           final int qty = (double.tryParse(detail['jumlah_pesanan']?.toString() ?? '1') ?? 1.0).toInt();
           
           totalQtySold += qty;
           if (menuMap.containsKey(menuName)) {
             menuMap[menuName]!['qty'] = (menuMap[menuName]!['qty'] as int) + qty;
+            if (menuMap[menuName]!['photoUrl'] == null && photoUrl != null) {
+              menuMap[menuName]!['photoUrl'] = photoUrl;
+            }
           } else {
             menuMap[menuName] = {
               'name': menuName,
               'category': category,
               'qty': qty,
+              'photoUrl': photoUrl,
             };
           }
         }
@@ -371,6 +377,7 @@ class _FinanceReportScreenState extends State<FinanceReportScreen> {
                             final String name = item['name'];
                             final String category = item['category'];
                             final int qty = item['qty'];
+                            final String? photoUrl = item['photoUrl'];
                             
                             // Hitung persentase
                             final double pct = totalQtySold > 0 ? (qty / totalQtySold * 100) : 0.0;
@@ -386,6 +393,7 @@ class _FinanceReportScreenState extends State<FinanceReportScreen> {
                               quantity: qty,
                               percentage: pct,
                               color: progressColor,
+                              photoUrl: photoUrl,
                             );
                           }),
                         
@@ -529,6 +537,7 @@ class _FinanceReportScreenState extends State<FinanceReportScreen> {
     required int quantity,
     required double percentage,
     required Color color,
+    String? photoUrl,
   }) {
     IconData icon = Icons.fastfood;
     Color iconColor = const Color(0xFFF2994A);
@@ -542,6 +551,18 @@ class _FinanceReportScreenState extends State<FinanceReportScreen> {
       icon = Icons.cookie;
       iconColor = const Color(0xFF27AE60);
       bgColor = const Color(0xFFEEF9F1);
+    }
+
+    String finalPhotoUrl = '';
+    if (photoUrl != null && photoUrl.isNotEmpty) {
+      if (photoUrl.startsWith('http')) {
+        finalPhotoUrl = photoUrl;
+      } else {
+        // Fallback for storage URL
+        final String baseUrl = dotenv.env['BASE_URL'] ?? 'http://10.0.2.2:8000/api';
+        final String baseUrlForStorage = baseUrl.replaceAll('/api', '/storage');
+        finalPhotoUrl = '$baseUrlForStorage/$photoUrl';
+      }
     }
 
     return Container(
@@ -560,14 +581,23 @@ class _FinanceReportScreenState extends State<FinanceReportScreen> {
       ),
       child: Row(
         children: [
-          // Icon Box
+          // Icon Box / Photo Box
           Container(
-            padding: const EdgeInsets.all(10),
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
               color: bgColor,
               borderRadius: BorderRadius.circular(12),
+              image: finalPhotoUrl.isNotEmpty
+                  ? DecorationImage(
+                      image: NetworkImage(finalPhotoUrl),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
             ),
-            child: Icon(icon, color: iconColor, size: 20),
+            child: finalPhotoUrl.isEmpty
+                ? Icon(icon, color: iconColor, size: 22)
+                : null,
           ),
           const SizedBox(width: 14),
           

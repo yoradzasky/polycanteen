@@ -43,17 +43,28 @@ class PegawaiSeeder extends Seeder
         ];
 
         foreach ($pegawaiUsers as $index => $user) {
-            if (!isset($profilPegawai[$index])) break;
-            $profil = $profilPegawai[$index];
+            if (isset($profilPegawai[$index])) {
+                $profil = $profilPegawai[$index];
+            } else {
+                $profil = [
+                    'nama_karyawan'    => $user->nama_lengkap,
+                    'no_telp'          => '08' . rand(1000000000, 9999999999),
+                    'kantin_index'     => rand(0, count($kantinList) - 1),
+                ];
+            }
 
-            if (!isset($kantinList[$profil['kantin_index']])) continue;
+            if (!isset($kantinList[$profil['kantin_index']])) {
+                $profil['kantin_index'] = 0;
+            }
+
+            $foto = 'https://i.pravatar.cc/150?u=' . urlencode($profil['nama_karyawan']);
 
             Pegawai::create([
                 'user_id'          => $user->id,
                 'kantin_id'        => $kantinList[$profil['kantin_index']]->id,
                 'nama_karyawan'    => $profil['nama_karyawan'],
                 'no_telp'          => $profil['no_telp'],
-                'foto_profil_path' => $profil['foto_profil_path'],
+                'foto_profil_path' => $foto,
             ]);
         }
     }

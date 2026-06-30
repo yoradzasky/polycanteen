@@ -106,6 +106,8 @@ class MenuSeeder extends Seeder
         ];
 
         foreach ($menuKantin1 as $item) {
+            $keyword = strtolower($item['kategori']) === 'minuman' ? 'drink,beverage' : 'food,dish';
+            $item['foto_menu'] = 'https://loremflickr.com/320/240/' . $keyword . '?lock=' . (crc32($item['nama_item']) % 1000);
             Menu::create(array_merge(['kantin_id' => $kantin1->id], $item));
         }
 
@@ -224,6 +226,8 @@ class MenuSeeder extends Seeder
         ];
 
         foreach ($menuKantin2 as $item) {
+            $keyword = strtolower($item['kategori']) === 'minuman' ? 'drink,beverage' : 'food,dish';
+            $item['foto_menu'] = 'https://loremflickr.com/320/240/' . $keyword . '?lock=' . (crc32($item['nama_item']) % 1000);
             Menu::create(array_merge(['kantin_id' => $kantin2->id], $item));
         }
 
@@ -326,6 +330,8 @@ class MenuSeeder extends Seeder
         ];
 
         foreach ($menuKantin3 as $item) {
+            $keyword = strtolower($item['kategori']) === 'minuman' ? 'drink,beverage' : 'food,dish';
+            $item['foto_menu'] = 'https://loremflickr.com/320/240/' . $keyword . '?lock=' . (crc32($item['nama_item']) % 1000);
             Menu::create(array_merge(['kantin_id' => $kantin3->id], $item));
         }
     }

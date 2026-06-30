@@ -1022,7 +1022,7 @@ class OrderCard extends StatelessWidget {
                   radius: 22,
                   backgroundColor: Colors.grey.shade300,
                   backgroundImage: (fotoPath != null && fotoPath.toString().isNotEmpty)
-                      ? NetworkImage('$cleanBase/storage/$fotoPath')
+                      ? NetworkImage(fotoPath.toString().startsWith('http') ? fotoPath : '$cleanBase/storage/$fotoPath')
                       : null,
                   child: (fotoPath == null || fotoPath.toString().isEmpty)
                       ? const Icon(
@@ -1977,7 +1977,7 @@ class OrderDetailsDialog extends StatelessWidget {
                           (fotoPath != null && fotoPath.toString().isNotEmpty)
                               ? CircleAvatar(
                                   radius: 12,
-                                  backgroundImage: NetworkImage('$cleanBase/storage/$fotoPath'),
+                                  backgroundImage: NetworkImage(fotoPath.toString().startsWith('http') ? fotoPath : '$cleanBase/storage/$fotoPath'),
                                 )
                               : const Icon(Icons.person_outline, size: 18, color: Colors.grey),
                           const SizedBox(width: 8),
