@@ -136,6 +136,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         .replaceAll(RegExp(r'/mobile$'), '');
   }
 
+  String _getImageUrl(String? path, String baseUrl) {
+    if (path == null || path.isEmpty) return '';
+    if (path.startsWith('http')) return path;
+    return '$baseUrl/storage/$path';
+  }
+
   Map<String, dynamic> _getOrderTypeConfig(String tipe) {
     switch (tipe) {
       case 'delivery':
@@ -246,7 +252,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     final kantinLogo = _order!['kantin']?['logo_path'];
     final tipePesanan = _order!['tipe_pesanan'] ?? 'dine_in';
     final catatan = _order!['catatan_pesanan'];
-    final totalHarga = _order!['total_harga'];
+    final totalHarga = double.tryParse(_order!['total_harga']?.toString() ?? '0') ?? 0.0;
 
     final dynamic rawDetails = _order!['details'];
     final List<dynamic> details = rawDetails is List
@@ -467,9 +473,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       // Kantin logo
                       ClipRRect(
                         borderRadius: BorderRadius.circular(10),
-                        child: kantinLogo != null
+                        child: kantinLogo != null && kantinLogo.toString().isNotEmpty
                             ? Image.network(
-                                '$baseUrl/storage/$kantinLogo',
+                                _getImageUrl(kantinLogo.toString(), baseUrl),
                                 width: 44,
                                 height: 44,
                                 fit: BoxFit.cover,
@@ -906,9 +912,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           // Menu photo
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: photo != null
+            child: photo != null && photo.toString().isNotEmpty
                 ? Image.network(
-                    '$baseUrl/storage/$photo',
+                    _getImageUrl(photo.toString(), baseUrl),
                     width: 56,
                     height: 56,
                     fit: BoxFit.cover,
