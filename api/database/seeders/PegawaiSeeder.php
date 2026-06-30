@@ -14,42 +14,46 @@ class PegawaiSeeder extends Seeder
         $pegawaiUsers = User::where('role', 'pegawai')->orderBy('id')->get();
         $kantinList   = Kantin::orderBy('id')->get();
 
-        // Distribusi: kantin 1 → 2 pegawai, kantin 2 → 1 pegawai, kantin 3 → 1 pegawai
+        // Distribusi: Kantin Teknik → 2 pegawai, Kantin TN → 1 pegawai, Kantin GKT → 1 pegawai
         $profilPegawai = [
             [
-                'nama_karyawan'   => 'Ahmad Fauzi',
-                'no_telp'         => '083344556677',
-                'foto_profil_path'=> null,
-                'kantin_index'    => 0, // Kantin Barokah
+                'nama_karyawan'    => 'Ahmad Fauzi',
+                'no_telp'          => '083344556677',
+                'foto_profil_path' => null,
+                'kantin_index'     => 0, // Kantin Teknik (Kantek)
             ],
             [
-                'nama_karyawan'   => 'Lina Marlina',
-                'no_telp'         => '083344556678',
-                'foto_profil_path'=> null,
-                'kantin_index'    => 0, // Kantin Barokah
+                'nama_karyawan'    => 'Lina Marlina',
+                'no_telp'          => '083344556678',
+                'foto_profil_path' => null,
+                'kantin_index'     => 0, // Kantin Teknik (Kantek)
             ],
             [
-                'nama_karyawan'   => 'Teguh Santoso',
-                'no_telp'         => '083344556679',
-                'foto_profil_path'=> null,
-                'kantin_index'    => 1, // Warung Bu Sri
+                'nama_karyawan'    => 'Teguh Santoso',
+                'no_telp'          => '083344556679',
+                'foto_profil_path' => null,
+                'kantin_index'     => 1, // Kantin Tata Niaga (TN)
             ],
             [
-                'nama_karyawan'   => 'Rina Oktavia',
-                'no_telp'         => '083344556680',
-                'foto_profil_path'=> null,
-                'kantin_index'    => 2, // Kantin Pak Agus
+                'nama_karyawan'    => 'Rina Oktavia',
+                'no_telp'          => '083344556680',
+                'foto_profil_path' => null,
+                'kantin_index'     => 2, // Kantin GKT
             ],
         ];
 
         foreach ($pegawaiUsers as $index => $user) {
+            if (!isset($profilPegawai[$index])) break;
             $profil = $profilPegawai[$index];
+
+            if (!isset($kantinList[$profil['kantin_index']])) continue;
+
             Pegawai::create([
-                'user_id'         => $user->id,
-                'kantin_id'       => $kantinList[$profil['kantin_index']]->id,
-                'nama_karyawan'   => $profil['nama_karyawan'],
-                'no_telp'         => $profil['no_telp'],
-                'foto_profil_path'=> $profil['foto_profil_path'],
+                'user_id'          => $user->id,
+                'kantin_id'        => $kantinList[$profil['kantin_index']]->id,
+                'nama_karyawan'    => $profil['nama_karyawan'],
+                'no_telp'          => $profil['no_telp'],
+                'foto_profil_path' => $profil['foto_profil_path'],
             ]);
         }
     }

@@ -15,27 +15,36 @@ class BuyerApplicationSeeder extends Seeder
     {
         $admin = User::where('role', 'admin')->orderBy('id')->first();
 
+        // Jurusan-jurusan yang ada di Politeknik Negeri Semarang
+        $jurusanPolines = [
+            'Teknik Sipil',
+            'Teknik Mesin',
+            'Teknik Elektro',
+            'Akuntansi',
+            'Administrasi Bisnis',
+        ];
+
         $applications = [
-            ['name' => 'Aditya Nugraha', 'nim' => '22410101001', 'phone' => '081300000001', 'email' => 'aditya.nugraha@student.politeknik.ac.id', 'status' => 'pending', 'days_ago' => 1],
-            ['name' => 'Nabila Putri', 'nim' => '22410101002', 'phone' => '081300000002', 'email' => 'nabila.putri@student.politeknik.ac.id', 'status' => 'pending', 'days_ago' => 2],
-            ['name' => 'Fajar Maulana', 'nim' => '22410101003', 'phone' => '081300000003', 'email' => 'fajar.maulana@student.politeknik.ac.id', 'status' => 'pending', 'days_ago' => 3],
-            ['name' => 'Aulia Rahman', 'nim' => '22410101004', 'phone' => '081300000004', 'email' => 'aulia.rahman@student.politeknik.ac.id', 'status' => 'pending', 'days_ago' => 4],
-            ['name' => 'Kevin Saputra', 'nim' => '22410101005', 'phone' => '081300000005', 'email' => 'kevin.saputra@student.politeknik.ac.id', 'status' => 'pending', 'days_ago' => 5],
-            ['name' => 'Maya Kartika', 'nim' => '22410101006', 'phone' => '081300000006', 'email' => 'maya.kartika@student.politeknik.ac.id', 'status' => 'pending', 'days_ago' => 6],
-            ['name' => 'Dimas Prakoso', 'nim' => '22410101007', 'phone' => '081300000007', 'email' => 'dimas.prakoso@student.politeknik.ac.id', 'status' => 'pending', 'days_ago' => 7],
-            ['name' => 'Rara Anggraini', 'nim' => '22410101008', 'phone' => '081300000008', 'email' => 'rara.anggraini@student.politeknik.ac.id', 'status' => 'pending', 'days_ago' => 8],
-            ['name' => 'Bagus Wicaksono', 'nim' => '22410101009', 'phone' => '081300000009', 'email' => 'bagus.wicaksono@student.politeknik.ac.id', 'status' => 'pending', 'days_ago' => 9],
-            ['name' => 'Intan Permata', 'nim' => '22410101010', 'phone' => '081300000010', 'email' => 'intan.permata@student.politeknik.ac.id', 'status' => 'pending', 'days_ago' => 10],
-            ['name' => 'Rizal Hakim', 'nim' => '22410101011', 'phone' => '081300000011', 'email' => 'rizal.hakim@student.politeknik.ac.id', 'status' => 'pending', 'days_ago' => 11],
-            ['name' => 'Tiara Melati', 'nim' => '22410101012', 'phone' => '081300000012', 'email' => 'tiara.melati@student.politeknik.ac.id', 'status' => 'pending', 'days_ago' => 12],
-            ['name' => 'Yoga Prasetyo', 'nim' => '22410101013', 'phone' => '081300000013', 'email' => 'yoga.prasetyo@student.politeknik.ac.id', 'status' => 'approved', 'days_ago' => 13],
-            ['name' => 'Citra Lestari', 'nim' => '22410101014', 'phone' => '081300000014', 'email' => 'citra.lestari@student.politeknik.ac.id', 'status' => 'approved', 'days_ago' => 14],
-            ['name' => 'Hafiz Ramadhan', 'nim' => '22410101015', 'phone' => '081300000015', 'email' => 'hafiz.ramadhan@student.politeknik.ac.id', 'status' => 'approved', 'days_ago' => 15],
-            ['name' => 'Putri Amelia', 'nim' => '22410101016', 'phone' => '081300000016', 'email' => 'putri.amelia@student.politeknik.ac.id', 'status' => 'approved', 'days_ago' => 16],
-            ['name' => 'Rendi Kurniawan', 'nim' => '22410101017', 'phone' => '081300000017', 'email' => 'rendi.kurniawan@student.politeknik.ac.id', 'status' => 'approved', 'days_ago' => 17],
-            ['name' => 'Salsa Maharani', 'nim' => '22410101018', 'phone' => '081300000018', 'email' => 'salsa.maharani@student.politeknik.ac.id', 'status' => 'approved', 'days_ago' => 18],
-            ['name' => 'Farhan Abdillah', 'nim' => '22410101019', 'phone' => '081300000019', 'email' => 'farhan.abdillah@student.politeknik.ac.id', 'status' => 'approved', 'days_ago' => 19],
-            ['name' => 'Laras Oktaviani', 'nim' => '22410101020', 'phone' => '081300000020', 'email' => 'laras.oktaviani@student.politeknik.ac.id', 'status' => 'approved', 'days_ago' => 20],
+            ['name' => 'Aditya Nugraha',    'nim' => '4.33.23.1.01', 'jurusan' => 'Teknik Elektro',       'phone' => '081300000001', 'email' => 'aditya.nugraha@mhs.polines.ac.id',    'status' => 'pending', 'days_ago' => 1],
+            ['name' => 'Nabila Putri',       'nim' => '4.41.23.1.02', 'jurusan' => 'Akuntansi',            'phone' => '081300000002', 'email' => 'nabila.putri@mhs.polines.ac.id',      'status' => 'pending', 'days_ago' => 2],
+            ['name' => 'Fajar Maulana',      'nim' => '4.21.23.1.03', 'jurusan' => 'Teknik Mesin',         'phone' => '081300000003', 'email' => 'fajar.maulana@mhs.polines.ac.id',     'status' => 'pending', 'days_ago' => 3],
+            ['name' => 'Aulia Rahman',       'nim' => '4.52.23.1.04', 'jurusan' => 'Administrasi Bisnis',  'phone' => '081300000004', 'email' => 'aulia.rahman@mhs.polines.ac.id',      'status' => 'pending', 'days_ago' => 4],
+            ['name' => 'Kevin Saputra',      'nim' => '4.11.23.1.05', 'jurusan' => 'Teknik Sipil',         'phone' => '081300000005', 'email' => 'kevin.saputra@mhs.polines.ac.id',     'status' => 'pending', 'days_ago' => 5],
+            ['name' => 'Maya Kartika',       'nim' => '4.33.23.1.06', 'jurusan' => 'Teknik Elektro',       'phone' => '081300000006', 'email' => 'maya.kartika@mhs.polines.ac.id',      'status' => 'pending', 'days_ago' => 6],
+            ['name' => 'Dimas Prakoso',      'nim' => '4.21.23.1.07', 'jurusan' => 'Teknik Mesin',         'phone' => '081300000007', 'email' => 'dimas.prakoso@mhs.polines.ac.id',     'status' => 'pending', 'days_ago' => 7],
+            ['name' => 'Rara Anggraini',     'nim' => '4.41.23.1.08', 'jurusan' => 'Akuntansi',            'phone' => '081300000008', 'email' => 'rara.anggraini@mhs.polines.ac.id',    'status' => 'pending', 'days_ago' => 8],
+            ['name' => 'Bagus Wicaksono',    'nim' => '4.11.23.1.09', 'jurusan' => 'Teknik Sipil',         'phone' => '081300000009', 'email' => 'bagus.wicaksono@mhs.polines.ac.id',   'status' => 'pending', 'days_ago' => 9],
+            ['name' => 'Intan Permata',      'nim' => '4.52.23.1.10', 'jurusan' => 'Administrasi Bisnis',  'phone' => '081300000010', 'email' => 'intan.permata@mhs.polines.ac.id',     'status' => 'pending', 'days_ago' => 10],
+            ['name' => 'Rizal Hakim',        'nim' => '4.33.23.1.11', 'jurusan' => 'Teknik Elektro',       'phone' => '081300000011', 'email' => 'rizal.hakim@mhs.polines.ac.id',       'status' => 'pending', 'days_ago' => 11],
+            ['name' => 'Tiara Melati',       'nim' => '4.41.23.1.12', 'jurusan' => 'Akuntansi',            'phone' => '081300000012', 'email' => 'tiara.melati@mhs.polines.ac.id',      'status' => 'pending', 'days_ago' => 12],
+            ['name' => 'Yoga Prasetyo',      'nim' => '4.21.23.1.13', 'jurusan' => 'Teknik Mesin',         'phone' => '081300000013', 'email' => 'yoga.prasetyo@mhs.polines.ac.id',     'status' => 'approved', 'days_ago' => 13],
+            ['name' => 'Citra Lestari',      'nim' => '4.52.23.1.14', 'jurusan' => 'Administrasi Bisnis',  'phone' => '081300000014', 'email' => 'citra.lestari@mhs.polines.ac.id',     'status' => 'approved', 'days_ago' => 14],
+            ['name' => 'Hafiz Ramadhan',     'nim' => '4.11.23.1.15', 'jurusan' => 'Teknik Sipil',         'phone' => '081300000015', 'email' => 'hafiz.ramadhan@mhs.polines.ac.id',    'status' => 'approved', 'days_ago' => 15],
+            ['name' => 'Putri Amelia',       'nim' => '4.33.23.1.16', 'jurusan' => 'Teknik Elektro',       'phone' => '081300000016', 'email' => 'putri.amelia@mhs.polines.ac.id',      'status' => 'approved', 'days_ago' => 16],
+            ['name' => 'Rendi Kurniawan',    'nim' => '4.41.23.1.17', 'jurusan' => 'Akuntansi',            'phone' => '081300000017', 'email' => 'rendi.kurniawan@mhs.polines.ac.id',   'status' => 'approved', 'days_ago' => 17],
+            ['name' => 'Salsa Maharani',     'nim' => '4.21.23.1.18', 'jurusan' => 'Teknik Mesin',         'phone' => '081300000018', 'email' => 'salsa.maharani@mhs.polines.ac.id',    'status' => 'approved', 'days_ago' => 18],
+            ['name' => 'Farhan Abdillah',    'nim' => '4.52.23.1.19', 'jurusan' => 'Administrasi Bisnis',  'phone' => '081300000019', 'email' => 'farhan.abdillah@mhs.polines.ac.id',   'status' => 'approved', 'days_ago' => 19],
+            ['name' => 'Laras Oktaviani',    'nim' => '4.11.23.1.20', 'jurusan' => 'Teknik Sipil',         'phone' => '081300000020', 'email' => 'laras.oktaviani@mhs.polines.ac.id',   'status' => 'approved', 'days_ago' => 20],
         ];
 
         foreach ($applications as $data) {
@@ -50,6 +59,7 @@ class BuyerApplicationSeeder extends Seeder
                     'reviewed_by' => $data['status'] === 'approved' ? $admin?->id : null,
                     'name' => $data['name'],
                     'nim' => $data['nim'],
+                    'jurusan' => $data['jurusan'],
                     'phone' => $data['phone'],
                     'account_expires_at' => '2027-08-31',
                     'foto_ktm_path' => null,
@@ -85,6 +95,7 @@ class BuyerApplicationSeeder extends Seeder
             [
                 'user_id' => $user->id,
                 'nama_mahasiswa' => $data['name'],
+                'jurusan' => $data['jurusan'],
                 'no_telp' => $data['phone'],
                 'masa_aktif' => '2027-08-31',
                 'foto_profil_path' => null,

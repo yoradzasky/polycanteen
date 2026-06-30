@@ -17,7 +17,7 @@ class MenuSeeder extends Seeder
             return;
         }
 
-        // ── Kantin 1: Kantin Barokah ─────────────────────────────────────
+        // ── Kantin 1: Kantin Teknik (Kantek) ─────────────────────────────
         $kantin1 = $kantinList[0];
 
         $menuKantin1 = [
@@ -26,10 +26,10 @@ class MenuSeeder extends Seeder
                 'kategori'        => 'Makanan',
                 'harga'           => 15000,
                 'status_stok'     => true,
-                'deskripsi'       => 'Nasi goreng dengan telur, ayam, dan sayuran segar pilihan.',
+                'deskripsi'       => 'Nasi goreng dengan telur, ayam, dan sayuran segar khas Kantek Polines.',
                 'estimasi_waktu'  => 10,
                 'pilihan_layanan' => ['makan_di_tempat', 'dibungkus'],
-                'foto_menu'       => 'https://images.unsplash.com/photo-1603133872878-685f2026d5f5?w=500&auto=format&fit=crop',
+                'foto_menu'       => null,
                 'varian'          => [
                     [
                         'nama' => 'Level Pedas',
@@ -59,7 +59,7 @@ class MenuSeeder extends Seeder
                 'deskripsi'       => 'Mie goreng dengan potongan ayam dan bumbu khas.',
                 'estimasi_waktu'  => 8,
                 'pilihan_layanan' => ['makan_di_tempat', 'dibungkus'],
-                'foto_menu'       => 'https://images.unsplash.com/photo-1585032226651-759b368d7246?w=500&auto=format&fit=crop',
+                'foto_menu'       => null,
                 'varian'          => [
                     [
                         'nama' => 'Level Pedas',
@@ -77,10 +77,10 @@ class MenuSeeder extends Seeder
                 'kategori'        => 'Minuman',
                 'harga'           => 5000,
                 'status_stok'     => true,
-                'deskripsi'       => 'Teh manis dingin yang menyegarkan.',
+                'deskripsi'       => 'Teh manis dingin yang menyegarkan, cocok untuk cuaca Semarang.',
                 'estimasi_waktu'  => 3,
                 'pilihan_layanan' => ['makan_di_tempat', 'dibungkus'],
-                'foto_menu'       => 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=500&auto=format&fit=crop',
+                'foto_menu'       => null,
                 'varian'          => [
                     [
                         'nama' => 'Suhu',
@@ -93,14 +93,14 @@ class MenuSeeder extends Seeder
                 ],
             ],
             [
-                'nama_item'       => 'Soto Ayam',
+                'nama_item'       => 'Soto Ayam Semarang',
                 'kategori'        => 'Makanan',
                 'harga'           => 14000,
                 'status_stok'     => false, // contoh stok habis
-                'deskripsi'       => 'Soto ayam kuah bening dengan pelengkap bihun, tauge, dan perkedel.',
+                'deskripsi'       => 'Soto ayam khas Semarang dengan kuah bening, bihun, tauge, dan perkedel.',
                 'estimasi_waktu'  => 7,
                 'pilihan_layanan' => ['makan_di_tempat'],
-                'foto_menu'       => 'https://images.unsplash.com/photo-1626804475315-77626996d911?w=500&auto=format&fit=crop',
+                'foto_menu'       => null,
                 'varian'          => null,
             ],
         ];
@@ -109,7 +109,7 @@ class MenuSeeder extends Seeder
             Menu::create(array_merge(['kantin_id' => $kantin1->id], $item));
         }
 
-        // ── Kantin 2: Warung Bu Sri ──────────────────────────────────────
+        // ── Kantin 2: Kantin Tata Niaga (TN) ─────────────────────────────
         $kantin2 = $kantinList[1];
 
         $menuKantin2 = [
@@ -118,17 +118,17 @@ class MenuSeeder extends Seeder
                 'kategori'        => 'Makanan',
                 'harga'           => 12000,
                 'status_stok'     => true,
-                'deskripsi'       => 'Pecel dengan sayuran rebus segar dan bumbu kacang khas.',
+                'deskripsi'       => 'Pecel dengan sayuran rebus segar dan bumbu kacang khas, favorit mahasiswa Akuntansi.',
                 'estimasi_waktu'  => 5,
                 'pilihan_layanan' => ['makan_di_tempat', 'dibungkus'],
-                'foto_menu'       => 'https://images.unsplash.com/photo-1590137876181-2a5a7e340308?w=500&auto=format&fit=crop',
+                'foto_menu'       => null,
                 'varian'          => [
                     [
                         'nama' => 'Nasi',
                         'tipe' => 'wajib',
                         'pilihan' => [
                             ['nama' => 'nasi putih', 'harga' => 0],
-                            ['nama' => 'nasi uduk', 'harga' => 2000], // harga beda untuk uduk
+                            ['nama' => 'nasi uduk', 'harga' => 2000],
                             ['nama' => 'tanpa nasi', 'harga' => 0],
                         ]
                     ],
@@ -151,7 +151,7 @@ class MenuSeeder extends Seeder
                 'deskripsi'       => 'Bakso sapi kenyal dengan kuah kaldu gurih dan mi.',
                 'estimasi_waktu'  => 5,
                 'pilihan_layanan' => ['makan_di_tempat', 'dibungkus'],
-                'foto_menu'       => 'https://images.unsplash.com/photo-1541518763669-27fef04b14ea?w=500&auto=format&fit=crop',
+                'foto_menu'       => null,
                 'varian'          => [
                     [
                         'nama' => 'Jenis Mi',
@@ -180,7 +180,7 @@ class MenuSeeder extends Seeder
                 'deskripsi'       => 'Jus alpukat segar dengan susu kental manis.',
                 'estimasi_waktu'  => 5,
                 'pilihan_layanan' => ['makan_di_tempat', 'dibungkus'],
-                'foto_menu'       => 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=500&auto=format&fit=crop',
+                'foto_menu'       => null,
                 'varian'          => [
                     [
                         'nama' => 'Gula',
@@ -198,10 +198,10 @@ class MenuSeeder extends Seeder
                 'kategori'        => 'Minuman',
                 'harga'           => 8000,
                 'status_stok'     => true,
-                'deskripsi'       => 'Kopi robusta dengan susu segar, disajikan dingin.',
+                'deskripsi'       => 'Kopi robusta Semarang dengan susu segar, disajikan dingin.',
                 'estimasi_waktu'  => 4,
                 'pilihan_layanan' => ['makan_di_tempat', 'dibungkus'],
-                'foto_menu'       => 'https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=500&auto=format&fit=crop',
+                'foto_menu'       => null,
                 'varian'          => [
                     [
                         'nama' => 'Suhu',
@@ -216,7 +216,7 @@ class MenuSeeder extends Seeder
                         'tipe' => 'wajib',
                         'pilihan' => [
                             ['nama' => 'regular', 'harga' => 0],
-                            ['nama' => 'large', 'harga' => 3000], // Large +3000
+                            ['nama' => 'large', 'harga' => 3000],
                         ]
                     ],
                 ],
@@ -227,7 +227,7 @@ class MenuSeeder extends Seeder
             Menu::create(array_merge(['kantin_id' => $kantin2->id], $item));
         }
 
-        // ── Kantin 3: Kantin Pak Agus ────────────────────────────────────
+        // ── Kantin 3: Kantin GKT (Gedung Kuliah Terpadu) ────────────────
         $kantin3 = $kantinList[2];
 
         $menuKantin3 = [
@@ -236,10 +236,10 @@ class MenuSeeder extends Seeder
                 'kategori'        => 'Makanan',
                 'harga'           => 17000,
                 'status_stok'     => true,
-                'deskripsi'       => 'Ayam goreng crispy digeprek dengan sambal bawang.',
+                'deskripsi'       => 'Ayam goreng crispy digeprek dengan sambal bawang, menu andalan anak Polines.',
                 'estimasi_waktu'  => 12,
                 'pilihan_layanan' => ['makan_di_tempat', 'dibungkus', 'pengantaran'],
-                'foto_menu'       => 'https://images.unsplash.com/photo-1626240906144-48615b161f3d?w=500&auto=format&fit=crop',
+                'foto_menu'       => null,
                 'varian'          => [
                     [
                         'nama' => 'Level Pedas',
@@ -268,10 +268,10 @@ class MenuSeeder extends Seeder
                 'kategori'        => 'Makanan',
                 'harga'           => 20000,
                 'status_stok'     => true,
-                'deskripsi'       => 'Nasi dengan 3 pilihan lauk + sayur + sambal.',
+                'deskripsi'       => 'Nasi dengan 3 pilihan lauk + sayur + sambal, praktis untuk mahasiswa sibuk.',
                 'estimasi_waktu'  => 5,
                 'pilihan_layanan' => ['dibungkus', 'pengantaran'],
-                'foto_menu'       => 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop',
+                'foto_menu'       => null,
                 'varian'          => [
                     [
                         'nama' => 'Lauk 1',
@@ -307,10 +307,10 @@ class MenuSeeder extends Seeder
                 'kategori'        => 'Minuman',
                 'harga'           => 6000,
                 'status_stok'     => true,
-                'deskripsi'       => 'Jeruk segar diperas, manis dan segar.',
+                'deskripsi'       => 'Jeruk segar diperas, manis dan segar untuk menemani kuliah.',
                 'estimasi_waktu'  => 3,
                 'pilihan_layanan' => ['makan_di_tempat', 'dibungkus'],
-                'foto_menu'       => 'https://images.unsplash.com/photo-1613478223719-2ab802602423?w=500&auto=format&fit=crop',
+                'foto_menu'       => null,
                 'varian'          => [
                     [
                         'nama' => 'Gula',
