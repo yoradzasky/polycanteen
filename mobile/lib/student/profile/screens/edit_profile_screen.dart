@@ -24,15 +24,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   String? _selectedJurusan;
   final List<String> _jurusanList = [
-    'Teknologi Informasi',
-    'Produksi Pertanian',
-    'Teknologi Pertanian',
-    'Peternakan',
-    'Manajemen Agribisnis',
-    'Kesehatan',
-    'Teknik',
-    'Bahasa, Komunikasi dan Pariwisata',
-    'Lainnya',
+    'Teknik Mesin',
+    'Teknik Elektro',
+    'Teknik Sipil',
+    'Administrasi Bisnis',
+    'Akuntansi',
   ];
 
   @override
