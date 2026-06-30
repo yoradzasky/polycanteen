@@ -187,8 +187,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
         if (qty > 1) {
           await MenuService().decreaseCartQty(menuId);
           qty--;
+        } else if (qty == 1) {
+          await MenuService().decreaseCartQty(menuId);
+          qty = 0;
+          if (!mounted) return;
+          Navigator.pop(context);
+          return;
         } else {
-          throw 'Jumlah minimal adalah 1';
+          throw 'Jumlah pesanan minimal adalah 1';
         }
       }
 
