@@ -57,10 +57,10 @@ class BuyerController extends Controller
 
     public function index(Request $request)
     {
-        $status = $request->input('status', 'semua');
         $search = $request->input('search', '');
 
         $query = User::where('role', 'mahasiswa')
+            ->where('status_akun', 'aktif')
             ->with(['mahasiswa' => function ($query) {
                 $query->withCount('pesanan')
                       ->withSum('pesanan', 'total_harga'); 
@@ -77,11 +77,6 @@ class BuyerController extends Controller
             });
         }
 
-        if ($status === 'aktif') {
-            $query->where('status_akun', 'aktif');
-        } elseif ($status === 'nonaktif') {
-            $query->where('status_akun', '!=', 'aktif');
-        }
 
         /** @var \Illuminate\Pagination\LengthAwarePaginator $buyers */
         // Mengurutkan berdasarkan abjad (A-Z) dari kolom nama_mahasiswa di tabel mahasiswa
@@ -119,7 +114,6 @@ class BuyerController extends Controller
         return Inertia::render('Buyers/Index', [
             'buyers' => $buyers,
             'filters' => [
-                'status' => $status,
                 'search' => $search
             ]
         ]);
@@ -196,5 +190,14 @@ class BuyerController extends Controller
         $validated = $request->validated();
         $this->buyerService->updateActiveUntil($id, $validated['active_until']);
         return redirect()->back()->with('success', 'Masa aktif mahasiswa berhasil diperbarui.');
+    }
+
+    public function destroy($id)
+    {
+        $user = User::findOrFail($id);
+        $user->status_akun = 'nonaktif';
+        $user->save();
+
+        return redirect()->route('admin.buyers.index')->with('success', 'Akun mahasiswa berhasil dinonaktifkan.');
     }
 }
