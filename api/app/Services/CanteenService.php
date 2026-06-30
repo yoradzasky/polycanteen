@@ -261,7 +261,7 @@ class CanteenService
                 $pegawaiDihapus = $kantin->pegawai()->whereNotIn('id', $payloadPegawaiIds)->get();
                 foreach ($pegawaiDihapus as $pegawai) {
                     if ($pegawai->user) {
-                        $pegawai->user->update(['status_akun' => 'suspend']);
+                        $pegawai->user->update(['status_akun' => 'nonaktif']);
                     }
                     $pegawai->delete();
                 }
@@ -326,13 +326,13 @@ class CanteenService
             return DB::transaction(function () use ($id) {
                 $kantin = Kantin::findOrFail($id);
 
-                // Tahap 1: Suspend akun pemilik
-                $kantin->pemilik->user()->update(['status_akun' => 'suspend']);
+                // Tahap 1: Nonaktifkan akun pemilik
+                $kantin->pemilik->user()->update(['status_akun' => 'nonaktif']);
 
-                // Tahap 2: Suspend semua akun pegawai kantin ini
+                // Tahap 2: Nonaktifkan semua akun pegawai kantin ini
                 $userIds = $kantin->pegawai()->pluck('user_id');
                 if ($userIds->isNotEmpty()) {
-                    User::whereIn('id', $userIds)->update(['status_akun' => 'suspend']);
+                    User::whereIn('id', $userIds)->update(['status_akun' => 'nonaktif']);
                 }
 
                 // Tahap 3: Soft delete kantin (mengisi kolom deleted_at)
