@@ -85,6 +85,11 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->name('admin.')->grou
     // URL: PATCH /admin/buyers/{id}/expiration
     // Name: admin.buyers.updateExpiration
 
+    Route::delete('/buyers/{id}', [BuyerController::class, 'destroy'])
+        ->name('buyers.destroy');
+    // URL: DELETE /admin/buyers/{id}
+    // Name: admin.buyers.destroy
+
     // ==========================================
     // PERSETUJUAN AKUN PEMBELI
     // ==========================================

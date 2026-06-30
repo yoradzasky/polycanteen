@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Head, Link, router } from "@inertiajs/react";
 import StatusBadge from "@/Components/UI/StatusBadge";
+import DeactivateConfirmModal from "@/Components/Modals/DeactivateConfirmModal";
 import AdminLayout from "@/Layouts/AdminLayout";
 
 export default function Index({ buyers, filters }) {
@@ -9,9 +10,10 @@ export default function Index({ buyers, filters }) {
 
     // 1. Ambil nilai default search dari URL (filters.search) agar tidak hilang saat refresh
     const [search, setSearch] = useState(filters?.search || "");
+    const [selectedUserForDeactivation, setSelectedUserForDeactivation] = useState(null);
+    const [isProcessingDeactivate, setIsProcessingDeactivate] = useState(false);
 
-    // Mengambil status filter saat ini dari backend (default: 'semua')
-    const currentStatus = filters?.status || "semua";
+
 
     // 2. Tambahkan useEffect untuk auto-search (debounce)
     useEffect(() => {
@@ -22,7 +24,7 @@ export default function Index({ buyers, filters }) {
         const delaySearch = setTimeout(() => {
             router.get(
                 "/admin/buyers",
-                { status: currentStatus, search: search },
+                { search: search },
                 {
                     preserveState: true,
                     replace: true,
@@ -32,19 +34,9 @@ export default function Index({ buyers, filters }) {
 
         // Bersihkan timer jika user mengetik lagi sebelum 400ms
         return () => clearTimeout(delaySearch);
-    }, [search, currentStatus, filters?.search]);
+    }, [search, filters?.search]);
 
-    // 3. Update fungsi untuk menyertakan kata kunci pencarian saat filter status diklik
-    const handleFilterClick = (status) => {
-        router.get(
-            "/admin/buyers",
-            { status: status, search: search },
-            {
-                preserveState: true, // Menjaga state scroll dll
-                replace: true, // Mengganti history browser agar tidak menumpuk saat back
-            },
-        );
-    };
+
 
     // Komponen Search Bar (Ukuran & Gaya 100% sama dengan TopNavbar)
     const renderSearchBar = (
@@ -100,30 +92,7 @@ export default function Index({ buyers, filters }) {
                         </div>
 
                         <div className="flex items-center gap-3">
-                            <div className="inline-flex bg-gray-50 rounded-lg p-1 transition-all">
-                                <button
-                                    onClick={() => handleFilterClick("semua")}
-                                    className={`px-4 py-1.5 text-sm font-medium rounded-md shadow-sm transition-colors ${currentStatus === "semua" ? "bg-[#3949AB] text-white" : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"}`}
-                                >
-                                    Semua
-                                </button>
-                                <button
-                                    onClick={() => handleFilterClick("aktif")}
-                                    className={`px-4 py-1.5 text-sm font-medium rounded-md shadow-sm transition-colors ${currentStatus === "aktif" ? "bg-[#3949AB] text-white" : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"}`}
-                                >
-                                    Aktif
-                                </button>
-                                <button
-                                    onClick={() =>
-                                        handleFilterClick("nonaktif")
-                                    }
-                                    className={`px-4 py-1.5 text-sm font-medium rounded-md shadow-sm transition-colors ${currentStatus === "nonaktif" ? "bg-[#3949AB] text-white" : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"}`}
-                                >
-                                    Nonaktif
-                                </button>
-                            </div>
-
-                            {/* Export button removed */}
+                            {/* Filter and Export buttons removed */}
                         </div>
                     </div>
 
@@ -288,15 +257,7 @@ export default function Index({ buyers, filters }) {
                                                     {/* TOMBOL HAPUS - Sekarang identik dengan tombol Detail */}
                                                     <button
                                                         className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
-                                                        onClick={() => {
-                                                            if (
-                                                                confirm(
-                                                                    "Apakah Anda yakin ingin menghapus data ini?",
-                                                                )
-                                                            ) {
-                                                                // Logika hapusmu di sini
-                                                            }
-                                                        }}
+                                                        onClick={() => setSelectedUserForDeactivation(user)}
                                                     >
                                                         <svg
                                                             className="w-3.5 h-3.5"
@@ -430,6 +391,26 @@ export default function Index({ buyers, filters }) {
                     )}
                 </div>
             </div>
+
+            {/* Modal Nonaktifkan Akun */}
+            <DeactivateConfirmModal
+                isOpen={!!selectedUserForDeactivation}
+                onClose={() => setSelectedUserForDeactivation(null)}
+                onConfirm={() => {
+                    if (!selectedUserForDeactivation) return;
+                    router.delete(`/admin/buyers/${selectedUserForDeactivation.id}`, {
+                        preserveScroll: true,
+                        onStart: () => setIsProcessingDeactivate(true),
+                        onFinish: () => {
+                            setIsProcessingDeactivate(false);
+                            setSelectedUserForDeactivation(null);
+                        }
+                    });
+                }}
+                namaPengguna={selectedUserForDeactivation?.name}
+                avatarPath={selectedUserForDeactivation?.foto_profil_path?.startsWith("http") ? selectedUserForDeactivation.foto_profil_path : selectedUserForDeactivation?.foto_profil_path ? `/storage/${selectedUserForDeactivation.foto_profil_path}` : null}
+                isProcessing={isProcessingDeactivate}
+            />
         </AdminLayout>
     );
 }

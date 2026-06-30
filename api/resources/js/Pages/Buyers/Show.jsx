@@ -1,11 +1,14 @@
 import React, { useState } from "react";
-import { Head, Link } from "@inertiajs/react";
+import { Head, Link, router } from "@inertiajs/react";
 import EditExpirationModal from "@/Components/Modals/EditExpirationModal";
+import DeactivateConfirmModal from "@/Components/Modals/DeactivateConfirmModal";
 import StatusBadge from "@/Components/UI/StatusBadge";
 import AdminLayout from "@/Layouts/AdminLayout";
 
 export default function Show({ buyer }) {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDeactivateModalOpen, setIsDeactivateModalOpen] = useState(false);
+    const [isProcessingDeactivate, setIsProcessingDeactivate] = useState(false);
 
     // Menggunakan data 'buyer' kiriman Controller
     const data = buyer || {};
@@ -318,7 +321,10 @@ export default function Show({ buyer }) {
                                 </div>
 
                                 <div className="flex flex-col gap-3 min-w-[200px] xl:border-l xl:border-gray-100 xl:pl-6 justify-center">
-                                    <button className="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-[#EF4444] hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+                                    <button 
+                                        onClick={() => setIsDeactivateModalOpen(true)}
+                                        className="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-[#EF4444] hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
+                                    >
                                         <svg
                                             className="w-4 h-4"
                                             fill="none"
@@ -469,6 +475,24 @@ export default function Show({ buyer }) {
                             isOpen={isEditModalOpen}
                             onClose={() => setIsEditModalOpen(false)}
                             buyer={data}
+                        />
+
+                        {/* Modal Nonaktifkan Akun */}
+                        <DeactivateConfirmModal
+                            isOpen={isDeactivateModalOpen}
+                            onClose={() => setIsDeactivateModalOpen(false)}
+                            onConfirm={() => {
+                                router.delete(`/admin/buyers/${data.id}`, {
+                                    onStart: () => setIsProcessingDeactivate(true),
+                                    onFinish: () => {
+                                        setIsProcessingDeactivate(false);
+                                        setIsDeactivateModalOpen(false);
+                                    }
+                                });
+                            }}
+                            namaPengguna={data.name}
+                            avatarPath={data.avatar?.startsWith("http") ? data.avatar : data.avatar ? `/storage/${data.avatar}` : null}
+                            isProcessing={isProcessingDeactivate}
                         />
                     </>
                 ) : (
