@@ -48,8 +48,7 @@ class PesananSeeder extends Seeder
 
         $scenarios = [];
         $targetOrders = [
-            ['count' => 5, 'status' => ['dibayar', 'menunggu_persetujuan']],
-            ['count' => 5, 'status' => ['dimasak', 'dalam_perjalanan']],
+            ['count' => 10, 'status' => ['dibayar', 'menunggu_persetujuan']],
             ['count' => 5, 'status' => ['selesai']], // 5 for today
             ['count' => 10, 'status' => ['selesai']], // 10 older ones
         ];

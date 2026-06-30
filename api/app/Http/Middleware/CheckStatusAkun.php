@@ -16,7 +16,7 @@ class CheckStatusAkun
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::check() && Auth::user()->status_akun !== 'aktif') {
+        if (Auth::check() && strtolower(Auth::user()->status_akun) === 'nonaktif') {
             if ($request->expectsJson() || $request->is('api/*')) {
                 $user = Auth::user();
                 if (method_exists($user, 'currentAccessToken') && $user->currentAccessToken()) {
