@@ -52,8 +52,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         }
 
         if (data['foto_profil_path'] != null) {
-          _currentPhotoUrl =
-              '${_service.baseUrlForStorage}/storage/${data['foto_profil_path']}';
+          final String pFoto = data['foto_profil_path'];
+          _currentPhotoUrl = pFoto.startsWith('http')
+              ? pFoto
+              : '${_service.baseUrlForStorage}/storage/$pFoto';
         }
         _isLoading = false;
       });

@@ -57,10 +57,23 @@ class MahasiswaSeeder extends Seeder
         ];
 
         foreach ($mahasiswaUsers as $index => $user) {
-            if (!isset($profilMahasiswa[$index])) break;
+            if (isset($profilMahasiswa[$index])) {
+                $profil = $profilMahasiswa[$index];
+            } else {
+                $profil = [
+                    'nama_mahasiswa'   => $user->nama_lengkap,
+                    'nim'              => '4.' . rand(10, 99) . '.' . rand(10, 99) . '.0.' . rand(10, 99),
+                    'jurusan'          => 'Lainnya',
+                    'no_telp'          => '08' . rand(1000000000, 9999999999),
+                    'masa_aktif'       => '2026-08-31',
+                ];
+            }
+            
+            $profil['foto_profil_path'] = 'https://i.pravatar.cc/150?u=' . urlencode($profil['nama_mahasiswa']);
+
             Mahasiswa::create(array_merge(
                 ['user_id' => $user->id],
-                $profilMahasiswa[$index]
+                $profil
             ));
         }
     }

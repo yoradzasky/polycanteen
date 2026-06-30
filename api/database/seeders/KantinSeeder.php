@@ -38,7 +38,8 @@ class KantinSeeder extends Seeder
             ],
         ];
 
-        foreach ($kantinList as $kantin) {
+        foreach ($kantinList as $index => $kantin) {
+            $kantin['logo_path'] = 'https://loremflickr.com/320/240/restaurant,storefront?lock=' . (crc32($kantin['nama_kantin']) % 1000);
             Kantin::create($kantin);
         }
     }

@@ -21,11 +21,11 @@ class PaymentProofScreen extends StatelessWidget {
     // AMBIL NAMA KANTIN DARI DATABASE (Atur fallback jika null)
     final namaKantin = order['kantin']?['nama_kantin'] ?? 'Kantin Sipil';
 
-    // SINKRONISASI STATUS: Jika di tabel "sukses" atau "settlement", paksa jadi "LUNAS"
+    // SINKRONISASI STATUS: Jika di tabel "sukses", "settlement", "lunas", atau "berhasil", paksa jadi "BERHASIL"
     String rawStatus = payment['status_bayar']?.toString().toLowerCase() ?? '';
-    String status = 'LUNAS'; 
-    if (rawStatus == 'sukses' || rawStatus == 'settlement' || rawStatus == 'lunas') {
-      status = 'LUNAS';
+    String status = 'PENDING'; 
+    if (rawStatus == 'sukses' || rawStatus == 'settlement' || rawStatus == 'lunas' || rawStatus == 'berhasil') {
+      status = 'BERHASIL';
     } else if (rawStatus.isNotEmpty) {
       status = rawStatus.toUpperCase();
     } else {
@@ -95,13 +95,13 @@ class PaymentProofScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          status == 'LUNAS' ? Icons.check_circle : Icons.pending, 
-                          color: status == 'LUNAS' ? primaryColor : const Color(0xFFF2994A), 
+                          status == 'BERHASIL' ? Icons.check_circle : Icons.pending, 
+                          color: status == 'BERHASIL' ? primaryColor : const Color(0xFFF2994A), 
                           size: 30
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          status == 'LUNAS' ? 'Pembayaran\nBerhasil' : 'Menunggu\nPembayaran',
+                          status == 'BERHASIL' ? 'Pembayaran\nBerhasil' : (status == 'PENDING' ? 'Menunggu\nPembayaran' : 'Pembayaran\n$status'),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -120,7 +120,7 @@ class PaymentProofScreen extends StatelessWidget {
                     _buildInfoRow(
                       'Status Pembayaran', 
                       status, 
-                      valueColor: status == 'LUNAS' ? primaryColor : const Color(0xFFF2994A)
+                      valueColor: status == 'BERHASIL' ? primaryColor : const Color(0xFFF2994A)
                     ),
                     _buildInfoRow('Waktu Pembayaran', waktuBayar),
 

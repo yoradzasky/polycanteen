@@ -39,6 +39,8 @@ class ProfileController extends Controller
         
         if ($user->role === 'pemilik') {
             $pemilik = $user->pemilik;
+            $fotoPemilik = $pemilik?->foto_profil_path;
+            $fotoFinal = $fotoPemilik ? $this->getFullUrl($fotoPemilik) : $fotoProfile;
             return response()->json([
                 'success' => true,
                 'data' => [
@@ -49,14 +51,16 @@ class ProfileController extends Controller
                     'nama' => $nama,
                     'nama_pemilik' => $pemilik?->nama_pemilik,
                     'no_telp' => $pemilik?->no_telp,
-                    'foto_profil_path' => $fotoProfile, // Use full URL here too
-                    'foto_profile' => $fotoProfile,
+                    'foto_profil_path' => $fotoFinal,
+                    'foto_profile' => $fotoFinal,
                 ]
             ]);
         }
         
         if ($user->role === 'pegawai') {
             $pegawai = $user->pegawai;
+            $fotoPegawai = $pegawai?->foto_profil_path;
+            $fotoFinal = $fotoPegawai ? $this->getFullUrl($fotoPegawai) : $fotoProfile;
             return response()->json([
                 'success' => true,
                 'data' => [
@@ -67,8 +71,8 @@ class ProfileController extends Controller
                     'nama' => $nama,
                     'nama_pemilik' => $pegawai?->nama_karyawan,
                     'no_telp' => $pegawai?->no_telp,
-                    'foto_profil_path' => $fotoProfile,
-                    'foto_profile' => $fotoProfile,
+                    'foto_profil_path' => $fotoFinal,
+                    'foto_profile' => $fotoFinal,
                 ]
             ]);
         }
