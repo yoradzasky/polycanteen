@@ -1,4 +1,4 @@
-package com.example.mobile
+package com.polines.polycanteen
 
 import io.flutter.embedding.android.FlutterActivity
 
