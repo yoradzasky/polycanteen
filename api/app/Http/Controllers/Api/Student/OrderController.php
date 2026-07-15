@@ -212,7 +212,7 @@ class OrderController extends Controller
             // Kirim notifikasi FCM ke penjual
             try {
                 $fcmService = app(\App\Services\FcmNotificationService::class);
-                $mahasiswaNama = Auth::user()->mahasiswa?->nama_mahasiswa ?? Auth::user()->username;
+                $mahasiswaNama = Auth::user()->mahasiswa?->nama_mahasiswa ?? Auth::user()->nama_lengkap;
                 $fcmService->sendToKantinOwners(
                     $pesanan->kantin_id,
                     'Pesanan Baru!',
@@ -268,7 +268,7 @@ class OrderController extends Controller
             // Kirim notifikasi FCM ke pemilik & pegawai kantin
             try {
                 $fcmService = app(\App\Services\FcmNotificationService::class);
-                $mahasiswaNama = Auth::user()->mahasiswa?->nama_mahasiswa ?? Auth::user()->username;
+                $mahasiswaNama = Auth::user()->mahasiswa?->nama_mahasiswa ?? Auth::user()->nama_lengkap;
                 $fcmService->sendToKantinOwners(
                     $pesanan->kantin_id,
                     'Pesanan Dibatalkan',
@@ -352,12 +352,12 @@ class OrderController extends Controller
                 ], 400);
             }
 
-            $pesanan->total_harga = $totalHarga;
+            $pesanan->total_harga = $totalHarga + 1000;
             $pesanan->save();
 
             // Hitung nominal pembayaran
             if ($pesanan->payment) {
-                $pesanan->payment->nominal = $totalHarga;
+                $pesanan->payment->nominal = $totalHarga + 1000;
                 $pesanan->payment->save();
             }
 
@@ -370,13 +370,16 @@ class OrderController extends Controller
                 return [
                     'id'              => $d->id,
                     'menu_id'         => $d->menu_id,
-                    'nama_item'       => $d->menu->nama_item ?? '-',
-                    'foto_menu'       => $d->menu->foto_menu ?? null,
                     'jumlah_pesanan'  => $d->jumlah_pesanan,
                     'harga_saat_beli' => $d->harga_saat_beli,
                     'subtotal'        => $d->subtotal,
                     'varian_snapshot' => $d->varian_snapshot,
                     'topping_snapshot'=> $d->topping_snapshot,
+                    'menu'            => [
+                        'id'        => $d->menu_id,
+                        'nama_item' => $d->menu->nama_item ?? '-',
+                        'foto_menu' => $d->menu->foto_menu ?? null,
+                    ],
                 ];
             })->values();
 

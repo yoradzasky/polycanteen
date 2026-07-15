@@ -365,7 +365,7 @@ class CartController extends Controller
                 'kantin_id' => $kantinId,
                 'tipe_pesanan' => 'dine-in', // Default
                 'status_pesanan' => 'pending',
-                'total_harga' => $totalHarga,
+                'total_harga' => $totalHarga + 1000,
                 'nomor_antrian' => null,
                 'catatan_pesanan' => $request->input('catatan_pesanan'),
             ]);
@@ -405,7 +405,7 @@ class CartController extends Controller
                 'metode_bayar' => 'qris',
                 'status_bayar' => 'pending',
                 'log_transaksi' => 'Pesanan dibuat, menunggu pembayaran',
-                'nominal' => $totalHarga,
+                'nominal' => $totalHarga + 1000,
                 'midtrans_order_id' => 'ORDER-' . strtoupper(\Illuminate\Support\Str::random(8)),
             ]);
 

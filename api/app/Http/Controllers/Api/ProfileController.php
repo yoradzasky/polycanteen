@@ -31,25 +31,48 @@ class ProfileController extends Controller
         return $host . $url;
     }
 
-    // Get current user profile
     public function show(Request $request)
     {
         $user = $request->user();
         $fotoProfile = $this->getFullUrl($user->foto_profile);
+        $nama = $user->courier_name;
         
         if ($user->role === 'pemilik') {
             $pemilik = $user->pemilik;
+            $fotoPemilik = $pemilik?->foto_profil_path;
+            $fotoFinal = $fotoPemilik ? $this->getFullUrl($fotoPemilik) : $fotoProfile;
             return response()->json([
                 'success' => true,
                 'data' => [
                     'id' => $user->id,
-                    'username' => $user->username,
+                    'nama_lengkap' => $user->nama_lengkap,
                     'email' => $user->email,
                     'role' => $user->role,
+                    'nama' => $nama,
                     'nama_pemilik' => $pemilik?->nama_pemilik,
                     'no_telp' => $pemilik?->no_telp,
-                    'foto_profil_path' => $fotoProfile, // Use full URL here too
-                    'foto_profile' => $fotoProfile,
+                    'foto_profil_path' => $fotoFinal,
+                    'foto_profile' => $fotoFinal,
+                ]
+            ]);
+        }
+        
+        if ($user->role === 'pegawai') {
+            $pegawai = $user->pegawai;
+            $fotoPegawai = $pegawai?->foto_profil_path;
+            $fotoFinal = $fotoPegawai ? $this->getFullUrl($fotoPegawai) : $fotoProfile;
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $user->id,
+                    'nama_lengkap' => $user->nama_lengkap,
+                    'email' => $user->email,
+                    'role' => $user->role,
+                    'nama' => $nama,
+                    'nama_pemilik' => $pegawai?->nama_karyawan,
+                    'no_telp' => $pegawai?->no_telp,
+                    'foto_profil_path' => $fotoFinal,
+                    'foto_profile' => $fotoFinal,
                 ]
             ]);
         }
@@ -58,9 +81,10 @@ class ProfileController extends Controller
             'success' => true,
             'data' => [
                 'id' => $user->id,
-                'username' => $user->username,
+                'nama_lengkap' => $user->nama_lengkap,
                 'email' => $user->email,
                 'role' => $user->role,
+                'nama' => $nama,
                 'foto_profile' => $fotoProfile,
             ]
         ]);
@@ -75,7 +99,7 @@ class ProfileController extends Controller
         $photoField = $request->hasFile('foto_profil') ? 'foto_profil' : 'foto_profile';
 
         $validated = $request->validate([
-            'username' => 'sometimes|string|max:255|unique:users,username,' . $user->id,
+            'nama_lengkap' => 'sometimes|string|max:255|unique:users,nama_lengkap,' . $user->id,
             'email' => 'sometimes|email|unique:users,email,' . $user->id,
             'nama_pemilik' => 'sometimes|string|max:255',
             'no_telp' => 'sometimes|string|max:20',
@@ -83,8 +107,8 @@ class ProfileController extends Controller
         ]);
 
         // Update user data
-        if (isset($validated['username'])) {
-            $user->username = $validated['username'];
+        if (isset($validated['nama_lengkap'])) {
+            $user->nama_lengkap = $validated['nama_lengkap'];
         }
         if (isset($validated['email'])) {
             $user->email = $validated['email'];
@@ -120,6 +144,24 @@ class ProfileController extends Controller
             $pemilik->save();
         }
 
+        // Update pegawai data if user is pegawai
+        if ($user->role === 'pegawai' && $user->pegawai) {
+            $pegawai = $user->pegawai;
+            
+            if (isset($validated['nama_pemilik'])) {
+                $pegawai->nama_karyawan = $validated['nama_pemilik'];
+            }
+            if (isset($validated['no_telp'])) {
+                $pegawai->no_telp = $validated['no_telp'];
+            }
+            
+            if ($request->hasFile($photoField)) {
+                $pegawai->foto_profil_path = $user->foto_profile;
+            }
+
+            $pegawai->save();
+        }
+
         $fotoProfileUrl = $this->getFullUrl($user->foto_profile);
 
         return response()->json([
@@ -127,12 +169,13 @@ class ProfileController extends Controller
             'message' => 'Profil berhasil diperbarui',
             'data' => [
                 'id' => $user->id,
-                'username' => $user->username,
+                'nama_lengkap' => $user->nama_lengkap,
                 'email' => $user->email,
                 'role' => $user->role,
+                'nama' => $user->courier_name,
                 'foto_profile' => $fotoProfileUrl,
                 'nama_pemilik' => $user->pemilik?->nama_pemilik,
-                'no_telp' => $user->pemilik?->no_telp,
+                'no_telp' => $user->pemilik?->no_telp ?? $user->pegawai?->no_telp,
             ]
         ]);
     }

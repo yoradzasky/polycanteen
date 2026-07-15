@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:geolocator/geolocator.dart';
@@ -192,14 +193,12 @@ class _OrderListScreenState extends State<OrderListScreen> {
       
       bool matchesTab = false;
       if (_selectedTabIndex == 0) {
-        matchesTab = status == 'pending' || status == 'menunggu_persetujuan'; // Baru masuk
+        matchesTab = status == 'pending' || status == 'menunggu_persetujuan' || status == 'dibayar' || status == 'menunggu_pembayaran'; // Baru masuk
       } else if (_selectedTabIndex == 1) {
-        matchesTab = status == 'dibayar' ||
-            status == 'dimasak' ||
+        matchesTab = status == 'dimasak' ||
             status == 'dalam_perjalanan' ||
             status == 'siap_diambil' ||
-            status == 'menunggu_dikirim' ||
-            status == 'menunggu_pembayaran'; // Diproses
+            status == 'menunggu_dikirim'; // Diproses
       } else {
         matchesTab = status == 'selesai'; // Selesai
       }
@@ -213,15 +212,16 @@ class _OrderListScreenState extends State<OrderListScreen> {
       } else if (_selectedTypeFilter == 'dine_in') {
         return tipePesanan.contains('dine in') ||
             tipePesanan.contains('makan di tempat') ||
-            tipePesanan == 'dine_in';
+            tipePesanan.contains('dine_in') ||
+            tipePesanan.contains('dine-in');
       } else if (_selectedTypeFilter == 'take_away') {
         return tipePesanan.contains('take away') ||
             tipePesanan.contains('bungkus') ||
-            tipePesanan == 'take_away';
+            tipePesanan.contains('take_away') ||
+            tipePesanan.contains('take-away');
       } else if (_selectedTypeFilter == 'delivery') {
         return tipePesanan.contains('delivery') ||
-            tipePesanan.contains('pengantaran') ||
-            tipePesanan == 'delivery';
+            tipePesanan.contains('pengantaran');
       }
 
       return true;
@@ -432,7 +432,8 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                     (o) =>
                                         o['status_pesanan'] == 'dibayar' ||
                                         o['status_pesanan'] == 'pending' ||
-                                        o['status_pesanan'] == 'menunggu_persetujuan',
+                                        o['status_pesanan'] == 'menunggu_persetujuan' ||
+                                        o['status_pesanan'] == 'menunggu_pembayaran',
                                   )
                                   .length,
                               ),
@@ -446,8 +447,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                           o['status_pesanan'] == 'dimasak' ||
                                           o['status_pesanan'] == 'dalam_perjalanan' ||
                                           o['status_pesanan'] == 'siap_diambil' ||
-                                          o['status_pesanan'] == 'menunggu_dikirim' ||
-                                          o['status_pesanan'] == 'menunggu_pembayaran',
+                                          o['status_pesanan'] == 'menunggu_dikirim',
                                     )
                                     .length,
                               ),
@@ -545,7 +545,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                         final status = orderMap['status_pesanan'];
                         final orderId = orderMap['id'];
 
-                        if (status == 'selesai') {
+                        if (status == 'selesai' || status == 'dibatalkan') {
                           return CompletedOrderCard(
                             key: ValueKey(orderId),
                             order: orderMap,
@@ -889,16 +889,26 @@ class CompletedOrderCard extends StatelessWidget {
                       const SizedBox(height: 6),
                       Row(
                         children: [
-                          const Icon(
-                            Icons.check,
-                            color: Color(0xFF27AE60),
+                          Icon(
+                            order['status_pesanan'] == 'selesai'
+                                ? Icons.check
+                                : Icons.close,
+                            color: order['status_pesanan'] == 'selesai'
+                                ? const Color(0xFF27AE60)
+                                : const Color(0xFFE53935),
                             size: 16,
                           ),
                           const SizedBox(width: 4),
-                          const Text(
-                            'Selesai',
+                          Text(
+                            order['status_pesanan'] == 'selesai'
+                                ? 'Selesai'
+                                : (order['status_pesanan'] == 'ditolak'
+                                    ? 'Ditolak'
+                                    : 'Dibatalkan'),
                             style: TextStyle(
-                              color: Color(0xFF27AE60),
+                              color: order['status_pesanan'] == 'selesai'
+                                  ? const Color(0xFF27AE60)
+                                  : const Color(0xFFE53935),
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
                             ),
@@ -966,15 +976,23 @@ class OrderCard extends StatelessWidget {
     String catatan = order['catatan_pesanan'] ?? '';
     String tipePesanan = order['tipe_pesanan'] ?? '-';
 
+    final baseUrl = dotenv.env['BASE_URL'] ?? 'http://192.168.1.14:8000/api';
+    final cleanBase = baseUrl.replaceAll(RegExp(r'/api$'), '').replaceAll(RegExp(r'/mobile$'), '');
+    final fotoPath = order['mahasiswa']?['foto_profil_path'];
+
     // Tentukan warna tag berdasarkan tipe pesanan
     Color tipeColor = Colors.grey;
     Color tipeBgColor = Colors.grey.shade100;
     if (tipePesanan.toLowerCase().contains('dine in') ||
-        tipePesanan.toLowerCase().contains('makan di tempat')) {
+        tipePesanan.toLowerCase().contains('makan di tempat') ||
+        tipePesanan.toLowerCase().contains('dine_in') ||
+        tipePesanan.toLowerCase().contains('dine-in')) {
       tipeColor = const Color(0xFF27AE60);
       tipeBgColor = const Color(0xFFB9F6CA).withValues(alpha: 0.5);
     } else if (tipePesanan.toLowerCase().contains('take away') ||
-        tipePesanan.toLowerCase().contains('bungkus')) {
+        tipePesanan.toLowerCase().contains('bungkus') ||
+        tipePesanan.toLowerCase().contains('take_away') ||
+        tipePesanan.toLowerCase().contains('take-away')) {
       tipeColor = const Color(0xFFF2994A);
       tipeBgColor = const Color(0xFFFFF3F0);
     }
@@ -1003,11 +1021,16 @@ class OrderCard extends StatelessWidget {
                 CircleAvatar(
                   radius: 22,
                   backgroundColor: Colors.grey.shade300,
-                  child: const Icon(
-                    Icons.person,
-                    color: Colors.white,
-                    size: 24,
-                  ),
+                  backgroundImage: (fotoPath != null && fotoPath.toString().isNotEmpty)
+                      ? NetworkImage(fotoPath.toString().startsWith('http') ? fotoPath : '$cleanBase/storage/$fotoPath')
+                      : null,
+                  child: (fotoPath == null || fotoPath.toString().isEmpty)
+                      ? const Icon(
+                          Icons.person,
+                          color: Colors.white,
+                          size: 24,
+                        )
+                      : null,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -1272,7 +1295,7 @@ class OrderCard extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                if (tabIndex == 0) ...[
+                if (tabIndex == 0 && (order['status_pesanan'] == 'pending' || order['status_pesanan'] == 'menunggu_persetujuan')) ...[
                   Row(
                     children: [
                       Expanded(
@@ -1411,7 +1434,7 @@ class OrderCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                ] else if (tabIndex == 1 &&
+                ] else if (tabIndex == 0 &&
                     order['status_pesanan'] == 'dibayar') ...[
                   SizedBox(
                     width: double.infinity,
@@ -1468,7 +1491,7 @@ class OrderCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                ] else if (tabIndex == 1 &&
+                ] else if (tabIndex == 0 &&
                     order['status_pesanan'] == 'menunggu_pembayaran') ...[
                   SizedBox(
                     width: double.infinity,
@@ -1793,6 +1816,10 @@ class OrderDetailsDialog extends StatelessWidget {
     final notes = order['catatan_pesanan'] ?? '';
     final orderType = order['tipe_pesanan'] ?? '-';
 
+    final baseUrl = dotenv.env['BASE_URL'] ?? 'http://192.168.1.14:8000/api';
+    final cleanBase = baseUrl.replaceAll(RegExp(r'/api$'), '').replaceAll(RegExp(r'/mobile$'), '');
+    final fotoPath = order['mahasiswa']?['foto_profil_path'];
+
     // Format order time
     String orderTime = '-';
     if (order['created_at'] != null) {
@@ -1947,7 +1974,12 @@ class OrderDetailsDialog extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.person_outline, size: 18, color: Colors.grey),
+                          (fotoPath != null && fotoPath.toString().isNotEmpty)
+                              ? CircleAvatar(
+                                  radius: 12,
+                                  backgroundImage: NetworkImage(fotoPath.toString().startsWith('http') ? fotoPath : '$cleanBase/storage/$fotoPath'),
+                                )
+                              : const Icon(Icons.person_outline, size: 18, color: Colors.grey),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -1986,7 +2018,58 @@ class OrderDetailsDialog extends StatelessWidget {
                       final namaMenu = item['menu']?['nama_item'] ?? 'Item';
                       final qty = int.tryParse(item['jumlah_pesanan']?.toString() ?? '1') ?? 1;
                       final hargaSatuan = (double.tryParse(item['harga_saat_beli']?.toString() ?? '0') ?? 0).toInt();
-                      final hasVarian = item['varian_snapshot'] != null;
+                      final dynamic rawVarian = item['varian_snapshot'];
+                      final List<Map<String, String>> parsedVariants = [];
+
+                      if (rawVarian != null) {
+                        if (rawVarian is Map) {
+                          rawVarian.forEach((key, value) {
+                            final category = key.toString();
+                            if (value is Map) {
+                              final nama = value['nama'] ?? value['name'] ?? '-';
+                              parsedVariants.add({
+                                'category': category,
+                                'name': nama.toString(),
+                              });
+                            } else if (value is List) {
+                              for (var v in value) {
+                                if (v is Map) {
+                                  final nama = v['nama'] ?? v['name'] ?? '-';
+                                  parsedVariants.add({
+                                    'category': category,
+                                    'name': nama.toString(),
+                                  });
+                                } else {
+                                  parsedVariants.add({
+                                    'category': category,
+                                    'name': v.toString(),
+                                  });
+                                }
+                              }
+                            } else {
+                              parsedVariants.add({
+                                'category': category,
+                                'name': value.toString(),
+                              });
+                            }
+                          });
+                        } else if (rawVarian is List) {
+                          for (var v in rawVarian) {
+                            if (v is Map) {
+                              final nama = v['nama'] ?? v['name'] ?? v.toString();
+                              parsedVariants.add({
+                                'category': 'Varian',
+                                'name': nama.toString(),
+                              });
+                            } else {
+                              parsedVariants.add({
+                                'category': 'Varian',
+                                'name': v.toString(),
+                              });
+                            }
+                          }
+                        }
+                      }
 
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12.0),
@@ -2021,11 +2104,17 @@ class OrderDetailsDialog extends StatelessWidget {
                                       color: Color(0xFF1A1A2E),
                                     ),
                                   ),
-                                  if (hasVarian) ...[
-                                    const SizedBox(height: 2),
-                                    const Text(
-                                      '• Memiliki varian',
-                                      style: TextStyle(color: Colors.grey, fontSize: 11),
+                                  if (parsedVariants.isNotEmpty) ...[
+                                    const SizedBox(height: 4),
+                                    ...parsedVariants.map(
+                                      (v) => Text(
+                                        '• ${v['category']}: ${v['name']}',
+                                        style: TextStyle(
+                                          color: Colors.grey.shade600,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ],
@@ -2162,6 +2251,7 @@ class OrderDetailsDialog extends StatelessWidget {
                       ),
                       child: const Text(
                         'Lihat Halaman Detail',
+                        textAlign: TextAlign.center,
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),

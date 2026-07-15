@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 import '../widgets/profile_header_curve.dart';
 import '../services/profile_service.dart';
 
@@ -18,6 +19,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   bool _showNewPassword = false;
   bool _showConfirmPassword = false;
   String? _fotoProfile;
+  String _userRole = 'pegawai';
+
+  Color get _primaryColor => _userRole == 'pegawai'
+      ? const Color(0xFF5E7AC4)
+      : const Color(0xFF3949AB);
 
   @override
   void initState() {
@@ -25,7 +31,17 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     _currentPasswordController = TextEditingController();
     _newPasswordController = TextEditingController();
     _confirmPasswordController = TextEditingController();
+    _loadRole();
     _loadProfile();
+  }
+
+  Future<void> _loadRole() async {
+    final prefs = EncryptedSharedPreferences();
+    final role = await prefs.getString('user_role');
+    if (!mounted) return;
+    setState(() {
+      _userRole = role.isNotEmpty ? role : 'pegawai';
+    });
   }
 
   Future<void> _loadProfile() async {
@@ -103,42 +119,50 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: const Color(0xFFF4F6FB),
       body: SingleChildScrollView(
         child: Column(
           children: [
             ProfileHeaderCurve(
               title: 'Ubah Password',
+              primaryColor: _primaryColor,
               profileImage: Container(
                 padding: const EdgeInsets.all(4),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.3),
                   shape: BoxShape.circle,
                 ),
                 child: CircleAvatar(
                   radius: 40,
-                  backgroundColor: Colors.grey[300],
+                  backgroundColor: Colors.white.withValues(alpha: 0.2),
                   backgroundImage: _fotoProfile != null
                       ? NetworkImage("$_fotoProfile?v=${DateTime.now().millisecondsSinceEpoch}")
                       : null,
                   child: _fotoProfile == null
-                      ? Icon(
+                      ? const Icon(
                           Icons.person,
                           size: 40,
-                          color: Colors.grey[600],
+                          color: Colors.white70,
                         )
                       : null,
                 ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(20.0),
               child: Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))],
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -162,9 +186,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         setState(() => _showNewPassword = !_showNewPassword);
                       },
                     ),
-                    const Padding(
-                      padding: EdgeInsets.only(top: 8, bottom: 16),
-                      child: Text('Minimal 8 karakter dengan kombinasi huruf dan angka.', style: TextStyle(color: Colors.grey, fontSize: 10)),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8, bottom: 16),
+                      child: Text(
+                        'Minimal 8 karakter dengan kombinasi huruf dan angka.',
+                        style: TextStyle(color: Colors.grey.shade400, fontSize: 11),
+                      ),
                     ),
                     _buildInputLabel('Konfirmasi Password Baru'),
                     _buildPasswordField(
@@ -178,13 +205,14 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     const SizedBox(height: 32),
                     SizedBox(
                       width: double.infinity,
-                      height: 48,
+                      height: 52,
                       child: ElevatedButton(
                         onPressed: _isLoading ? null : _changePassword,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFF59E0B),
-                          disabledBackgroundColor: const Color(0xFFD4A574),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          backgroundColor: _primaryColor,
+                          disabledBackgroundColor: _primaryColor.withValues(alpha: 0.5),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          elevation: 0,
                         ),
                         child: _isLoading
                             ? const SizedBox(
@@ -195,7 +223,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                                 ),
                               )
-                            : const Text('Simpan Perubahan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                            : const Text('Simpan Perubahan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
                       ),
                     ),
                   ],
@@ -211,7 +239,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   Widget _buildInputLabel(String label) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
-      child: Text(label, style: const TextStyle(color: Color(0xFF6B7280), fontSize: 12, fontWeight: FontWeight.w600)),
+      child: Text(label, style: TextStyle(color: Colors.grey.shade500, fontSize: 13, fontWeight: FontWeight.w600)),
     );
   }
 
@@ -227,7 +255,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       decoration: InputDecoration(
         hintText: hint,
         filled: true,
-        fillColor: const Color(0xFFF9FAFB),
+        fillColor: const Color(0xFFF4F6FB),
         suffixIcon: IconButton(
           icon: Icon(
             isVisible ? Icons.visibility : Icons.visibility_off,

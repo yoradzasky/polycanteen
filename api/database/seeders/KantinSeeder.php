@@ -9,34 +9,37 @@ class KantinSeeder extends Seeder
 {
     public function run(): void
     {
+        // Koordinat kampus Polines Tembalang: -7.0519, 110.4353
+        // Kantin-kantin di area kampus Politeknik Negeri Semarang
         $kantinList = [
             [
-                'nama_kantin'    => 'Kantin Barokah',
-                'lokasi_lengkap' => 'Gedung A Lantai 1, Politeknik Negeri Salatiga',
-                'longitude'      => 110.4956789,
-                'latitude'       => -7.3304321,
+                'nama_kantin'    => 'Kantin Teknik (Kantek)',
+                'lokasi_lengkap' => 'Dekat Gedung Teknik Mesin & Teknik Elektro, Kampus Polines, Jl. Prof. Soedarto, Tembalang, Semarang',
+                'longitude'      => 110.4358,
+                'latitude'       => -7.0522,
                 'status_toko'    => 'buka',
-                'logo_path'      => 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&auto=format&fit=crop',
+                'logo_path'      => null,
             ],
             [
-                'nama_kantin'    => 'Warung Bu Sri',
-                'lokasi_lengkap' => 'Gedung B Samping Aula, Politeknik Negeri Salatiga',
-                'longitude'      => 110.4961234,
-                'latitude'       => -7.3307654,
+                'nama_kantin'    => 'Kantin Tata Niaga (TN)',
+                'lokasi_lengkap' => 'Dekat Gedung Jurusan Akuntansi & Administrasi Bisnis, Kampus Polines, Jl. Prof. Soedarto, Tembalang, Semarang',
+                'longitude'      => 110.4347,
+                'latitude'       => -7.0515,
                 'status_toko'    => 'buka',
-                'logo_path'      => 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&auto=format&fit=crop',
+                'logo_path'      => null,
             ],
             [
-                'nama_kantin'    => 'Kantin Pak Agus',
-                'lokasi_lengkap' => 'Gedung C Dekat Parkiran, Politeknik Negeri Salatiga',
-                'longitude'      => 110.4948765,
-                'latitude'       => -7.3312345,
+                'nama_kantin'    => 'Kantin GKT (Gedung Kuliah Terpadu)',
+                'lokasi_lengkap' => 'Lantai 1 Gedung Kuliah Terpadu, Kampus Polines, Jl. Prof. Soedarto, Tembalang, Semarang',
+                'longitude'      => 110.4352,
+                'latitude'       => -7.0518,
                 'status_toko'    => 'tutup',
-                'logo_path'      => 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=500&auto=format&fit=crop',
+                'logo_path'      => null,
             ],
         ];
 
-        foreach ($kantinList as $kantin) {
+        foreach ($kantinList as $index => $kantin) {
+            $kantin['logo_path'] = 'https://loremflickr.com/320/240/restaurant,storefront?lock=' . (crc32($kantin['nama_kantin']) % 1000);
             Kantin::create($kantin);
         }
     }

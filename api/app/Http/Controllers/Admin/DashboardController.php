@@ -43,8 +43,15 @@ class DashboardController extends Controller
             ->limit(100) 
             ->get()
             ->map(function ($pesanan) {
-                $nama = $pesanan->mahasiswa?->nama_mahasiswa ?? $pesanan->mahasiswa?->user?->username ?? 'Unknown';
-                $fotoProfile = $pesanan->mahasiswa?->user?->foto_profile ?? 'https://ui-avatars.com/api/?name=' . urlencode($nama) . '&background=random&color=fff';
+                $nama = $pesanan->mahasiswa?->nama_mahasiswa ?? $pesanan->mahasiswa?->user?->nama_lengkap ?? 'Unknown';
+                $fotoRaw = $pesanan->mahasiswa?->foto_profil_path;
+                if ($fotoRaw && !str_starts_with($fotoRaw, 'http')) {
+                    $fotoProfile = '/storage/' . $fotoRaw;
+                } elseif ($fotoRaw) {
+                    $fotoProfile = $fotoRaw;
+                } else {
+                    $fotoProfile = 'https://ui-avatars.com/api/?name=' . urlencode($nama) . '&background=random&color=fff';
+                }
                 
                 return [
                     'id' => $pesanan->id,
@@ -63,16 +70,24 @@ class DashboardController extends Controller
 
         // 2. Ambil registrasi akun baru (Batasi misal 50 terbaru)
         $registrasi = User::where('role', 'mahasiswa')
+            ->with('mahasiswa')
             ->orderBy('created_at', 'desc')
             ->limit(50)
             ->get()
             ->map(function ($user) {
-                $fotoProfile = $user->foto_profile ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->username) . '&background=random&color=fff';
+                $fotoRaw = $user->mahasiswa?->foto_profil_path;
+                if ($fotoRaw && !str_starts_with($fotoRaw, 'http')) {
+                    $fotoProfile = '/storage/' . $fotoRaw;
+                } elseif ($fotoRaw) {
+                    $fotoProfile = $fotoRaw;
+                } else {
+                    $fotoProfile = 'https://ui-avatars.com/api/?name=' . urlencode($user->nama_lengkap) . '&background=random&color=fff';
+                }
                 
                 return [
                     'id' => $user->id,
-                    // GUNAKAN $user->username
-                    'nama' => $user->username ?? 'Unknown', 
+                    // GUNAKAN $user->nama_lengkap
+                    'nama' => $user->nama_lengkap ?? 'Unknown', 
                     'userId' => $user->id,
                     'fotoProfile' => $fotoProfile,
                     'tipe' => 'Registrasi Akun Baru',

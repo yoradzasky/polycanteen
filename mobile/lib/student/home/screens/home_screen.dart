@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mobile/student/home/widgets/custom_snackbar.dart';
 import '../services/home_service.dart';
 import 'package:intl/intl.dart';
+import '../../../core/auth/services/auth_service.dart';
+import '../../../core/auth/screens/login_screen.dart';
 import '../widgets/filter_menu.dart';
 import '../../menu/screens/menu_detail.dart';
 import '../../order/screens/order_detail_screen.dart';
@@ -124,8 +126,25 @@ class _HomeScreenState extends State<HomeScreen> {
       });
       fetchCartData();
     } catch (e) {
+      final errorMsg = e.toString().replaceAll('Exception: ', '');
+      if (errorMsg.contains('Unauthenticated') || errorMsg.toLowerCase().contains('dinonaktifkan')) {
+        await AuthService.logout();
+        if (mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+            (route) => false,
+          );
+          CustomSnackBar.show(
+            context,
+            message: 'Sesi berakhir atau akun dinonaktifkan. Silakan login kembali.',
+            isError: true,
+          );
+        }
+        return;
+      }
+
       setState(() {
-        errorMessage = e.toString().replaceAll('Exception: ', '');
+        errorMessage = errorMsg;
         isLoading = false;
       });
     }
@@ -214,7 +233,7 @@ class _HomeScreenState extends State<HomeScreen> {
           .toList();
     }
 
-    // 3. Urutkan Gabungan (Harga dulu, baru Waktu jika harganya sama / waktu diminta)
+    // 3. Urutkan Gabungan (Harga/Waktu) secara aman
     if (activePriceSort != null || activeTimeSort != null) {
       filtered.sort((a, b) {
         int result = 0;
@@ -228,8 +247,8 @@ class _HomeScreenState extends State<HomeScreen> {
         }
 
         if (result == 0 && activeTimeSort != null) {
-          int timeA = a['estimasi_waktu'] ?? 999;
-          int timeB = b['estimasi_waktu'] ?? 999;
+          int timeA = int.tryParse(a['estimasi_waktu']?.toString() ?? '') ?? 999;
+          int timeB = int.tryParse(b['estimasi_waktu']?.toString() ?? '') ?? 999;
           result = activeTimeSort == 'asc'
               ? timeA.compareTo(timeB)
               : timeB.compareTo(timeA);
@@ -390,7 +409,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ],
                           ),
                         ),
-                        if (activeOrder != null) _buildActiveOrderCard(),
+                        if (activeOrder != null && activeOrder!['status_pesanan'] != 'selesai') _buildActiveOrderCard(),
                       ],
                     ),
                   ),
@@ -637,10 +656,21 @@ class _HomeScreenState extends State<HomeScreen> {
         status == 'dalam_perjalanan' ||
         status == 'selesai');
 
-    String label3 = (tipe == 'take_away') ? "Sedang Diantar" : "Siap Diambil";
+    String label3 = "Siap Diambil";
+    if (tipe == 'delivery') {
+      label3 = "Dikirim";
+    } else if (tipe == 'take_away') {
+      label3 = "Sedang Diantar";
+    }
 
     String alertText = "";
     if (tipe == 'take_away') {
+      if (status == 'dalam_perjalanan') {
+        alertText = "Pesanan Anda Sedang Diantar";
+      } else if (status == 'selesai') {
+        alertText = "Pesanan Anda telah sampai!";
+      }
+    } else if (tipe == 'delivery') {
       if (status == 'dalam_perjalanan') {
         alertText = "Pesanan Anda Sedang Diantar";
       } else if (status == 'selesai') {

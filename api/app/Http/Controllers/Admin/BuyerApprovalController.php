@@ -54,15 +54,18 @@ class BuyerApprovalController extends Controller
 
     public function approve(Request $request, int $application): RedirectResponse
     {
+        $request->validate(['account_expires_at' => 'nullable|date']);
+        $expiresAt = $request->has('account_expires_at') ? $request->input('account_expires_at') : false;
+
         try {
-            $result = $this->approvalService->approve($application, $request->user()?->id);
+            $result = $this->approvalService->approve($application, $request->user()?->id, $expiresAt);
         } catch (RuntimeException $exception) {
             return redirect()
                 ->back()
                 ->with('error', $exception->getMessage());
         }
 
-        $message = "Akun {$result['user']->username} berhasil disetujui.";
+        $message = "Akun {$result['user']->nama_lengkap} berhasil disetujui.";
         if ($result['is_default'] ?? true) {
             $message .= " Password default: {$result['default_password']}";
         } else {

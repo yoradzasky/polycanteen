@@ -34,7 +34,7 @@ class BuyerController extends Controller
         // Cari mahasiswa berdasarkan nama atau nim
         $results = User::where('role', 'mahasiswa')
             ->where(function ($q) use ($search) {
-                $q->where('username', 'like', "%{$search}%")
+                $q->where('nama_lengkap', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
                   ->orWhereHas('mahasiswa', function ($subQ) use ($search) {
                       $subQ->where('nama_mahasiswa', 'like', "%{$search}%")
@@ -47,7 +47,7 @@ class BuyerController extends Controller
             ->map(function($user) {
                 return [
                     'id' => $user->id,
-                    'name' => $user->mahasiswa->nama_mahasiswa ?? $user->username,
+                    'name' => $user->mahasiswa->nama_mahasiswa ?? $user->nama_lengkap,
                     'nim' => $user->mahasiswa->nim ?? '-',
                 ];
             });
@@ -57,10 +57,10 @@ class BuyerController extends Controller
 
     public function index(Request $request)
     {
-        $status = $request->input('status', 'semua');
         $search = $request->input('search', '');
 
         $query = User::where('role', 'mahasiswa')
+            ->where('status_akun', 'aktif')
             ->with(['mahasiswa' => function ($query) {
                 $query->withCount('pesanan')
                       ->withSum('pesanan', 'total_harga'); 
@@ -68,7 +68,7 @@ class BuyerController extends Controller
 
         if (!empty($search)) {
             $query->where(function ($q) use ($search) {
-                $q->where('username', 'like', "%{$search}%")
+                $q->where('nama_lengkap', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
                   ->orWhereHas('mahasiswa', function ($subQ) use ($search) {
                       $subQ->where('nama_mahasiswa', 'like', "%{$search}%")
@@ -77,20 +77,6 @@ class BuyerController extends Controller
             });
         }
 
-        if ($status === 'aktif') {
-            $query->whereHas('mahasiswa', function ($q) {
-                $q->whereNotNull('masa_aktif')
-                  ->where('masa_aktif', '>', Carbon::now());
-            });
-        } elseif ($status === 'nonaktif') {
-            $query->where(function ($q) {
-                $q->whereDoesntHave('mahasiswa')
-                  ->orWhereHas('mahasiswa', function ($subQ) {
-                      $subQ->whereNull('masa_aktif')
-                           ->orWhere('masa_aktif', '<=', Carbon::now());
-                  });
-            });
-        }
 
         /** @var \Illuminate\Pagination\LengthAwarePaginator $buyers */
         // Mengurutkan berdasarkan abjad (A-Z) dari kolom nama_mahasiswa di tabel mahasiswa
@@ -101,21 +87,19 @@ class BuyerController extends Controller
             'asc' // 'asc' untuk A-Z, ubah ke 'desc' jika ingin Z-A
         )->paginate(10);
         $buyers->withQueryString(); 
-
         $buyers->through(function ($user) {
             $mhs = $user->mahasiswa;
-            $isActive = $mhs && $mhs->masa_aktif && Carbon::parse($mhs->masa_aktif)->isFuture();
 
             return [
                 'id' => $user->id,
-                'name' => $mhs->nama_mahasiswa ?? $user->username,
+                'name' => $mhs->nama_mahasiswa ?? $user->nama_lengkap,
                 'nim' => $mhs->nim ?? '-',
                 'user_id' => '#USR-' . str_pad($user->id, 4, '0', STR_PAD_LEFT),
                 'email' => $user->email,
                 'phone' => $mhs->no_telp ?? '-',
                 'total_rp' => 'Rp ' . number_format($mhs->pesanan_sum_total_harga ?? 0, 0, ',', '.'),
                 'total_trx' => ($mhs->pesanan_count ?? 0) . ' transaksi',
-                'status' => $isActive ? 'Aktif' : 'Nonaktif',
+                'status' => ucfirst($user->status_akun ?? 'aktif'),
                 'date' => $user->created_at->translatedFormat('d M Y'),
                 'time' => $user->created_at->format('H:i') . ' WIB',
                 
@@ -130,7 +114,6 @@ class BuyerController extends Controller
         return Inertia::render('Buyers/Index', [
             'buyers' => $buyers,
             'filters' => [
-                'status' => $status,
                 'search' => $search
             ]
         ]);
@@ -158,13 +141,13 @@ class BuyerController extends Controller
 
         $buyerData = [
             'id' => $user->id,
-            'name' => $mhs?->nama_mahasiswa ?? $user->username,
+            'name' => $mhs?->nama_mahasiswa ?? $user->nama_lengkap,
             
             // --- TAMBAHAN BARU: Kirimkan NIM ---
             'nim' => $mhs?->nim ?? '-',
             // -----------------------------------
             
-            'status' => $isActive ? 'Aktif' : 'Nonaktif',
+            'status' => ucfirst($user->status_akun ?? 'aktif'),
             'email' => $user->email,
             'phone' => $mhs?->no_telp ?? '-',
             'user_id' => '#PBY-' . str_pad($user->id, 5, '0', STR_PAD_LEFT),
@@ -207,5 +190,17 @@ class BuyerController extends Controller
         $validated = $request->validated();
         $this->buyerService->updateActiveUntil($id, $validated['active_until']);
         return redirect()->back()->with('success', 'Masa aktif mahasiswa berhasil diperbarui.');
+    }
+
+    public function destroy($id)
+    {
+        $user = User::findOrFail($id);
+        $user->status_akun = 'nonaktif';
+        $user->save();
+
+        // Revoke all tokens so that if they are currently logged in, they get logged out
+        $user->tokens()->delete();
+
+        return redirect()->route('admin.buyers.index')->with('success', 'Akun mahasiswa berhasil dinonaktifkan.');
     }
 }

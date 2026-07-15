@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -5,7 +6,6 @@ import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:mobile/core/widgets/app_loading_animation.dart';
-
 
 class OrderDetailScreen extends StatefulWidget {
   final int pesananId;
@@ -23,6 +23,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   Map<String, dynamic>? _order;
+  Timer? _refreshTimer;
+
+  /// Terminal statuses that don't need further polling
+  static const _terminalStatuses = {'selesai', 'ditolak', 'dibatalkan', 'gagal'};
 
   @override
   void initState() {
@@ -40,6 +44,45 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     );
 
     _fetchOrderDetail();
+    _startAutoRefresh();
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startAutoRefresh() {
+    _refreshTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+      if (!mounted) return;
+      // Stop polling if the order has reached a terminal status
+      final currentStatus = _order?['status_pesanan'] ?? '';
+      if (_terminalStatuses.contains(currentStatus)) {
+        _refreshTimer?.cancel();
+        return;
+      }
+      _silentRefresh();
+    });
+  }
+
+  /// Refreshes order data without showing loading indicator
+  Future<void> _silentRefresh() async {
+    try {
+      final response = await _dio.get(
+        '/mahasiswa/orders/${widget.pesananId}',
+        options: await _authOptions(),
+      );
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        if (mounted) {
+          setState(() {
+            _order = response.data['data'];
+          });
+        }
+      }
+    } catch (_) {
+      // Silently ignore errors during auto-refresh
+    }
   }
 
   Future<Options> _authOptions() async {
@@ -91,6 +134,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     return baseUrl
         .replaceAll(RegExp(r'/api$'), '')
         .replaceAll(RegExp(r'/mobile$'), '');
+  }
+
+  String _getImageUrl(String? path, String baseUrl) {
+    if (path == null || path.isEmpty) return '';
+    if (path.startsWith('http')) return path;
+    return '$baseUrl/storage/$path';
   }
 
   Map<String, dynamic> _getOrderTypeConfig(String tipe) {
@@ -149,7 +198,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           elevation: 0,
           surfaceTintColor: Colors.transparent,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF1A1A2E), size: 20),
+            icon: const Icon(
+              Icons.arrow_back_ios_new,
+              color: Color(0xFF1A1A2E),
+              size: 20,
+            ),
             onPressed: () => Navigator.pop(context),
           ),
           title: const Text(
@@ -199,7 +252,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     final kantinLogo = _order!['kantin']?['logo_path'];
     final tipePesanan = _order!['tipe_pesanan'] ?? 'dine_in';
     final catatan = _order!['catatan_pesanan'];
-    final totalHarga = _order!['total_harga'];
+    final totalHarga = double.tryParse(_order!['total_harga']?.toString() ?? '0') ?? 0.0;
 
     final dynamic rawDetails = _order!['details'];
     final List<dynamic> details = rawDetails is List
@@ -297,7 +350,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF1A1A2E), size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Color(0xFF1A1A2E),
+            size: 20,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
@@ -311,12 +368,20 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
+      body: RefreshIndicator(
+        onRefresh: _silentRefresh,
+        color: const Color(0xFFF08D39),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
         child: Column(
           children: [
             // ── QR Code Section (At the very top) ──
             if (payment != null &&
-                ['sudah_bayar', 'sukses', 'berhasil'].contains(payment['status_bayar']) &&
+                [
+                  'sudah_bayar',
+                  'sukses',
+                  'berhasil',
+                ].contains(payment['status_bayar']) &&
                 _isActiveStatus(status)) ...[
               Container(
                 width: double.infinity,
@@ -325,12 +390,15 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFFFE0C2), width: 1),
+                  border: Border.all(
+                    color: const Color(0xFFFFE0C2),
+                    width: 1.5,
+                  ),
                   boxShadow: [
                     BoxShadow(
                       color: const Color(0xFFF08D39).withValues(alpha: 0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+                      blurRadius: 15,
+                      offset: const Offset(0, 6),
                     ),
                   ],
                 ),
@@ -355,7 +423,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       ),
                       child: Center(
                         child: QrImageView(
-                          data: 'ORD-${widget.pesananId}',
+                          data: tipePesanan == 'delivery'
+                              ? (_order!['qr_token'] ?? 'ORD-${widget.pesananId}')
+                              : 'ORD-${widget.pesananId}',
                           version: QrVersions.auto,
                           size: 140.0,
                         ),
@@ -385,12 +455,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFFFE0C2), width: 1),
+                border: Border.all(color: const Color(0xFFFFE0C2), width: 1.5),
                 boxShadow: [
                   BoxShadow(
                     color: const Color(0xFFF08D39).withValues(alpha: 0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+                    blurRadius: 15,
+                    offset: const Offset(0, 6),
                   ),
                 ],
               ),
@@ -403,9 +473,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       // Kantin logo
                       ClipRRect(
                         borderRadius: BorderRadius.circular(10),
-                        child: kantinLogo != null
+                        child: kantinLogo != null && kantinLogo.toString().isNotEmpty
                             ? Image.network(
-                                '$baseUrl/storage/$kantinLogo',
+                                _getImageUrl(kantinLogo.toString(), baseUrl),
                                 width: 44,
                                 height: 44,
                                 fit: BoxFit.cover,
@@ -431,9 +501,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             Text(
                               (status == 'ditolak' || status == 'dibatalkan')
                                   ? 'Nomor Antrean'
-                                  : (nomorAntrian == '-' || status == 'menunggu_persetujuan' || status == 'menunggu_pembayaran')
-                                      ? 'Antrean: Belum Tersedia'
-                                      : 'Antrean: $nomorAntrian',
+                                  : (nomorAntrian == '-' ||
+                                        status == 'menunggu_persetujuan' ||
+                                        status == 'menunggu_pembayaran')
+                                  ? 'Antrean: Belum Tersedia'
+                                  : 'Antrean: $nomorAntrian',
                               style: TextStyle(
                                 fontSize: 13,
                                 color: Colors.grey.shade600,
@@ -494,7 +566,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           const SizedBox(width: 8),
                           Text(
                             tipePesanan == 'delivery'
-                                ? 'Pesanan siap diantar ke lokasi!'
+                                ? 'Pesanan sedang diantar ke lokasi'
                                 : 'Pesanan siap diambil!',
                             style: const TextStyle(
                               color: Color(0xFF2E7D32),
@@ -518,12 +590,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFFFE0C2), width: 1),
+                border: Border.all(color: const Color(0xFFFFE0C2), width: 1.5),
                 boxShadow: [
                   BoxShadow(
                     color: const Color(0xFFF08D39).withValues(alpha: 0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+                    blurRadius: 15,
+                    offset: const Offset(0, 6),
                   ),
                 ],
               ),
@@ -552,12 +624,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFFFE0C2), width: 1),
+                border: Border.all(color: const Color(0xFFFFE0C2), width: 1.5),
                 boxShadow: [
                   BoxShadow(
                     color: const Color(0xFFF08D39).withValues(alpha: 0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+                    blurRadius: 15,
+                    offset: const Offset(0, 6),
                   ),
                 ],
               ),
@@ -587,6 +659,18 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   ],
                   Divider(color: Colors.grey.shade200),
                   const SizedBox(height: 8),
+                  if (totalHarga >= 1000) ...[
+                    _buildInfoRow(
+                      'Subtotal',
+                      'Rp ${_formatCurrency(totalHarga - 1000)}',
+                    ),
+                    const SizedBox(height: 8),
+                    _buildInfoRow(
+                      'Biaya Layanan',
+                      'Rp 1.000',
+                    ),
+                    const SizedBox(height: 8),
+                  ],
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -620,12 +704,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFFFE0C2), width: 1),
+                border: Border.all(color: const Color(0xFFFFE0C2), width: 1.5),
                 boxShadow: [
                   BoxShadow(
                     color: const Color(0xFFF08D39).withValues(alpha: 0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+                    blurRadius: 15,
+                    offset: const Offset(0, 6),
                   ),
                 ],
               ),
@@ -651,8 +735,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   ],
                   const SizedBox(height: 8),
                   _buildInfoRow('Waktu Pesan', _formatDate(createdAt)),
-
-
                 ],
               ),
             ),
@@ -668,12 +750,15 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFFFE0C2), width: 1),
+                  border: Border.all(
+                    color: const Color(0xFFFFE0C2),
+                    width: 1.5,
+                  ),
                   boxShadow: [
                     BoxShadow(
                       color: const Color(0xFFF08D39).withValues(alpha: 0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+                      blurRadius: 15,
+                      offset: const Offset(0, 6),
                     ),
                   ],
                 ),
@@ -700,7 +785,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         );
                       }),
                     ),
-                    if (ulasan['komentar'] != null && ulasan['komentar'].toString().trim().isNotEmpty) ...[
+                    if (ulasan['komentar'] != null &&
+                        ulasan['komentar'].toString().trim().isNotEmpty) ...[
                       const SizedBox(height: 8),
                       Text(
                         ulasan['komentar'].toString().trim(),
@@ -719,6 +805,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           ],
         ),
       ),
+      ),
     );
   }
 
@@ -727,7 +814,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   // ==========================================
   Widget _buildProgressTracker(int activeStep, String tipePesanan) {
     final steps = tipePesanan == 'delivery'
-        ? ['Diterima', 'Disiapkan', 'Dikirim']
+        ? ['Diterima', 'Dimasak', 'Dikirim']
         : ['Diterima', 'Dimasak', 'Siap Diambil'];
 
     return Row(
@@ -825,9 +912,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           // Menu photo
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: photo != null
+            child: photo != null && photo.toString().isNotEmpty
                 ? Image.network(
-                    '$baseUrl/storage/$photo',
+                    _getImageUrl(photo.toString(), baseUrl),
                     width: 56,
                     height: 56,
                     fit: BoxFit.cover,

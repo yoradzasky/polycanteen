@@ -260,67 +260,7 @@ class _DeliveryTrackingScreenState extends State<DeliveryTrackingScreen> {
     );
   }
 
-  Future<void> _scanQrAndConfirm() async {
-    final scannedCode = await Navigator.push<String>(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const QrScannerScreen(returnMode: true),
-      ),
-    );
 
-    if (scannedCode != null && scannedCode.isNotEmpty) {
-      _confirmDelivery(scannedCode);
-    }
-  }
-
-  Future<void> _confirmDelivery(String qrToken) async {
-    // Show loading
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (c) => const Center(child: AppLoadingAnimation()),
-    );
-
-    try {
-      final response = await _dio.post(
-        '/penjual/deliveries/${widget.pesananId}/confirm',
-        data: {'qr_token': qrToken},
-        options: await _authOptions(),
-      );
-
-      if (mounted) {
-        Navigator.pop(context); // close loading dialog
-      }
-
-      if (response.statusCode == 200) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Pengantaran berhasil dikonfirmasi!'),
-              backgroundColor: Colors.green,
-            ),
-          );
-          _positionStreamSub?.cancel();
-          Navigator.pop(context); // go back
-        }
-      }
-    } on DioException catch (e) {
-      if (mounted) {
-        Navigator.pop(context); // close loading
-        final msg = e.response?.data?['message'] ?? 'Gagal konfirmasi pesanan';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg), backgroundColor: Colors.red),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Terjadi kesalahan: $e'), backgroundColor: Colors.red),
-        );
-      }
-    }
-  }
 
   @override
   void dispose() {
@@ -640,22 +580,6 @@ class _DeliveryTrackingScreenState extends State<DeliveryTrackingScreen> {
                     ],
                   ),
                 ),
-              const SizedBox(height: 24),
-              // Scan QR Button
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: _scanQrAndConfirm,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFF5A623),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: const Text('Scan QR', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                ),
-              ),
             ],
           ),
         );

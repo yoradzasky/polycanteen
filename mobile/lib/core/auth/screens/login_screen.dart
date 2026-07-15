@@ -325,15 +325,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   String? _selectedJurusan;
   final List<String> _jurusanList = [
-    'Teknologi Informasi',
-    'Produksi Pertanian',
-    'Teknologi Pertanian',
-    'Peternakan',
-    'Manajemen Agribisnis',
-    'Kesehatan',
-    'Teknik',
-    'Bahasa, Komunikasi dan Pariwisata',
-    'Lainnya',
+    'Teknik Mesin',
+    'Teknik Elektro',
+    'Teknik Sipil',
+    'Administrasi Bisnis',
+    'Akuntansi',
   ];
 
   @override
@@ -389,6 +385,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
 
     try {
+      final String? fcmToken = await NotificationService.getToken();
+
       final String baseUrl =
           dotenv.env['BASE_URL'] ?? 'http://192.168.1.14:8000/api';
       final Uri url = Uri.parse('$baseUrl/register');
@@ -405,6 +403,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
       request.fields['phone'] = phone;
       request.fields['password'] = password;
+      if (fcmToken != null) {
+        request.fields['fcm_token'] = fcmToken;
+      }
 
       if (_ktmImage != null) {
         request.files.add(

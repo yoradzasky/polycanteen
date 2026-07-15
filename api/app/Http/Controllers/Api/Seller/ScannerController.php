@@ -16,8 +16,10 @@ class ScannerController extends Controller
     private function getKantinId()
     {
         $user = Auth::user();
-        if ($user->pegawai) return $user->pegawai->kantin_id;
-        if ($user->pemilik) return $user->pemilik->kantin_id;
+        if ($user->pegawai)
+            return $user->pegawai->kantin_id;
+        if ($user->pemilik)
+            return $user->pemilik->kantin_id;
         return null;
     }
 
@@ -45,6 +47,7 @@ class ScannerController extends Controller
             // Parse order ID dari QR string (format: "ORD-20240512" atau langsung angka)
             $qrData = trim($request->qr_data);
             $pesananId = null;
+            $pesanan = null;
 
             // Coba parse format "ORD-{id}" atau "{id}"
             if (preg_match('/^ORD-(\d+)$/i', $qrData, $matches)) {
@@ -53,21 +56,21 @@ class ScannerController extends Controller
                 $pesananId = (int) $qrData;
             }
 
-            if (!$pesananId) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Format QR code tidak valid. Pastikan QR code berasal dari aplikasi Polycanteen.',
-                ], 422);
+            if ($pesananId) {
+                // Cari pesanan berdasarkan ID
+                $pesanan = Pesanan::with(['mahasiswa', 'details.menu', 'payment'])
+                    ->find($pesananId);
+            } else {
+                // Coba cari berdasarkan qr_token (untuk pesanan tipe delivery)
+                $pesanan = Pesanan::with(['mahasiswa', 'details.menu', 'payment'])
+                    ->where('qr_token', $qrData)
+                    ->first();
             }
-
-            // Cari pesanan dengan eager-load relasi
-            $pesanan = Pesanan::with(['mahasiswa', 'details.menu', 'payment'])
-                ->find($pesananId);
 
             if (!$pesanan) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Pesanan tidak ditemukan.',
+                    'message' => 'Pesanan tidak ditemukan atau format QR tidak valid.',
                 ], 404);
             }
 

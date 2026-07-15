@@ -160,7 +160,7 @@ class CanteenService
 
                 // Tahap 2: Buat akun user untuk pemilik
                 $userPemilik = User::create([
-                    'username' => strstr($data['email'], '@', true) . rand(1000, 9999),
+                    'nama_lengkap' => strstr($data['email'], '@', true) . rand(1000, 9999),
                     'email' => $data['email'],
                     'password' => Hash::make('password'),
                     'role' => 'pemilik',
@@ -180,7 +180,7 @@ class CanteenService
                     foreach ($data['karyawan'] as $karyawan) {
                         // Buat akun user untuk setiap karyawan
                         $userKaryawan = User::create([
-                            'username' => strstr($karyawan['email'], '@', true) . rand(1000, 9999),
+                            'nama_lengkap' => strstr($karyawan['email'], '@', true) . rand(1000, 9999),
                             'email' => $karyawan['email'],
                             'password' => Hash::make('password'),
                             'role' => 'pegawai',
@@ -261,7 +261,7 @@ class CanteenService
                 $pegawaiDihapus = $kantin->pegawai()->whereNotIn('id', $payloadPegawaiIds)->get();
                 foreach ($pegawaiDihapus as $pegawai) {
                     if ($pegawai->user) {
-                        $pegawai->user->update(['status_akun' => 'suspend']);
+                        $pegawai->user->update(['status_akun' => 'nonaktif']);
                     }
                     $pegawai->delete();
                 }
@@ -285,7 +285,7 @@ class CanteenService
                         } else {
                             // Buat user dan pegawai baru
                             $userBaru = User::create([
-                                'username' => strstr($karyawanData['email'], '@', true) . rand(1000, 9999),
+                                'nama_lengkap' => strstr($karyawanData['email'], '@', true) . rand(1000, 9999),
                                 'email' => $karyawanData['email'],
                                 'password' => Hash::make('password'),
                                 'role' => 'pegawai',
@@ -326,13 +326,13 @@ class CanteenService
             return DB::transaction(function () use ($id) {
                 $kantin = Kantin::findOrFail($id);
 
-                // Tahap 1: Suspend akun pemilik
-                $kantin->pemilik->user()->update(['status_akun' => 'suspend']);
+                // Tahap 1: Nonaktifkan akun pemilik
+                $kantin->pemilik->user()->update(['status_akun' => 'nonaktif']);
 
-                // Tahap 2: Suspend semua akun pegawai kantin ini
+                // Tahap 2: Nonaktifkan semua akun pegawai kantin ini
                 $userIds = $kantin->pegawai()->pluck('user_id');
                 if ($userIds->isNotEmpty()) {
-                    User::whereIn('id', $userIds)->update(['status_akun' => 'suspend']);
+                    User::whereIn('id', $userIds)->update(['status_akun' => 'nonaktif']);
                 }
 
                 // Tahap 3: Soft delete kantin (mengisi kolom deleted_at)

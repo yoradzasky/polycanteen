@@ -30,11 +30,11 @@ class AuthController extends Controller
             ], 401); // 401 = Unauthorized
         }
 
-        // Cek apakah akun nonaktif
-        if ($user->status_akun === 'nonaktif') {
+        // Cek apakah akun dinonaktifkan
+        if (strtolower($user->status_akun) === 'nonaktif') {
             return response()->json([
                 'success' => false,
-                'message' => 'Akun Anda sedang dinonaktifkan. Silakan hubungi admin.'
+                'message' => 'Akun Anda telah dinonaktifkan. Silakan hubungi admin.'
             ], 403);
         }
 
@@ -58,8 +58,13 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        // Menghapus token milik user yang saat ini sedang mengakses
-        $request->user()->currentAccessToken()->delete();
+        $user = $request->user();
+
+        // Hapus FCM token dari database agar tidak menerima notifikasi lagi setelah logout
+        if ($user) {
+            $user->update(['fcm_token' => null]);
+            $user->currentAccessToken()->delete();
+        }
 
         return response()->json([
             'success' => true,
@@ -80,6 +85,7 @@ class AuthController extends Controller
             'phone' => 'required|string|max:20',
             'password' => 'required|string|min:6',
             'foto_ktm' => 'nullable|image|max:2048', // Max 2MB
+            'fcm_token' => 'nullable|string',
         ]);
 
         $fotoKtmPath = null;
@@ -96,6 +102,7 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
             'foto_ktm_path' => $fotoKtmPath,
             'status' => 'pending',
+            'fcm_token' => $request->fcm_token,
         ]);
 
         return response()->json([

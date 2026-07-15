@@ -102,7 +102,7 @@ export default function Show({ kantin, total_penjualan, total_menu_terjual, menu
                 <div className="bg-white rounded-2xl border border-gray-100 p-6">
                     <div className="flex items-center gap-8 flex-wrap">
                         {kantin?.logo_path ? (
-                            <img src={kantin.logo_path} alt={kantin.nama_kantin} className="w-16 h-16 rounded-2xl object-cover flex-shrink-0" />
+                            <img src={kantin.logo_path.startsWith('http') ? kantin.logo_path : `/storage/${kantin.logo_path}`} alt={kantin.nama_kantin} className="w-16 h-16 rounded-2xl object-cover flex-shrink-0" />
                         ) : (
                             <div className="w-16 h-16 bg-[#2d3a8c] rounded-2xl flex items-center justify-center flex-shrink-0">
                                 <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72" /></svg>
@@ -119,9 +119,18 @@ export default function Show({ kantin, total_penjualan, total_menu_terjual, menu
                             <div className="flex flex-col justify-start">
                                 <p className="text-xs text-gray-400 mb-1.5">Nama Pemilik</p>
                                 <div className="flex items-center gap-2.5">
-                                    <div className="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                        <span className="text-[10px] font-bold text-orange-600">{getInisial(owner?.nama_pemilik)}</span>
-                                    </div>
+                                    {(() => {
+                                        const fotoPath = owner?.foto_profil_path;
+                                        const fotoSrc = fotoPath ? (fotoPath.startsWith('http') ? fotoPath : `/storage/${fotoPath}`) : null;
+                                        if (fotoSrc) {
+                                            return <img src={fotoSrc} alt={owner?.nama_pemilik} className="w-6 h-6 rounded-full object-cover flex-shrink-0" />;
+                                        }
+                                        return (
+                                            <div className="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                                <span className="text-[10px] font-bold text-orange-600">{getInisial(owner?.nama_pemilik)}</span>
+                                            </div>
+                                        );
+                                    })()}
                                     <p className="text-sm font-semibold text-gray-900 truncate" title={owner?.nama_pemilik}>{owner?.nama_pemilik || '-'}</p>
                                 </div>
                             </div>
@@ -188,39 +197,71 @@ export default function Show({ kantin, total_penjualan, total_menu_terjual, menu
                     </div>
                 </div>
 
-                {/* §4 Menu Table */}
-                <div className="bg-white rounded-2xl border border-gray-100">
-                    <div className="px-6 py-5 border-b border-gray-100"><h2 className="text-base font-bold text-gray-900">Daftar Menu</h2><p className="text-xs text-gray-400 mt-0.5">{meta.total || 0} menu terdaftar di kantin ini</p></div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full min-w-[650px]">
-                            <thead><tr className="border-b border-gray-100">
-                                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase">Foto Menu</th>
-                                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase">Nama Menu</th>
-                                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase">Harga</th>
-                                <th className="text-center px-6 py-3 text-xs font-semibold text-gray-400 uppercase">Status</th>
-                                <th className="text-center px-6 py-3 text-xs font-semibold text-gray-400 uppercase">Total Terjual</th>
-                            </tr></thead>
-                            <tbody className="divide-y divide-gray-50">
-                                {menuData.length > 0 ? menuData.map(m => (
-                                    <tr key={m.id} className="hover:bg-gray-50/50 transition-colors">
-                                        <td className="px-6 py-3">{m.foto_menu ? <img src={m.foto_menu} alt={m.nama_item} className="w-12 h-12 rounded-xl object-cover" /> : <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center"><span className="text-xs font-bold text-orange-600">{getInisial(m.nama_item)}</span></div>}</td>
-                                        <td className="px-6 py-3"><p className="text-sm font-semibold text-gray-900">{m.nama_item}</p><p className="text-xs text-gray-400">{m.kategori}</p></td>
-                                        <td className="px-6 py-3 text-sm text-gray-700">{formatRupiahPenuh(m.harga)}</td>
-                                        <td className="px-6 py-3 text-center"><span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${m.status_stok ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}><span className={`w-1.5 h-1.5 rounded-full ${m.status_stok ? 'bg-emerald-500' : 'bg-red-500'}`} />{m.status_stok ? 'Tersedia' : 'Habis'}</span></td>
-                                        <td className="px-6 py-3 text-center text-sm font-semibold text-gray-700">{formatAngka(m.pesanan_details_sum_jumlah_pesanan || 0)}</td>
-                                    </tr>
-                                )) : <tr><td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">Belum ada menu</td></tr>}
-                            </tbody>
-                        </table>
+                {/* §4 Menu Table & Pegawai List */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 flex flex-col overflow-hidden">
+                        <div className="px-6 py-5 border-b border-gray-100"><h2 className="text-base font-bold text-gray-900">Daftar Menu</h2><p className="text-xs text-gray-400 mt-0.5">{meta.total || 0} menu terdaftar di kantin ini</p></div>
+                        <div className="overflow-x-auto flex-1">
+                            <table className="w-full min-w-[650px]">
+                                <thead><tr className="border-b border-gray-100">
+                                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase">Foto Menu</th>
+                                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase">Nama Menu</th>
+                                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase">Harga</th>
+                                    <th className="text-center px-6 py-3 text-xs font-semibold text-gray-400 uppercase">Status</th>
+                                    <th className="text-center px-6 py-3 text-xs font-semibold text-gray-400 uppercase">Total Terjual</th>
+                                </tr></thead>
+                                <tbody className="divide-y divide-gray-50">
+                                    {menuData.length > 0 ? menuData.map(m => (
+                                        <tr key={m.id} className="hover:bg-gray-50/50 transition-colors">
+                                            <td className="px-6 py-3">{m.foto_menu ? <img src={m.foto_menu.startsWith('http') ? m.foto_menu : `/storage/${m.foto_menu}`} alt={m.nama_item} className="w-12 h-12 rounded-xl object-cover" /> : <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center"><span className="text-xs font-bold text-orange-600">{getInisial(m.nama_item)}</span></div>}</td>
+                                            <td className="px-6 py-3"><p className="text-sm font-semibold text-gray-900">{m.nama_item}</p><p className="text-xs text-gray-400">{m.kategori}</p></td>
+                                            <td className="px-6 py-3 text-sm text-gray-700">{formatRupiahPenuh(m.harga)}</td>
+                                            <td className="px-6 py-3 text-center"><span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${m.status_stok ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}><span className={`w-1.5 h-1.5 rounded-full ${m.status_stok ? 'bg-emerald-500' : 'bg-red-500'}`} />{m.status_stok ? 'Tersedia' : 'Habis'}</span></td>
+                                            <td className="px-6 py-3 text-center text-sm font-semibold text-gray-700">{formatAngka(m.pesanan_details_sum_jumlah_pesanan || 0)}</td>
+                                        </tr>
+                                    )) : <tr><td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">Belum ada menu</td></tr>}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-white">
+                            <p className="text-sm text-gray-500">Menampilkan <span className="font-semibold text-gray-700">{meta.from || 0}–{meta.to || 0}</span> dari <span className="font-semibold text-gray-700">{meta.total || 0}</span> menu</p>
+                            <div className="flex items-center gap-1">
+                                <button onClick={() => handleMenuPage(Math.max(1, (meta.current_page || 1) - 1))} disabled={(meta.current_page || 1) <= 1} className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30">‹</button>
+                                {Array.from({ length: meta.last_page || 1 }, (_, i) => i + 1).map(p => (
+                                    <button key={p} onClick={() => handleMenuPage(p)} className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm transition-colors ${p === (meta.current_page || 1) ? 'bg-[#3852b4] text-white font-semibold' : 'text-gray-600 hover:bg-gray-100'}`}>{p}</button>
+                                ))}
+                                <button onClick={() => handleMenuPage(Math.min(meta.last_page || 1, (meta.current_page || 1) + 1))} disabled={(meta.current_page || 1) >= (meta.last_page || 1)} className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30">›</button>
+                            </div>
+                        </div>
                     </div>
-                    <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
-                        <p className="text-sm text-gray-500">Menampilkan <span className="font-semibold text-gray-700">{meta.from || 0}–{meta.to || 0}</span> dari <span className="font-semibold text-gray-700">{meta.total || 0}</span> menu</p>
-                        <div className="flex items-center gap-1">
-                            <button onClick={() => handleMenuPage(Math.max(1, (meta.current_page || 1) - 1))} disabled={(meta.current_page || 1) <= 1} className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30">‹</button>
-                            {Array.from({ length: meta.last_page || 1 }, (_, i) => i + 1).map(p => (
-                                <button key={p} onClick={() => handleMenuPage(p)} className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm transition-colors ${p === (meta.current_page || 1) ? 'bg-[#3852b4] text-white font-semibold' : 'text-gray-600 hover:bg-gray-100'}`}>{p}</button>
-                            ))}
-                            <button onClick={() => handleMenuPage(Math.min(meta.last_page || 1, (meta.current_page || 1) + 1))} disabled={(meta.current_page || 1) >= (meta.last_page || 1)} className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30">›</button>
+
+                    <div className="lg:col-span-1 bg-white rounded-2xl border border-gray-100 flex flex-col overflow-hidden">
+                        <div className="px-6 py-5 border-b border-gray-100"><h2 className="text-base font-bold text-gray-900">Daftar Pegawai</h2><p className="text-xs text-gray-400 mt-0.5">{kantin?.pegawai?.length || 0} orang terdaftar</p></div>
+                        <div className="flex-1 p-6 flex flex-col gap-4 overflow-y-auto max-h-[500px]">
+                            {kantin?.pegawai?.length > 0 ? kantin.pegawai.map(p => {
+                                const fotoPath = p.foto_profil_path;
+                                const fotoSrc = fotoPath ? (fotoPath.startsWith('http') ? fotoPath : `/storage/${fotoPath}`) : null;
+                                return (
+                                    <div key={p.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors border border-gray-50 shadow-sm">
+                                        {fotoSrc ? (
+                                            <img src={fotoSrc} alt={p.nama_karyawan} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                                        ) : (
+                                            <div className="w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center flex-shrink-0">
+                                                <span className="text-sm font-bold text-purple-600">{getInisial(p.nama_karyawan)}</span>
+                                            </div>
+                                        )}
+                                        <div className="flex flex-col flex-1 min-w-0">
+                                            <p className="text-sm font-semibold text-gray-900 truncate">{p.nama_karyawan || '-'}</p>
+                                            <p className="text-xs text-gray-500 truncate">{p.user?.email || p.no_telp || '-'}</p>
+                                        </div>
+                                    </div>
+                                )
+                            }) : (
+                                <div className="flex flex-col items-center justify-center py-10 opacity-50 h-full">
+                                    <svg className="w-8 h-8 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                                    <p className="text-sm text-gray-500">Belum ada pegawai</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

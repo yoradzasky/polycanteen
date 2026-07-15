@@ -24,15 +24,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   String? _selectedJurusan;
   final List<String> _jurusanList = [
-    'Teknologi Informasi',
-    'Produksi Pertanian',
-    'Teknologi Pertanian',
-    'Peternakan',
-    'Manajemen Agribisnis',
-    'Kesehatan',
-    'Teknik',
-    'Bahasa, Komunikasi dan Pariwisata',
-    'Lainnya',
+    'Teknik Mesin',
+    'Teknik Elektro',
+    'Teknik Sipil',
+    'Administrasi Bisnis',
+    'Akuntansi',
   ];
 
   @override
@@ -56,8 +52,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         }
 
         if (data['foto_profil_path'] != null) {
-          _currentPhotoUrl =
-              '${_service.baseUrlForStorage}/storage/${data['foto_profil_path']}';
+          final String pFoto = data['foto_profil_path'];
+          _currentPhotoUrl = pFoto.startsWith('http')
+              ? pFoto
+              : '${_service.baseUrlForStorage}/storage/$pFoto';
         }
         _isLoading = false;
       });

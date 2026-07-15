@@ -49,8 +49,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         String? pathFoto = data['foto_profil_path'];
 
         if (pathFoto != null && pathFoto.isNotEmpty) {
-          fotoProfil =
-              '${_mahasiswaService.baseUrlForStorage}/storage/$pathFoto?t=${DateTime.now().millisecondsSinceEpoch}';
+          fotoProfil = pathFoto.startsWith('http')
+              ? pathFoto
+              : '${_mahasiswaService.baseUrlForStorage}/storage/$pathFoto?t=${DateTime.now().millisecondsSinceEpoch}';
         } else {
           fotoProfil = 'https://via.placeholder.com/150';
         }

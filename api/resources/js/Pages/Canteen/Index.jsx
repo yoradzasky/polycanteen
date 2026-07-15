@@ -271,7 +271,7 @@ export default function Index({ canteens, filters }) {
                                             <td className="px-6 py-4 text-left">
                                                 <div className="flex items-center gap-3">
                                                     <div className="flex-shrink-0">
-                                                        <Avatar nama={kantin.nama_kantin} size="w-9 h-9" textSize="text-xs" />
+                                                        <Avatar src={kantin.logo_path ? (kantin.logo_path.startsWith('http') ? kantin.logo_path : `/storage/${kantin.logo_path}`) : null} nama={kantin.nama_kantin} size="w-9 h-9" textSize="text-xs" />
                                                     </div>
                                                     <div>
                                                         <p className="text-sm font-semibold text-gray-900 line-clamp-2">{kantin.nama_kantin}</p>
@@ -283,7 +283,7 @@ export default function Index({ canteens, filters }) {
                                                 <div className="flex items-center gap-2.5">
                                                     <div className="flex-shrink-0">
                                                         <Avatar
-                                                            src={kantin.pemilik?.user?.avatar}
+                                                            src={kantin.pemilik?.foto_profil_path ? (kantin.pemilik.foto_profil_path.startsWith('http') ? kantin.pemilik.foto_profil_path : `/storage/${kantin.pemilik.foto_profil_path}`) : null}
                                                             nama={kantin.pemilik?.nama_pemilik}
                                                             size="w-7 h-7"
                                                             textSize="text-[10px]"

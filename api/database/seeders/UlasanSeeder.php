@@ -17,21 +17,21 @@ class UlasanSeeder extends Seeder
                 $query->whereNull('catatan_pesanan')
                       ->orWhere('catatan_pesanan', 'not like', '%belum dirating%');
             })
-            ->with(['mahasiswa', 'kantin'])
+            ->with(['mahasiswa', 'kantin', 'details'])
             ->get();
 
         $ulasanData = [
-            // Indeks 0: pesanan selesai pertama (Budi - Kantin Barokah, dine-in)
+            // Indeks 0: pesanan selesai pertama
             [
                 'rating'   => 5,
-                'komentar' => 'Nasi gorengnya enak banget, porsi besar dan harga terjangkau! Es tehnya juga segar. Pasti balik lagi!',
+                'komentar' => 'Nasi gorengnya enak banget, porsi besar dan harga terjangkau! Es tehnya juga segar. Pasti balik lagi ke Kantek!',
             ],
-            // Indeks 1: pesanan selesai kedua (Siti - Warung Bu Sri, take-away)
+            // Indeks 1: pesanan selesai kedua
             [
                 'rating'   => 4,
-                'komentar' => 'Pecel-nya enak, bumbu kacangnya pas. Kopi susu segar-nya mantap. Tapi antrian lumayan lama.',
+                'komentar' => 'Bakso kuahnya mantap, kuahnya gurih. Delivery ke Perpustakaan Polines juga cepat. Top!',
             ],
-            // Indeks 2: pesanan selesai ketiga (Rizky - Kantin Pak Agus, delivery)
+            // Indeks 2: pesanan selesai ketiga
             [
                 'rating'   => 4,
                 'komentar' => 'Nasi kotaknya enak dan dikemas rapi. Pengirimannya cepat juga. Tapi es jeruknya kurang manis dikit.',
@@ -42,20 +42,26 @@ class UlasanSeeder extends Seeder
             // Gunakan ulasan sesuai urutan, atau ulasan default jika melebihi array
             $data = $ulasanData[$index] ?? [
                 'rating'   => rand(3, 5),
-                'komentar' => 'Pelayanan memuaskan, akan pesan lagi.',
+                'komentar' => 'Pelayanan di kantin Polines memuaskan, akan pesan lagi.',
             ];
 
-            // CARI MENU ID UNTUK SEEDER:
-            // Ambil secara acak satu menu yang kebetulan dijual oleh kantin tersebut
-            $menu_id = \App\Models\Menu::where('kantin_id', $pesanan->kantin_id)
-                                       ->inRandomOrder()
-                                       ->value('id');
+            // Ambil menu_id dari pesanan detail yang terkait
+            $menuId = $pesanan->details->first()?->menu_id;
+            
+            // Fallback: ambil menu acak dari kantin jika tidak ada detail
+            if (!$menuId) {
+                $menuId = \App\Models\Menu::where('kantin_id', $pesanan->kantin_id)
+                    ->inRandomOrder()
+                    ->value('id');
+            }
+
+            if (!$menuId) continue;
 
             Ulasan::create([
                 'pesanan_id'   => $pesanan->id,
                 'mahasiswa_id' => $pesanan->mahasiswa_id,
                 'kantin_id'    => $pesanan->kantin_id,
-                'menu_id'      => $menu_id, // <-- Ganti $request->menu_id dengan variabel ini
+                'menu_id'      => $menuId,
                 'rating'       => $data['rating'],
                 'komentar'     => $data['komentar'],
             ]);
