@@ -97,7 +97,7 @@ class _SellerOrderHistoryScreenState extends State<SellerOrderHistoryScreen> {
               itemBuilder: (context, index) {
                 final order = history[index];
                 final String customerName =
-                    order['mahasiswa']?['nama'] ?? 'Pelanggan';
+                    order['mahasiswa']?['nama_mahasiswa'] ?? 'Pelanggan';
                 final String tipePesanan = order['tipe_pesanan'] ?? 'Delivery';
                 final String rawAntrian = order['nomor_antrian'] ?? 'A00';
                 final String nomorAntrian = rawAntrian.replaceAll('-', '');
